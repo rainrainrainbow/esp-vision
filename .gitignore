@@ -1,0 +1,47 @@
+# Build output
+/build/
+/dist/
+
+# ESP-IDF generated
+sdkconfig
+sdkconfig.old
+sdkconfig.ci
+managed_components/
+dependencies.lock
+
+# Compiled artifacts
+*.o
+*.a
+*.so
+*.elf
+*.bin
+*.uf2
+*.map
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Patches / staging
+*.rej
+*.orig
+
+# Editors / IDE
+.vscode/
+.codex/
+.claude/
+.idea/
+*.swp
+*.swo
+.cache/
+compile_commands.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

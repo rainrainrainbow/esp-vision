@@ -1,0 +1,3 @@
+DEFAULT:
+  # Keep this in sync with .pre-commit-config.yaml's astyle_py hook.
+  options: "--style=otbs --attach-namespaces --attach-classes --indent=spaces=4 --convert-tabs --align-reference=name --keep-one-line-statements --pad-header --pad-oper --unpad-paren --max-continuation-indent=120"
