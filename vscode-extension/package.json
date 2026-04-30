@@ -1,0 +1,75 @@
+{
+  "name": "esp-vision",
+  "displayName": "ESP-VISION",
+  "description": "VSCode tools for running MicroPython scripts on ESP-VISION boards.",
+  "version": "0.1.0",
+  "publisher": "espressif",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "espVision.connect",
+        "title": "ESP-VISION: Connect",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "espVision.disconnect",
+        "title": "ESP-VISION: Disconnect",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "espVision.runCurrentFile",
+        "title": "ESP-VISION: Run Current File",
+        "icon": "$(play)"
+      },
+      {
+        "command": "espVision.stopScript",
+        "title": "ESP-VISION: Stop Script",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "espVision.softReset",
+        "title": "ESP-VISION: Soft Reset",
+        "icon": "$(debug-restart)"
+      }
+    ],
+    "configuration": {
+      "title": "ESP-VISION",
+      "properties": {
+        "espVision.serialPort": {
+          "type": "string",
+          "default": "",
+          "description": "Serial port path used to connect to the ESP-VISION board."
+        },
+        "espVision.baudRate": {
+          "type": "number",
+          "default": 921600,
+          "description": "Serial baud rate used for the MicroPython REPL connection."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
