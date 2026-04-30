@@ -98,6 +98,21 @@ typedef struct list {
     size_t data_len;
 } list_t;
 
+#define list_init omv_list_init
+#define list_copy omv_list_copy
+#define list_free omv_list_free
+#define list_clear omv_list_clear
+#define list_size omv_list_size
+#define list_insert omv_list_insert
+#define list_push_front omv_list_push_front
+#define list_push_back omv_list_push_back
+#define list_remove omv_list_remove
+#define list_pop_front omv_list_pop_front
+#define list_pop_back omv_list_pop_back
+#define list_move omv_list_move
+#define list_move_front omv_list_move_front
+#define list_move_back omv_list_move_back
+
 void list_init(list_t *ptr, size_t data_len);
 void list_copy(list_t *dst, list_t *src);
 void list_free(list_t *ptr);

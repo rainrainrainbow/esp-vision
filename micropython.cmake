@@ -17,6 +17,7 @@ add_library(usermod_esp_vision_platform INTERFACE)
 
 target_sources(usermod_esp_vision_platform INTERFACE
     ${ESP_VISION_ROOT}/modules/py_image.c
+    ${ESP_VISION_ROOT}/modules/py_helper.c
     ${ESP_VISION_ROOT}/modules/py_sensor.c
     ${ESP_VISION_ROOT}/platform/camera.c
     ${ESP_VISION_ROOT}/platform/debug.c
@@ -27,6 +28,7 @@ target_include_directories(usermod_esp_vision_platform INTERFACE
     ${ESP_VISION_ROOT}/modules
     ${ESP_VISION_ROOT}/platform
     ${ESP_VISION_BOARD_DIR}
+    ${ESP_VISION_ROOT}/lib
     ${ESP_VISION_ROOT}/components/imlib/upstream
     ${ESP_VISION_ROOT}/components/imlib/include
     ${CMAKE_BINARY_DIR}
@@ -34,6 +36,7 @@ target_include_directories(usermod_esp_vision_platform INTERFACE
 
 target_compile_definitions(usermod_esp_vision_platform INTERFACE
     CMSIS_MCU_H="cmsis_compiler.h"
+    OMV_NO_GPL=1
 )
 
 target_link_libraries(usermod INTERFACE usermod_esp_vision_platform)

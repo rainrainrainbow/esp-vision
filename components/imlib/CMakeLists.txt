@@ -24,15 +24,32 @@ idf_component_register(
     SRCS
         "upstream/collections.c"
         "upstream/binary.c"
+        "upstream/bayer.c"
+        "upstream/blob.c"
         "upstream/draw.c"
+        "upstream/edge.c"
+        "upstream/eye.c"
+        "upstream/filter.c"
         "upstream/fmath.c"
         "upstream/font.c"
         "upstream/fsort.c"
+        "upstream/hough.c"
         "upstream/imlib.c"
+        "upstream/integral.c"
+        "upstream/jpegd.c"
+        "upstream/jpege.c"
+        "upstream/line.c"
+        "upstream/mathop.c"
+        "upstream/png.c"
         "upstream/point.c"
         "upstream/rectangle.c"
+        "upstream/stats.c"
+        "upstream/template.c"
+        "upstream/yuv.c"
         "compat/array.c"
         "compat/fb_alloc.c"
+        "compat/lab_table.c"
+        "compat/sincos_table.c"
         "compat/unaligned_memcpy.c"
         "compat/umm_malloc.c"
     INCLUDE_DIRS
@@ -55,8 +72,10 @@ add_dependencies(${COMPONENT_LIB} imlib_micropython_genhdr)
 
 target_compile_definitions(${COMPONENT_LIB} PRIVATE
     CMSIS_MCU_H="cmsis_compiler.h"
+    OMV_NO_GPL=1
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE
+    -O3
     -Wno-error
 )
