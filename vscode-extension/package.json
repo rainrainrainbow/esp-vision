@@ -41,6 +41,11 @@
         "command": "espVision.softReset",
         "title": "ESP-VISION: Soft Reset",
         "icon": "$(debug-restart)"
+      },
+      {
+        "command": "espVision.showPreview",
+        "title": "ESP-VISION: Show Preview",
+        "icon": "$(preview)"
       }
     ],
     "configuration": {

@@ -19,7 +19,9 @@ ignore:
   include:
     - 'build/**/*'
     - 'dist/**/*'
+    - 'components/imlib/**/*'
     - 'lib/micropython/**/*'
+    - 'lib/ulab/**/*'
     - 'vscode-extension/node_modules/**/*'
     - 'vscode-extension/out/**/*'
     - 'vscode-extension/package-lock.json'

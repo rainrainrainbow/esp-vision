@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO LTD
+# SPDX-License-Identifier: MIT
+
+version: "0.1.0"
+description: ESP-VISION imlib component
+license: "MIT"
+dependencies:
+  idf:
+    version: ">=5.3.0"

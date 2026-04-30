@@ -6,7 +6,9 @@ exclude: |
   (?x)^(
     build/|
     dist/|
+    components/imlib/|
     lib/micropython/|
+    lib/ulab/|
     vscode-extension/node_modules/|
     vscode-extension/out/|
     vscode-extension/.*\.vsix$|
@@ -19,6 +21,7 @@ repos:
     hooks:
       - id: check-copyright
         args: ['--config', 'tools/ci/check_copyright_config.yaml', '--ignore', 'tools/ci/check_copyright_ignore.txt']
+        exclude: ^platform/main\.c$
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -52,3 +55,4 @@ repos:
     hooks:
       - id: astyle_py
         args: ['--astyle-version=3.4.7', '--rules=tools/ci/astyle-rules.yml']
+        exclude: ^platform/main\.c$

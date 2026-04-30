@@ -16,15 +16,50 @@ let status: vscode.StatusBarItem | undefined;
 let runButton: vscode.StatusBarItem | undefined;
 let stopButton: vscode.StatusBarItem | undefined;
 let resetButton: vscode.StatusBarItem | undefined;
+let previewButton: vscode.StatusBarItem | undefined;
+let previewPanel: vscode.WebviewPanel | undefined;
+let lastPreviewFrame: PreviewFrame | undefined;
+let previewFrameSeq = 0;
 let currentPort = "";
 let suppressSerialOutput = false;
 let rawOutputParser: RawOutputParser | undefined;
+let lastRunnableUri: vscode.Uri | undefined;
+let runCompletion: Promise<void> | undefined;
+let resolveRunCompletion: (() => void) | undefined;
+let runOperation: Promise<void> = Promise.resolve();
 
 interface RawOutputParser {
-    phase: "stdout" | "stderr" | "prompt";
+    phase: "header" | "stdout" | "stderr" | "prompt";
     decoder: StringDecoder;
     stderrBytes: number;
     stopRequested: boolean;
+    preview: PreviewTextParser;
+}
+
+interface PreviewFrame {
+    seq: number;
+    width: number;
+    height: number;
+    size: number;
+    format: string;
+    encoding: string;
+    base64: string;
+    receivedAt: Date;
+}
+
+interface PreviewFrameHeader {
+    width: number;
+    height: number;
+    size: number;
+    format: string;
+    encoding: string;
+    raw: string;
+}
+
+interface PreviewTextParser {
+    phase: "text" | "body";
+    pending: string;
+    header?: PreviewFrameHeader;
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -33,11 +68,13 @@ export function activate(context: vscode.ExtensionContext): void {
     const nextRunButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
     const nextStopButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
     const nextResetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 97);
+    const nextPreviewButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 96);
     output = nextOutput;
     status = nextStatus;
     runButton = nextRunButton;
     stopButton = nextStopButton;
     resetButton = nextResetButton;
+    previewButton = nextPreviewButton;
     nextRunButton.text = "$(play)";
     nextRunButton.tooltip = "ESP-VISION: Run Current File";
     nextRunButton.command = "espVision.runCurrentFile";
@@ -47,7 +84,10 @@ export function activate(context: vscode.ExtensionContext): void {
     nextResetButton.text = "$(debug-restart)";
     nextResetButton.tooltip = "ESP-VISION: Soft Reset";
     nextResetButton.command = "espVision.softReset";
-    context.subscriptions.push(nextOutput, nextStatus, nextRunButton, nextStopButton, nextResetButton);
+    nextPreviewButton.text = "$(preview)";
+    nextPreviewButton.tooltip = "ESP-VISION: Show Preview";
+    nextPreviewButton.command = "espVision.showPreview";
+    context.subscriptions.push(nextOutput, nextStatus, nextRunButton, nextStopButton, nextResetButton, nextPreviewButton);
     updateStatus();
 
     context.subscriptions.push(
@@ -56,7 +96,18 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand("espVision.runCurrentFile", runCurrentFile),
         vscode.commands.registerCommand("espVision.stopScript", stopScript),
         vscode.commands.registerCommand("espVision.softReset", softReset),
+        vscode.commands.registerCommand("espVision.showPreview", showPreview),
+        vscode.window.onDidChangeActiveTextEditor((editor) => {
+            if (editor && isRunnableDocument(editor.document)) {
+                lastRunnableUri = editor.document.uri;
+            }
+        }),
     );
+
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor && isRunnableDocument(activeEditor.document)) {
+        lastRunnableUri = activeEditor.document.uri;
+    }
 }
 
 export async function deactivate(): Promise<void> {
@@ -66,6 +117,8 @@ export async function deactivate(): Promise<void> {
     runButton = undefined;
     stopButton = undefined;
     resetButton = undefined;
+    previewButton = undefined;
+    previewPanel = undefined;
 }
 
 async function connect(): Promise<void> {
@@ -116,7 +169,7 @@ async function disconnect(options: { quiet?: boolean } = {}): Promise<void> {
     transport = undefined;
     rawRepl = undefined;
     currentPort = "";
-    rawOutputParser = undefined;
+    finishRawRun();
     suppressSerialOutput = false;
 
     if (options.quiet) {
@@ -128,43 +181,42 @@ async function disconnect(options: { quiet?: boolean } = {}): Promise<void> {
 }
 
 async function runCurrentFile(): Promise<void> {
+    runOperation = runOperation
+        .catch(() => undefined)
+        .then(runCurrentFileInner);
+    await runOperation;
+}
+
+async function runCurrentFileInner(): Promise<void> {
     const repl = requireRawRepl();
     if (!repl) {
         return;
     }
 
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showWarningMessage("No active editor.");
+    const document = await getRunnableDocument();
+    if (!document) {
         return;
     }
 
-    if (editor.document.isDirty) {
-        await editor.document.save();
+    if (document.isDirty) {
+        await document.save();
+    }
+
+    if (rawOutputParser) {
+        appendOutputLine("\n[restart]");
+        await stopRunningScript(repl);
     }
 
     showOutput(true);
-    appendOutputLine(`\n[run] ${editor.document.fileName}`);
-    rawOutputParser = undefined;
-    suppressSerialOutput = true;
+    appendOutputLine(`\n[run] ${document.fileName}`);
+    startRawRun();
     try {
-        await repl.runScript(editor.document.getText());
-        rawOutputParser = {
-            phase: "stdout",
-            decoder: new StringDecoder("utf8"),
-            stderrBytes: 0,
-            stopRequested: false,
-        };
-        const pending = transport?.takeInput();
-        if (pending?.length) {
-            handleSerialData(pending);
-        }
+        await repl.runScript(document.getText());
     } catch (error) {
+        finishRawRun();
         const message = error instanceof Error ? error.message : String(error);
         appendOutputLine(`[error] ${message}`);
         vscode.window.showErrorMessage(`ESP-VISION run failed: ${message}`);
-    } finally {
-        suppressSerialOutput = false;
     }
 }
 
@@ -174,11 +226,7 @@ async function stopScript(): Promise<void> {
         return;
     }
 
-    appendOutputLine("\n[stop]");
-    if (rawOutputParser) {
-        rawOutputParser.stopRequested = true;
-    }
-    await repl.stopScript();
+    await stopRunningScript(repl, true);
 }
 
 async function softReset(): Promise<void> {
@@ -188,7 +236,7 @@ async function softReset(): Promise<void> {
     }
 
     appendOutputLine("\n[soft reset]");
-    rawOutputParser = undefined;
+    finishRawRun();
     suppressSerialOutput = true;
     try {
         await repl.softReset();
@@ -196,6 +244,28 @@ async function softReset(): Promise<void> {
     } finally {
         suppressSerialOutput = false;
     }
+}
+
+async function showPreview(): Promise<void> {
+    if (previewPanel) {
+        previewPanel.reveal(vscode.ViewColumn.Beside);
+        updatePreviewPanel();
+        return;
+    }
+
+    previewPanel = vscode.window.createWebviewPanel(
+        "espVisionPreview",
+        "ESP-VISION Preview",
+        vscode.ViewColumn.Beside,
+        {
+            enableScripts: false,
+            retainContextWhenHidden: true,
+        },
+    );
+    previewPanel.onDidDispose(() => {
+        previewPanel = undefined;
+    });
+    updatePreviewPanel();
 }
 
 async function pickSerialPort(): Promise<string | undefined> {
@@ -225,6 +295,91 @@ function requireRawRepl(): RawRepl | undefined {
     return rawRepl;
 }
 
+async function getRunnableDocument(): Promise<vscode.TextDocument | undefined> {
+    const editor = vscode.window.activeTextEditor;
+    if (editor && isRunnableDocument(editor.document)) {
+        lastRunnableUri = editor.document.uri;
+        return editor.document;
+    }
+
+    if (lastRunnableUri) {
+        try {
+            return await vscode.workspace.openTextDocument(lastRunnableUri);
+        } catch {
+            lastRunnableUri = undefined;
+        }
+    }
+
+    vscode.window.showWarningMessage("Open a Python file before running ESP-VISION.");
+    return undefined;
+}
+
+function isRunnableDocument(document: vscode.TextDocument): boolean {
+    return document.uri.scheme === "file" &&
+        (document.languageId === "python" || document.fileName.endsWith(".py"));
+}
+
+function startRawRun(): void {
+    rawOutputParser = {
+        phase: "header",
+        decoder: new StringDecoder("utf8"),
+        stderrBytes: 0,
+        stopRequested: false,
+        preview: {
+            phase: "text",
+            pending: "",
+        },
+    };
+    runCompletion = new Promise<void>((resolve) => {
+        resolveRunCompletion = resolve;
+    });
+}
+
+function finishRawRun(): void {
+    rawOutputParser = undefined;
+    const resolve = resolveRunCompletion;
+    runCompletion = undefined;
+    resolveRunCompletion = undefined;
+    resolve?.();
+}
+
+async function stopRunningScript(repl: RawRepl, showMessage = false): Promise<void> {
+    if (showMessage) {
+        appendOutputLine("\n[stop]");
+    }
+    if (rawOutputParser) {
+        rawOutputParser.stopRequested = true;
+    }
+
+    await repl.stopScript();
+
+    if (runCompletion) {
+        try {
+            await withTimeout(runCompletion, 3000);
+        } catch {
+            finishRawRun();
+            transport?.clearInput();
+            appendOutputLine("[stopped]");
+        }
+    }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    let timer: NodeJS.Timeout | undefined;
+    try {
+        return await Promise.race([
+            promise,
+            new Promise<T>((_, reject) => {
+                timer = setTimeout(() => reject(new Error("timeout")), timeoutMs);
+            }),
+        ]);
+    } finally {
+        if (timer) {
+            clearTimeout(timer);
+        }
+    }
+}
+
 function updateStatus(connected = Boolean(transport?.isOpen)): void {
     if (!status) {
         return;
@@ -237,6 +392,7 @@ function updateStatus(connected = Boolean(transport?.isOpen)): void {
         runButton?.show();
         stopButton?.show();
         resetButton?.show();
+        previewButton?.show();
     } catch {
         status = undefined;
     }
@@ -268,13 +424,23 @@ function handleRawOutputData(data: Buffer): void {
 
     while (remaining.length > 0 && rawOutputParser) {
         const parser = rawOutputParser;
+        if (parser.phase === "header") {
+            const okIndex = remaining.indexOf("OK");
+            if (okIndex < 0) {
+                return;
+            }
+            remaining = remaining.subarray(okIndex + 2);
+            parser.phase = "stdout";
+            continue;
+        }
+
         if (rawOutputParser.phase === "prompt") {
             const promptIndex = remaining.indexOf(">");
             if (promptIndex < 0) {
                 return;
             }
             appendOutputLine(statusTextForRawParser(parser));
-            rawOutputParser = undefined;
+            finishRawRun();
             remaining = remaining.subarray(promptIndex + 1);
             continue;
         }
@@ -285,8 +451,12 @@ function handleRawOutputData(data: Buffer): void {
             return;
         }
 
+        const phaseBeforeDelimiter = parser.phase;
         appendRawStreamData(parser, remaining.subarray(0, delimiterIndex));
-        appendOutput(normalizeLineEndings(parser.decoder.end()));
+        appendRawText(parser, parser.decoder.end());
+        if (phaseBeforeDelimiter === "stdout") {
+            appendOutput(normalizeLineEndings(flushPreviewText(parser.preview)));
+        }
         remaining = remaining.subarray(delimiterIndex + 1);
         parser.decoder = new StringDecoder("utf8");
         parser.phase = parser.phase === "stdout" ? "stderr" : "prompt";
@@ -303,8 +473,224 @@ function appendRawStreamData(parser: RawOutputParser, data: Buffer): void {
     }
     if (parser.phase === "stderr") {
         parser.stderrBytes += data.length;
+        appendOutput(normalizeLineEndings(parser.decoder.write(data)));
+        return;
     }
-    appendOutput(normalizeLineEndings(parser.decoder.write(data)));
+    appendRawText(parser, parser.decoder.write(data));
+}
+
+function appendRawText(parser: RawOutputParser, value: string): void {
+    if (value.length === 0) {
+        return;
+    }
+    if (parser.phase !== "stdout") {
+        appendOutput(normalizeLineEndings(value));
+        return;
+    }
+
+    appendOutput(normalizeLineEndings(processPreviewText(parser.preview, value)));
+}
+
+function processPreviewText(parser: PreviewTextParser, value: string): string {
+    parser.pending += value;
+    let outputText = "";
+
+    for (;;) {
+        if (parser.phase === "text") {
+            const frameStart = parser.pending.indexOf("<EVFRAME");
+            if (frameStart < 0) {
+                const keep = "<EVFRAME".length - 1;
+                if (parser.pending.length > keep) {
+                    outputText += parser.pending.slice(0, parser.pending.length - keep);
+                    parser.pending = parser.pending.slice(parser.pending.length - keep);
+                }
+                return outputText;
+            }
+
+            outputText += parser.pending.slice(0, frameStart);
+            parser.pending = parser.pending.slice(frameStart);
+
+            const headerEnd = parser.pending.indexOf(">");
+            if (headerEnd < 0) {
+                return outputText;
+            }
+
+            const headerText = parser.pending.slice(0, headerEnd + 1);
+            const header = parsePreviewFrameHeader(headerText);
+            parser.pending = parser.pending.slice(headerEnd + 1);
+            if (!header) {
+                outputText += headerText;
+                continue;
+            }
+
+            parser.phase = "body";
+            parser.header = header;
+            continue;
+        }
+
+        const frameEnd = parser.pending.indexOf("</EVFRAME>");
+        if (frameEnd < 0) {
+            return outputText;
+        }
+
+        const base64 = parser.pending.slice(0, frameEnd).replace(/\s+/g, "");
+        const header = parser.header;
+        parser.pending = parser.pending.slice(frameEnd + "</EVFRAME>".length);
+        parser.pending = parser.pending.replace(/^\r?\n/, "");
+        parser.phase = "text";
+        parser.header = undefined;
+
+        if (header) {
+            handlePreviewFrame(header, base64);
+        }
+    }
+}
+
+function parsePreviewFrameHeader(headerText: string): PreviewFrameHeader | undefined {
+    const attributes = new Map<string, string>();
+    const pattern = /([A-Za-z_][A-Za-z0-9_]*)=("[^"]*"|[^\s>]+)/g;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(headerText)) !== null) {
+        const value = match[2].startsWith("\"") ? match[2].slice(1, -1) : match[2];
+        attributes.set(match[1], value);
+    }
+
+    const width = Number(attributes.get("width"));
+    const height = Number(attributes.get("height"));
+    const size = Number(attributes.get("size"));
+    const format = attributes.get("format") ?? "";
+    const encoding = attributes.get("encoding") ?? "";
+
+    if (!Number.isFinite(width) || !Number.isFinite(height) || !Number.isFinite(size)) {
+        return undefined;
+    }
+    if (width <= 0 || height <= 0 || size <= 0) {
+        return undefined;
+    }
+    if (format !== "jpg" || encoding !== "base64") {
+        return undefined;
+    }
+
+    return {
+        width,
+        height,
+        size,
+        format,
+        encoding,
+        raw: headerText,
+    };
+}
+
+function handlePreviewFrame(header: PreviewFrameHeader, base64: string): void {
+    if (base64.length === 0) {
+        return;
+    }
+
+    lastPreviewFrame = {
+        seq: ++previewFrameSeq,
+        width: header.width,
+        height: header.height,
+        size: header.size,
+        format: header.format,
+        encoding: header.encoding,
+        base64,
+        receivedAt: new Date(),
+    };
+    if (previewButton) {
+        previewButton.text = "$(preview) " + header.width + "x" + header.height;
+    }
+    updatePreviewPanel();
+}
+
+function flushPreviewText(parser: PreviewTextParser): string {
+    const outputText = parser.phase === "body" && parser.header
+        ? parser.header.raw + parser.pending
+        : parser.pending;
+    parser.phase = "text";
+    parser.pending = "";
+    parser.header = undefined;
+    return outputText;
+}
+
+function updatePreviewPanel(): void {
+    if (!previewPanel) {
+        return;
+    }
+    previewPanel.webview.html = renderPreviewHtml(lastPreviewFrame);
+}
+
+function renderPreviewHtml(frame: PreviewFrame | undefined): string {
+    const body = frame
+        ? `<main>
+            <div class="frame">
+                <img src="data:image/jpeg;base64,${frame.base64}" alt="ESP-VISION preview frame" />
+            </div>
+            <footer>${frame.width}x${frame.height} JPG · ${frame.size} bytes · #${frame.seq} · ${escapeHtml(formatTime(frame.receivedAt))}</footer>
+        </main>`
+        : `<main class="empty"><div>No preview frame</div></main>`;
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-font-family);
+}
+main {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: 100%;
+    padding: 12px;
+    gap: 8px;
+}
+.frame {
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-panel-border);
+}
+img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+}
+footer {
+    color: var(--vscode-descriptionForeground);
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.empty {
+    place-items: center;
+    color: var(--vscode-descriptionForeground);
+}
+</style>
+</head>
+<body>${body}</body>
+</html>`;
+}
+
+function formatTime(value: Date): string {
+    return value.toLocaleTimeString();
+}
+
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }
 
 function statusTextForRawParser(parser: RawOutputParser): string {
