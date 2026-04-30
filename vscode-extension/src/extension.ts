@@ -20,6 +20,7 @@ let previewButton: vscode.StatusBarItem | undefined;
 let previewPanel: vscode.WebviewPanel | undefined;
 let lastPreviewFrame: PreviewFrame | undefined;
 let previewFrameSeq = 0;
+let previewFrameTimes: number[] = [];
 let currentPort = "";
 let suppressSerialOutput = false;
 let rawOutputParser: RawOutputParser | undefined;
@@ -27,6 +28,8 @@ let lastRunnableUri: vscode.Uri | undefined;
 let runCompletion: Promise<void> | undefined;
 let resolveRunCompletion: (() => void) | undefined;
 let runOperation: Promise<void> = Promise.resolve();
+
+const PREVIEW_FPS_WINDOW_MS = 2000;
 
 interface RawOutputParser {
     phase: "header" | "stdout" | "stderr" | "prompt";
@@ -41,6 +44,7 @@ interface PreviewFrame {
     width: number;
     height: number;
     size: number;
+    fps: number;
     format: string;
     encoding: string;
     base64: string;
@@ -337,6 +341,7 @@ function startRawRun(): void {
 
 function finishRawRun(): void {
     rawOutputParser = undefined;
+    resetPreviewFps();
     const resolve = resolveRunCompletion;
     runCompletion = undefined;
     resolveRunCompletion = undefined;
@@ -586,20 +591,48 @@ function handlePreviewFrame(header: PreviewFrameHeader, base64: string): void {
         return;
     }
 
+    const receivedAtMs = Date.now();
+    const fps = recordPreviewFrame(receivedAtMs);
     lastPreviewFrame = {
         seq: ++previewFrameSeq,
         width: header.width,
         height: header.height,
         size: header.size,
+        fps,
         format: header.format,
         encoding: header.encoding,
         base64,
-        receivedAt: new Date(),
+        receivedAt: new Date(receivedAtMs),
     };
     if (previewButton) {
-        previewButton.text = "$(preview) " + header.width + "x" + header.height;
+        previewButton.text = `$(preview) ${header.width}x${header.height} ${formatFps(fps)}`;
+        previewButton.tooltip = `ESP-VISION Preview: ${header.width}x${header.height}, ${formatFps(fps)}`;
     }
     updatePreviewPanel();
+}
+
+function recordPreviewFrame(receivedAtMs: number): number {
+    previewFrameTimes.push(receivedAtMs);
+
+    const minTime = receivedAtMs - PREVIEW_FPS_WINDOW_MS;
+    while (previewFrameTimes.length > 0 && previewFrameTimes[0] < minTime) {
+        previewFrameTimes.shift();
+    }
+
+    if (previewFrameTimes.length < 2) {
+        return 0;
+    }
+
+    const elapsedMs = previewFrameTimes[previewFrameTimes.length - 1] - previewFrameTimes[0];
+    if (elapsedMs <= 0) {
+        return 0;
+    }
+
+    return ((previewFrameTimes.length - 1) * 1000) / elapsedMs;
+}
+
+function resetPreviewFps(): void {
+    previewFrameTimes = [];
 }
 
 function flushPreviewText(parser: PreviewTextParser): string {
@@ -625,7 +658,7 @@ function renderPreviewHtml(frame: PreviewFrame | undefined): string {
             <div class="frame">
                 <img src="data:image/jpeg;base64,${frame.base64}" alt="ESP-VISION preview frame" />
             </div>
-            <footer>${frame.width}x${frame.height} JPG · ${frame.size} bytes · #${frame.seq} · ${escapeHtml(formatTime(frame.receivedAt))}</footer>
+            <footer>${frame.width}x${frame.height} JPG · ${frame.size} bytes · ${formatFps(frame.fps)} · #${frame.seq} · ${escapeHtml(formatTime(frame.receivedAt))}</footer>
         </main>`
         : `<main class="empty"><div>No preview frame</div></main>`;
 
@@ -683,6 +716,13 @@ footer {
 
 function formatTime(value: Date): string {
     return value.toLocaleTimeString();
+}
+
+function formatFps(value: number): string {
+    if (!Number.isFinite(value) || value <= 0) {
+        return "-- FPS";
+    }
+    return `${value.toFixed(1)} FPS`;
 }
 
 function escapeHtml(value: string): string {
