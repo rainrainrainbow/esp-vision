@@ -12,6 +12,7 @@ const CTRL_C = Buffer.from([0x03]);
 const CTRL_D = Buffer.from([0x04]);
 const ENTER_RAW_REPL_ATTEMPTS = 4;
 const ENTER_RAW_REPL_TIMEOUT_MS = 2500;
+const REPL_SETTLE_MS = 120;
 
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -76,9 +77,11 @@ export class RawRepl {
 
     private async interruptUserCode(): Promise<void> {
         await this.transport.flushInput();
+        await this.transport.write(CTRL_B);
+        await delay(REPL_SETTLE_MS);
         for (let i = 0; i < 4; i++) {
             await this.transport.write(CTRL_C);
-            await delay(120);
+            await delay(REPL_SETTLE_MS);
         }
         await delay(300);
         await this.transport.flushInput();

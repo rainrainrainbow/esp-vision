@@ -30,8 +30,15 @@ let lastRunnableUri: vscode.Uri | undefined;
 let runCompletion: Promise<void> | undefined;
 let resolveRunCompletion: (() => void) | undefined;
 let runOperation: Promise<void> = Promise.resolve();
+let lastSerialPort = "";
+let lastBaudRate = 0;
+let reconnectTimer: NodeJS.Timeout | undefined;
+let reconnectAttempts = 0;
+let manualDisconnect = false;
 
 const PREVIEW_FPS_WINDOW_MS = 2000;
+const SERIAL_RECONNECT_DELAY_MS = 1200;
+const SERIAL_RECONNECT_MAX_ATTEMPTS = 20;
 
 interface RawOutputParser {
     phase: "header" | "stdout" | "stderr" | "prompt";
@@ -143,30 +150,60 @@ async function connect(): Promise<void> {
         await disconnect();
     }
 
+    clearReconnectTimer();
+    manualDisconnect = false;
+    await openSerialPort(port, baudRate);
+}
+
+async function openSerialPort(port: string, baudRate: number): Promise<void> {
     const nextTransport = new SerialTransport();
     nextTransport.on("data", handleSerialData);
     nextTransport.on("error", (error: Error) => {
         appendOutputLine(`\n[serial error] ${error.message}`);
-        vscode.window.showErrorMessage(`ESP-VISION serial error: ${error.message}`);
     });
     nextTransport.on("close", () => {
-        if (transport === nextTransport) {
-            transport = undefined;
-            rawRepl = undefined;
-            currentPort = "";
-        }
-        appendOutputLine("\n[serial closed]");
-        updateStatus(false);
+        handleSerialClosed(nextTransport);
     });
 
-    await nextTransport.open(port, baudRate);
+    try {
+        await nextTransport.open(port, baudRate);
+    } catch (error) {
+        nextTransport.removeAllListeners();
+        await nextTransport.close().catch(() => undefined);
+        throw error;
+    }
+
     transport = nextTransport;
     rawRepl = new RawRepl(nextTransport);
     currentPort = port;
+    lastSerialPort = port;
+    lastBaudRate = baudRate;
+    reconnectAttempts = 0;
+    lastPreviewFrame = undefined;
     resetSerialPreviewParser();
-    showOutput(true);
     appendOutputLine(`[connected] ${port} @ ${baudRate}`);
     updateStatus(true);
+}
+
+function handleSerialClosed(closedTransport: SerialTransport): void {
+    if (transport !== closedTransport) {
+        return;
+    }
+
+    transport = undefined;
+    rawRepl = undefined;
+    currentPort = "";
+    finishRawRun();
+    suppressSerialOutput = false;
+    lastPreviewFrame = undefined;
+    resetSerialPreviewParser();
+    updatePreviewPanel();
+    appendOutputLine("\n[serial closed]");
+    updateStatus(false);
+
+    if (!manualDisconnect && lastSerialPort && lastBaudRate > 0) {
+        scheduleReconnect();
+    }
 }
 
 async function disconnect(options: { quiet?: boolean } = {}): Promise<void> {
@@ -175,6 +212,8 @@ async function disconnect(options: { quiet?: boolean } = {}): Promise<void> {
         return;
     }
 
+    manualDisconnect = true;
+    clearReconnectTimer();
     transport = undefined;
     rawRepl = undefined;
     currentPort = "";
@@ -188,6 +227,40 @@ async function disconnect(options: { quiet?: boolean } = {}): Promise<void> {
 
     await currentTransport.close();
     updateStatus(false);
+}
+
+function clearReconnectTimer(): void {
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = undefined;
+    }
+}
+
+function scheduleReconnect(): void {
+    if (reconnectTimer || reconnectAttempts >= SERIAL_RECONNECT_MAX_ATTEMPTS) {
+        return;
+    }
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = undefined;
+        void reconnectSerial();
+    }, SERIAL_RECONNECT_DELAY_MS);
+}
+
+async function reconnectSerial(): Promise<void> {
+    if (manualDisconnect || transport?.isOpen || !lastSerialPort || lastBaudRate <= 0) {
+        return;
+    }
+
+    reconnectAttempts += 1;
+    try {
+        await openSerialPort(lastSerialPort, lastBaudRate);
+        appendOutputLine(`[reconnected] ${lastSerialPort} @ ${lastBaudRate}`);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        appendOutputLine(`[reconnect ${reconnectAttempts}/${SERIAL_RECONNECT_MAX_ATTEMPTS}] ${message}`);
+        scheduleReconnect();
+    }
 }
 
 async function runCurrentFile(): Promise<void> {
@@ -262,6 +335,12 @@ async function softReset(): Promise<void> {
 }
 
 async function showPreview(): Promise<void> {
+    if (transport?.isOpen && !rawOutputParser) {
+        lastPreviewFrame = undefined;
+        resetPreviewFps();
+        resetSerialPreviewParser();
+    }
+
     if (previewPanel) {
         previewPanel.reveal(vscode.ViewColumn.Beside);
         updatePreviewPanel();

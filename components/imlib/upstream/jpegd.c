@@ -2858,44 +2858,50 @@ static int DecodeJPEG(JPEGIMAGE *pJPEG) {
 }
 
 void jpeg_decompress(image_t *dst, image_t *src) {
-    JPEGIMAGE jpg;
-
     // Supports decoding baseline JPEGs only.
     if (!jpeg_is_valid(src)) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Non-Baseline JPEGs are not supported."));
     }
 
-    if (JPEG_openRAM(&jpg, src->data, src->size, dst->data) == 0) {
+    fb_alloc_mark();
+    JPEGIMAGE *jpg = fb_alloc(sizeof(JPEGIMAGE), FB_ALLOC_PREFER_SIZE);
+
+    if (JPEG_openRAM(jpg, src->data, src->size, dst->data) == 0) {
         // failed to parse the header
+        fb_alloc_free_till_mark();
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("JPEG decoder failed."));
     }
 
     switch (dst->pixfmt) {
         case PIXFORMAT_BINARY:
             // Force 1-bit (binary) output in the draw function.
-            jpg.ucPixelType = ONE_BIT_GRAYSCALE;
+            jpg->ucPixelType = ONE_BIT_GRAYSCALE;
             break;
         case PIXFORMAT_GRAYSCALE:
             // Force 8-bit grayscale output.
-            jpg.ucPixelType = EIGHT_BIT_GRAYSCALE;
+            jpg->ucPixelType = EIGHT_BIT_GRAYSCALE;
             break;
         case PIXFORMAT_RGB565:
             // Force output to be RGB565
-            jpg.ucPixelType = RGB565_LITTLE_ENDIAN;
+            jpg->ucPixelType = RGB565_LITTLE_ENDIAN;
             break;
         default:
+            fb_alloc_free_till_mark();
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Unsupported format."));
     }
 
     // Set up dest image params
-    jpg.pUser = (void *) dst;
+    jpg->pUser = (void *) dst;
 
     // Fill buffer with 0's so we only need to write "set" bits
     memset(dst->data, 0, image_size(dst));
 
     // Start decoding.
-    if (JPEG_decode(&jpg, 0, 0, 0) == 0) {
+    if (JPEG_decode(jpg, 0, 0, 0) == 0) {
+        fb_alloc_free_till_mark();
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("JPEG decoder failed."));
     }
+
+    fb_alloc_free_till_mark();
 }
 #endif
