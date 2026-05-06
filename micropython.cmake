@@ -18,7 +18,7 @@ list(APPEND MICROPY_QSTRDEFS_PORT
 set(MICROPY_ESP32_MAIN_SOURCE "${ESP_VISION_ROOT}/platform/main.c")
 
 set(ESP_VISION_BOARD_SOURCES)
-foreach(source sdcard.c)
+foreach(source sdcard.c display.c)
     if(EXISTS "${ESP_VISION_BOARD_DIR}/${source}")
         list(APPEND ESP_VISION_BOARD_SOURCES "${ESP_VISION_BOARD_DIR}/${source}")
     endif()
@@ -28,12 +28,14 @@ add_library(usermod_esp_vision_platform INTERFACE)
 
 target_sources(usermod_esp_vision_platform INTERFACE
     ${ESP_VISION_ROOT}/modules/py_espdl.cpp
+    ${ESP_VISION_ROOT}/modules/py_display.c
     ${ESP_VISION_ROOT}/modules/py_image.c
     ${ESP_VISION_ROOT}/modules/py_imageio.c
     ${ESP_VISION_ROOT}/modules/py_helper.c
     ${ESP_VISION_ROOT}/modules/py_sensor.c
     ${ESP_VISION_ROOT}/platform/camera.c
     ${ESP_VISION_ROOT}/platform/debug.c
+    ${ESP_VISION_ROOT}/platform/display.c
     ${ESP_VISION_ROOT}/platform/esp_vision_jpeg.c
     ${ESP_VISION_ROOT}/platform/preview.c
     ${ESP_VISION_ROOT}/platform/sdcard.c

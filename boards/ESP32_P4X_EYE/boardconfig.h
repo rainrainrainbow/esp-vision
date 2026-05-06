@@ -43,6 +43,25 @@
 #define ESP_VISION_CAMERA_SCCB_I2C_FREQ             (100000)
 #define ESP_VISION_CAMERA_XCLK_FREQ                 (24000000)
 
+/* LCD configuration. */
+#define ESP_VISION_LCD_WIDTH                        (240)
+#define ESP_VISION_LCD_HEIGHT                       (240)
+#define ESP_VISION_LCD_SPI_HOST                     (2)
+#define ESP_VISION_LCD_PIXEL_CLOCK_HZ               (80 * 1000 * 1000)
+#define ESP_VISION_LCD_CMD_BITS                     (8)
+#define ESP_VISION_LCD_PARAM_BITS                   (8)
+#define ESP_VISION_LCD_BPP                          (16)
+#define ESP_VISION_LCD_PIN_MOSI                     (16)
+#define ESP_VISION_LCD_PIN_CLK                      (17)
+#define ESP_VISION_LCD_PIN_CS                       (18)
+#define ESP_VISION_LCD_PIN_DC                       (19)
+#define ESP_VISION_LCD_PIN_RST                      (15)
+#define ESP_VISION_LCD_PIN_BL                       (20)
+#define ESP_VISION_LCD_BACKLIGHT_CH                 (0)
+#define ESP_VISION_LCD_BACKLIGHT_TIMER              (0)
+#define ESP_VISION_LCD_BACKLIGHT_PWM_HZ             (5000)
+#define ESP_VISION_LCD_BACKLIGHT_OUTPUT_INVERT      (1)
+
 /* SD card configuration. */
 #define ESP_VISION_SDCARD_MOUNT_PATH                "/sdcard"
 #define ESP_VISION_SDCARD_SLOT                      (0)

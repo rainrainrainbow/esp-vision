@@ -39,6 +39,7 @@ let manualDisconnect = false;
 const PREVIEW_FPS_WINDOW_MS = 2000;
 const SERIAL_RECONNECT_DELAY_MS = 1200;
 const SERIAL_RECONNECT_MAX_ATTEMPTS = 20;
+const PREVIEW_MAX_PENDING_CHARS = 2 * 1024 * 1024;
 
 interface RawOutputParser {
     phase: "header" | "stdout" | "stderr" | "prompt";
@@ -640,7 +641,20 @@ function processPreviewText(parser: PreviewTextParser, value: string): string {
         }
 
         const frameEnd = parser.pending.indexOf("</EVFRAME>");
+        const nextFrameStart = parser.pending.indexOf("<EVFRAME", 1);
+        if (nextFrameStart >= 0 && (frameEnd < 0 || nextFrameStart < frameEnd)) {
+            parser.pending = parser.pending.slice(nextFrameStart);
+            parser.phase = "text";
+            parser.header = undefined;
+            continue;
+        }
+
         if (frameEnd < 0) {
+            if (parser.pending.length > PREVIEW_MAX_PENDING_CHARS) {
+                parser.pending = "";
+                parser.phase = "text";
+                parser.header = undefined;
+            }
             return outputText;
         }
 
@@ -651,7 +665,7 @@ function processPreviewText(parser: PreviewTextParser, value: string): string {
         parser.phase = "text";
         parser.header = undefined;
 
-        if (header) {
+        if (header && isValidPreviewJpeg(header, base64)) {
             parser.seenFrame = true;
             handlePreviewFrame(header, base64);
         }
@@ -694,10 +708,6 @@ function parsePreviewFrameHeader(headerText: string): PreviewFrameHeader | undef
 }
 
 function handlePreviewFrame(header: PreviewFrameHeader, base64: string): void {
-    if (base64.length === 0) {
-        return;
-    }
-
     const receivedAtMs = Date.now();
     const fps = recordPreviewFrame(receivedAtMs);
     lastPreviewFrame = {
@@ -716,6 +726,30 @@ function handlePreviewFrame(header: PreviewFrameHeader, base64: string): void {
         previewButton.tooltip = `ESP-VISION Preview: ${header.width}x${header.height}, ${formatFps(fps)}`;
     }
     updatePreviewPanel();
+}
+
+function isValidPreviewJpeg(header: PreviewFrameHeader, base64: string): boolean {
+    if (base64.length === 0) {
+        return false;
+    }
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64) || (base64.length % 4) !== 0) {
+        return false;
+    }
+
+    let jpeg: Buffer;
+    try {
+        jpeg = Buffer.from(base64, "base64");
+    } catch {
+        return false;
+    }
+
+    if (jpeg.length !== header.size || jpeg.length < 4) {
+        return false;
+    }
+    return jpeg[0] === 0xff &&
+        jpeg[1] === 0xd8 &&
+        jpeg[jpeg.length - 2] === 0xff &&
+        jpeg[jpeg.length - 1] === 0xd9;
 }
 
 function recordPreviewFrame(receivedAtMs: number): number {

@@ -66,6 +66,7 @@
 #include "usb_serial_jtag.h"
 
 #include "camera.h"
+#include "display.h"
 #include "fb_alloc.h"
 #include "preview.h"
 #include "sdcard.h"
@@ -142,6 +143,7 @@ soft_reset:
     gc_init(mp_task_heap, mp_task_heap + MICROPY_GC_INITIAL_HEAP_SIZE);
     mp_init();
     esp_vision_camera_init0();
+    esp_vision_display_init0();
     esp_vision_preview_init0();
     esp_vision_sdcard_init0();
     fb_alloc_init0();
@@ -186,6 +188,7 @@ soft_reset:
     }
 
 soft_reset_exit:
+    esp_vision_display_deinit();
     esp_vision_preview_deinit();
     esp_vision_camera_deinit();
     fb_alloc_init0();
