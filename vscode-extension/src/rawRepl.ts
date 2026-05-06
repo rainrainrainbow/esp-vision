@@ -11,8 +11,9 @@ const CTRL_B = Buffer.from([0x02]);
 const CTRL_C = Buffer.from([0x03]);
 const CTRL_D = Buffer.from([0x04]);
 const ENTER_RAW_REPL_ATTEMPTS = 4;
-const ENTER_RAW_REPL_TIMEOUT_MS = 2500;
-const REPL_SETTLE_MS = 120;
+const ENTER_RAW_REPL_TIMEOUT_MS = 3000;
+const REPL_SETTLE_MS = 200;
+const INTERRUPT_CTRL_C_COUNT = 3;
 
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,11 +24,14 @@ export class RawRepl {
     }
 
     async enter(): Promise<void> {
-        await this.interruptUserCode();
-
         let lastError: unknown;
         for (let attempt = 0; attempt < ENTER_RAW_REPL_ATTEMPTS; attempt++) {
             try {
+                if (attempt > 0) {
+                    // Previous Ctrl-A may have been buffered as input by an already-active raw REPL.
+                    await this.exitToFriendly();
+                }
+                await this.interruptUserCode();
                 await this.transport.flushInput();
                 await this.transport.write(CTRL_A);
                 await this.transport.readUntil("raw REPL", ENTER_RAW_REPL_TIMEOUT_MS);
@@ -35,10 +39,6 @@ export class RawRepl {
                 return;
             } catch (error) {
                 lastError = error;
-                if (await this.trySyncRawPrompt()) {
-                    return;
-                }
-                await this.interruptUserCode();
             }
         }
 
@@ -76,26 +76,19 @@ export class RawRepl {
     }
 
     private async interruptUserCode(): Promise<void> {
+        // Multiple Ctrl-C with settle delay covers main.py stuck in long C calls (sensor.reset / skip_frames).
         await this.transport.flushInput();
-        await this.transport.write(CTRL_B);
-        await delay(REPL_SETTLE_MS);
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < INTERRUPT_CTRL_C_COUNT; i++) {
             await this.transport.write(CTRL_C);
             await delay(REPL_SETTLE_MS);
         }
-        await delay(300);
         await this.transport.flushInput();
     }
 
-    private async trySyncRawPrompt(): Promise<boolean> {
-        try {
-            await this.transport.flushInput();
-            await this.transport.write(CTRL_D);
-            await this.transport.readUntil("OK", 1000);
-            await this.transport.readUntil(">", 1000);
-            return true;
-        } catch {
-            return false;
-        }
+    private async exitToFriendly(): Promise<void> {
+        // Fallback when Ctrl-A didn't reach raw REPL: device may already be in raw REPL.
+        await this.transport.write(CTRL_B);
+        await delay(REPL_SETTLE_MS);
+        await this.transport.flushInput();
     }
 }
