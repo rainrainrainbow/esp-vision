@@ -14,6 +14,55 @@ make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 build flash monitor
 
 Other useful targets: `make menuconfig`, `make size`, `make erase`, `make clean`, `make distclean`.
 
+## Architecture
+
+ESP-VISION is an ESP32-P4 MicroPython vision runtime with a VSCode-based host tool.
+
+### Source Tree
+
+| Path | Responsibility |
+| --- | --- |
+| `Makefile` | Top-level build entry that wraps `idf.py` with the correct MicroPython ESP32 port flags. |
+| `micropython.cmake` | ESP-VISION MicroPython integration point, registering user modules, platform sources, board sources, include paths, and `ulab`. |
+| `lib/micropython` | Pinned MicroPython submodule; provides the runtime, ESP32 port, build system, and managed component integration. |
+| `lib/ulab` | Pinned `micropython-ulab` submodule used for numerical Python support. |
+| `boards` | Board packages containing per-board configuration, frozen manifests, and board-specific peripheral implementations. |
+| `platform` | Runtime services shared by Python modules, including camera, preview, storage, display, USB, JPEG, and debug support. |
+| `modules` | MicroPython C/C++ bindings exposed to scripts, including `sensor`, `image`, `display`, `imageio`, and `espdl`. |
+| `components/imlib` | ESP-IDF component containing the MIT-licensed OpenMV `imlib` subset and the ESP32-P4 compatibility layer. |
+| `models` | Optional `.espdl` model assets loaded at runtime from board storage such as `/flash` or `/sdcard`. |
+| `vscode-extension` | Host-side VSCode extension for serial connection, script run/stop, and JPG preview. |
+
+### Adding a New Board
+
+A board package is split across two locations: the MicroPython ESP32 port (`lib/micropython/ports/esp32/boards/<BOARD>/`) and the ESP-VISION repo (`boards/<BOARD>/`).
+
+**1. MicroPython port side** — `lib/micropython/ports/esp32/boards/<BOARD>/`:
+
+| File | Purpose |
+| --- | --- |
+| `mpconfigboard.cmake` | IDF target and `SDKCONFIG_DEFAULTS` chain. |
+| `mpconfigboard.h` | MicroPython feature flags and USB strings. |
+| `sdkconfig.board` | Board-specific ESP-IDF Kconfig overrides. |
+| `partitions-*.csv` | Partition table. |
+| `board.json`, `board.md` | Upstream board manifest metadata. |
+
+**2. ESP-VISION side** — `boards/<BOARD>/`:
+
+| File | Purpose |
+| --- | --- |
+| `boardconfig.h` | Pin assignments and board runtime constants. |
+| `imlib_config.h` | OpenMV `imlib` feature switches. |
+| `manifest.py` | Frozen Python modules. |
+| `display.c` | LCD panel and backlight implementation. |
+| `sdcard.c` | SD card power and card-detect implementation. |
+
+**3. Build and flash**:
+
+```bash
+make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
+```
+
 ## License
 
 ESP-VISION's own code is released under the Apache License 2.0. Vendored code keeps the license declared in each file's SPDX header.
@@ -23,7 +72,7 @@ ESP-VISION's own code is released under the Apache License 2.0. Vendored code ke
 | [MicroPython](https://github.com/micropython/micropython) | `lib/micropython` | MicroPython runtime and ESP32 port base | MIT |
 | [micropython-ulab](https://github.com/v923z/micropython-ulab) | `lib/ulab` | `ulab` numerical module | MIT |
 | [OpenMV](https://github.com/openmv/openmv) `imlib` MIT subset (v4.8.1) | `components/imlib` | Image processing and drawing algorithms | MIT |
-| [ESP-DL](https://github.com/espressif/esp-dl) | from ESP Component Registry | ESPDet model inference runtime | MIT |
+| [ESP-DL](https://github.com/espressif/esp-dl) | from ESP Component Registry | Model inference runtime | MIT |
 | [ESP-IDF](https://github.com/espressif/esp-idf) | external SDK | ESP32-P4 build system, drivers, JPEG/PPA/camera related components | Apache-2.0 |
 | [node-serialport](https://github.com/serialport/node-serialport) | `vscode-extension` npm dependency | VSCode extension serial transport | MIT |
 | [TypeScript](https://github.com/microsoft/TypeScript) | `vscode-extension` dev dependency | VSCode extension build tool | Apache-2.0 |
