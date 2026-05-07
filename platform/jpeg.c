@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "esp_vision_jpeg.h"
+#include "jpeg.h"
 
 #include <stdlib.h>
 #include <string.h>

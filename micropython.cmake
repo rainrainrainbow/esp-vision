@@ -36,7 +36,7 @@ target_sources(usermod_esp_vision_platform INTERFACE
     ${ESP_VISION_ROOT}/platform/camera.c
     ${ESP_VISION_ROOT}/platform/debug.c
     ${ESP_VISION_ROOT}/platform/display.c
-    ${ESP_VISION_ROOT}/platform/esp_vision_jpeg.c
+    ${ESP_VISION_ROOT}/platform/jpeg.c
     ${ESP_VISION_ROOT}/platform/preview.c
     ${ESP_VISION_ROOT}/platform/sdcard.c
     ${ESP_VISION_ROOT}/platform/usb_msc.c

@@ -29,7 +29,7 @@
 #endif
 
 #include "boardconfig.h"
-#include "esp_vision_jpeg.h"
+#include "jpeg.h"
 
 #define ESP_VISION_PREVIEW_BASE64_INPUT_CHUNK (768)
 #define ESP_VISION_PREVIEW_BASE64_OUTPUT_CHUNK ((ESP_VISION_PREVIEW_BASE64_INPUT_CHUNK / 3) * 4)

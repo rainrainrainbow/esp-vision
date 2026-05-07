@@ -50,7 +50,7 @@
 #include "py_helper.h"
 #include "py_image.h"
 #include "omv_boardconfig.h"
-#include "esp_vision_jpeg.h"
+#include "jpeg.h"
 #include "preview.h"
 #if defined(IMLIB_ENABLE_IMAGE_IO)
 #include "py_imageio.h"
