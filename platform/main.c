@@ -156,6 +156,7 @@ soft_reset:
     #endif
 
     pyexec_frozen_module("_boot.py", false);
+    pyexec_frozen_module("py_inisetup.py", false);
     esp_vision_sdcard_mount_if_present();
     int ret = pyexec_file_if_exists("boot.py");
 
