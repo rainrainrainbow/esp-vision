@@ -25,8 +25,10 @@
  * UMM memory allocator.
  */
 
+#include <stdint.h>
 #include <string.h>
 
+#include "esp_heap_caps.h"
 #include "py/runtime.h"
 #include "umm_malloc.h"
 
@@ -38,20 +40,59 @@ void umm_init_x(size_t size) {
     (void) size;
 }
 
+static void *umm_heap_malloc(size_t size) {
+    void *ptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (ptr == NULL) {
+        ptr = heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    }
+    if (ptr == NULL) {
+        ptr = heap_caps_malloc(size, MALLOC_CAP_8BIT);
+    }
+    return ptr;
+}
+
+static void *umm_heap_realloc(void *ptr, size_t size) {
+    void *new_ptr = heap_caps_realloc(ptr, size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (new_ptr == NULL) {
+        new_ptr = heap_caps_realloc(ptr, size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    }
+    if (new_ptr == NULL) {
+        new_ptr = heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+    }
+    return new_ptr;
+}
+
 void *umm_malloc(size_t size) {
-    return m_malloc(size);
+    if (size == 0) {
+        return NULL;
+    }
+    return umm_heap_malloc(size);
 }
 
 void *umm_calloc(size_t num, size_t size) {
-    void *ptr = m_malloc(num * size);
-    memset(ptr, 0, num * size);
+    if ((num == 0) || (size == 0)) {
+        return NULL;
+    }
+    if (num > (SIZE_MAX / size)) {
+        return NULL;
+    }
+
+    size_t total_size = num * size;
+    void *ptr = umm_heap_malloc(total_size);
+    if (ptr != NULL) {
+        memset(ptr, 0, total_size);
+    }
     return ptr;
 }
 
 void *umm_realloc(void *ptr, size_t size) {
-    return m_realloc(ptr, size);
+    if (size == 0) {
+        heap_caps_free(ptr);
+        return NULL;
+    }
+    return umm_heap_realloc(ptr, size);
 }
 
 void umm_free(void *ptr) {
-    m_free(ptr);
+    heap_caps_free(ptr);
 }

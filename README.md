@@ -32,7 +32,7 @@ ESP-VISION is an ESP32-P4 MicroPython vision runtime with a VSCode-based host to
 | `boards` | Board packages containing per-board configuration, frozen manifests, and board-specific peripheral implementations. |
 | `platform` | Runtime services shared by Python modules, including camera, preview, storage, display, USB, JPEG, and debug support. |
 | `modules` | MicroPython C/C++ bindings exposed to scripts, including `sensor`, `image`, `display`, `imageio`, and `espdl`. |
-| `components/imlib` | ESP-IDF component containing the MIT-licensed OpenMV `imlib` subset and the ESP32-P4 compatibility layer. |
+| `components/imlib` | ESP-IDF component containing the selected OpenMV `imlib` sources and the ESP32-P4 compatibility layer. |
 | `models` | Optional `.espdl` model assets loaded at runtime from board storage such as `/flash` or `/sdcard`. |
 | `example` | MicroPython example scripts for camera, preview, storage, display, image processing, and ESP-DL workflows. |
 | `vscode-extension` | Host-side VSCode extension for serial connection, script run/stop, and JPG preview. |
@@ -75,13 +75,14 @@ make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
 
 ## License
 
-ESP-VISION's own code is released under the Apache License 2.0. Vendored code keeps the license declared in each file's SPDX header.
+ESP-VISION's own code is released under the Apache License 2.0. Vendored code keeps the license declared in each file's SPDX or license header.
 
 | Repository | Local path | Usage | License |
 | --- | --- | --- | --- |
 | [MicroPython](https://github.com/micropython/micropython) | `lib/micropython` | MicroPython runtime and ESP32 port base | MIT |
 | [micropython-ulab](https://github.com/v923z/micropython-ulab) | `lib/ulab` | `ulab` numerical module | MIT |
-| [OpenMV](https://github.com/openmv/openmv) `imlib` MIT subset (v4.8.1) | `components/imlib` | Image processing and drawing algorithms | MIT |
+| [OpenMV](https://github.com/openmv/openmv) `imlib` MIT subset, excluding files listed separately (v4.8.1) | `components/imlib` | Image processing and drawing algorithms | MIT |
+| AprilTag algorithm from OpenMV `imlib` | `components/imlib/upstream/apriltag.c` | AprilTag and rectangle detection | BSD-2-Clause |
 | [ESP-DL](https://github.com/espressif/esp-dl) | from ESP Component Registry | Model inference runtime | MIT |
 | [ESP-IDF](https://github.com/espressif/esp-idf) | external SDK | ESP32-P4 build system, drivers, JPEG/PPA/camera related components | Apache-2.0 |
 | [node-serialport](https://github.com/serialport/node-serialport) | `vscode-extension` npm dependency | VSCode extension serial transport | MIT |

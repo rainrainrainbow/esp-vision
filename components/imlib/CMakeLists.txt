@@ -23,6 +23,7 @@ endif()
 idf_component_register(
     SRCS
         "upstream/collections.c"
+        "upstream/apriltag.c"
         "upstream/binary.c"
         "upstream/bayer.c"
         "upstream/blob.c"

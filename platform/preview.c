@@ -7,6 +7,7 @@
 #include "preview.h"
 
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 
 #if MICROPY_HW_USB_CDC
 #include "shared/tinyusb/mp_usbd_cdc.h"
+#include "tusb.h"
 #endif
 
 #ifndef CMSIS_MCU_H
@@ -36,6 +38,15 @@
 
 static const char *TAG = "esp_vision_preview";
 
+static bool esp_vision_preview_is_ready(void)
+{
+#if MICROPY_HW_USB_CDC
+    return tusb_inited() && tud_cdc_connected();
+#else
+    return true;
+#endif
+}
+
 static esp_err_t esp_vision_preview_write(const char *str, size_t len)
 {
     if ((str == NULL) || (len == 0)) {
@@ -43,11 +54,14 @@ static esp_err_t esp_vision_preview_write(const char *str, size_t len)
     }
 
 #if MICROPY_HW_USB_CDC
+    if (!esp_vision_preview_is_ready()) {
+        return ESP_ERR_INVALID_STATE;
+    }
     mp_uint_t written = mp_usbd_cdc_tx_strn(str, len);
 #else
     mp_uint_t written = mp_hal_stdout_tx_strn(str, len);
 #endif
-    return (written == len) ? ESP_OK : ESP_FAIL;
+    return (written == len) ? ESP_OK : ESP_ERR_TIMEOUT;
 }
 
 static esp_err_t esp_vision_preview_printf(const char *fmt, ...)
@@ -123,6 +137,11 @@ esp_err_t esp_vision_preview_flush(const image_t *img)
 {
     uint8_t *jpeg_buf = NULL;
     size_t jpeg_size = 0;
+    esp_err_t ret;
+
+    if (!esp_vision_preview_is_ready()) {
+        return ESP_OK;
+    }
 
     ESP_RETURN_ON_ERROR(esp_vision_jpeg_encode(img,
                                                ESP_VISION_JPEG_QUALITY_LOW,
@@ -130,5 +149,10 @@ esp_err_t esp_vision_preview_flush(const image_t *img)
                                                &jpeg_size),
                         TAG,
                         "failed to encode jpeg");
-    return esp_vision_preview_write_frame(img, jpeg_buf, jpeg_size);
+
+    ret = esp_vision_preview_write_frame(img, jpeg_buf, jpeg_size);
+    if ((ret == ESP_ERR_INVALID_STATE) || (ret == ESP_ERR_TIMEOUT)) {
+        return ESP_OK;
+    }
+    return ret;
 }

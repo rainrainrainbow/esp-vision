@@ -157,6 +157,10 @@ export class EspVisionSession {
         if (!repl) {
             return;
         }
+        if (!this.rawOutputParser) {
+            this.appendOutputLine("\n[stop] no script is running from the extension");
+            return;
+        }
         await this.stopRunningScript(repl, true);
     }
 
@@ -441,6 +445,7 @@ export class EspVisionSession {
         this.runCompletion = new Promise<void>((resolve) => {
             this.resolveRunCompletion = resolve;
         });
+        this.updateStatus();
     }
 
     private finishRawRun(): void {
@@ -450,6 +455,7 @@ export class EspVisionSession {
         this.runCompletion = undefined;
         this.resolveRunCompletion = undefined;
         resolve?.();
+        this.updateStatus();
     }
 
     private async stopRunningScript(repl: RawRepl, showMessage = false): Promise<void> {
@@ -480,7 +486,11 @@ export class EspVisionSession {
             this.buttons.status.command = connected ? "espVision.disconnect" : "espVision.connect";
             this.buttons.status.show();
             this.buttons.run.show();
-            this.buttons.stop.show();
+            if (connected && this.rawOutputParser) {
+                this.buttons.stop.show();
+            } else {
+                this.buttons.stop.hide();
+            }
             this.buttons.reset.show();
             this.buttons.preview.show();
             this.buttons.tools.show();

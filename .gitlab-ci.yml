@@ -35,6 +35,12 @@ pre_commit:
     - pre-commit run --all-files --show-diff-on-failure astyle_py
     - pre-commit run --all-files --show-diff-on-failure check-copyright
 
+python_stubs:
+  stage: check
+  image: python:3.11-slim
+  script:
+    - python -m py_compile stubs/*.pyi
+
 vscode_extension:
   stage: check
   image: node:20-bookworm

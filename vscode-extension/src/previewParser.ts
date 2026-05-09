@@ -21,6 +21,7 @@ export interface PreviewTextParser {
     header?: PreviewFrameHeader;
     dropUntilFirstFrame?: boolean;
     seenFrame?: boolean;
+    dropFrameSeparator?: boolean;
 }
 
 export type PreviewFrameHandler = (header: PreviewFrameHeader, base64: string) => void;
@@ -31,6 +32,7 @@ export function createPreviewTextParser(options: { dropUntilFirstFrame?: boolean
         pending: "",
         dropUntilFirstFrame: options.dropUntilFirstFrame,
         seenFrame: false,
+        dropFrameSeparator: false,
     };
 }
 
@@ -40,6 +42,16 @@ export function processPreviewText(parser: PreviewTextParser, value: string, onF
 
     for (;;) {
         if (parser.phase === "text") {
+            if (parser.dropFrameSeparator) {
+                const firstNonSeparator = parser.pending.search(/[^\r\n]/);
+                if (firstNonSeparator < 0) {
+                    parser.pending = "";
+                    return outputText;
+                }
+                parser.pending = parser.pending.slice(firstNonSeparator);
+                parser.dropFrameSeparator = false;
+            }
+
             const frameStart = parser.pending.indexOf("<EVFRAME");
             if (frameStart < 0) {
                 const keep = "<EVFRAME".length - 1;
@@ -96,7 +108,7 @@ export function processPreviewText(parser: PreviewTextParser, value: string, onF
         const base64 = parser.pending.slice(0, frameEnd).replace(/\s+/g, "");
         const header = parser.header;
         parser.pending = parser.pending.slice(frameEnd + "</EVFRAME>".length);
-        parser.pending = parser.pending.replace(/^\r?\n/, "");
+        parser.dropFrameSeparator = true;
         parser.phase = "text";
         parser.header = undefined;
 
@@ -114,6 +126,7 @@ export function flushPreviewText(parser: PreviewTextParser): string {
     parser.phase = "text";
     parser.pending = "";
     parser.header = undefined;
+    parser.dropFrameSeparator = false;
     return outputText;
 }
 

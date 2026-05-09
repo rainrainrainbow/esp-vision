@@ -17,12 +17,14 @@
     const greenStats = document.getElementById("greenStats");
     const blueStats = document.getElementById("blueStats");
     const DECODE_TIMEOUT_MS = 2000;
+    const HISTOGRAM_INTERVAL_MS = 200;
     let currentFrame = null;
     let pendingFrame = null;
     let decodingFrame = false;
     let decodeTimer = null;
     let sourceCanvas = null;
     let sourceCtx = null;
+    let lastHistogramAt = 0;
 
     function resizeCanvas(target) {
         const rect = target.getBoundingClientRect();
@@ -185,7 +187,11 @@
         decodeTimer = setTimeout(finishDecode, DECODE_TIMEOUT_MS);
         const decode = typeof image.decode === "function" ? image.decode() : Promise.resolve();
         decode.then(() => {
-            computeHistogram();
+            const now = performance.now();
+            if (now - lastHistogramAt >= HISTOGRAM_INTERVAL_MS) {
+                computeHistogram();
+                lastHistogramAt = now;
+            }
         }).catch(() => undefined).finally(finishDecode);
     }
 
@@ -213,6 +219,7 @@
     window.addEventListener("resize", () => {
         if (currentFrame) {
             computeHistogram();
+            lastHistogramAt = performance.now();
         }
     });
     window.addEventListener("message", (event) => {

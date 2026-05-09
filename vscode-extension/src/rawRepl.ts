@@ -27,10 +27,10 @@ export class RawRepl {
         let lastError: unknown;
         for (let attempt = 0; attempt < ENTER_RAW_REPL_ATTEMPTS; attempt++) {
             try {
-                if (attempt > 0) {
-                    // Previous Ctrl-A may have been buffered as input by an already-active raw REPL.
-                    await this.exitToFriendly();
-                }
+                // Always leave raw REPL first. If the previous run failed while already in raw
+                // REPL, another Ctrl-A may not print the "raw REPL" banner and the host would
+                // wait until timeout.
+                await this.exitToFriendly();
                 await this.interruptUserCode();
                 await this.transport.flushInput();
                 await this.transport.write(CTRL_A);

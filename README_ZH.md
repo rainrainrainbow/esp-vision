@@ -32,7 +32,7 @@ ESP-VISION 是面向 ESP32-P4 的 MicroPython 视觉运行时，并配套 VSCode
 | `boards` | 板级包目录，包含每板配置、冻结脚本清单和板级外设实现。 |
 | `platform` | 供 Python 模块复用的运行时服务层，包括 camera、preview、storage、display、USB、JPEG 和 debug 支持。 |
 | `modules` | 暴露给脚本的 MicroPython C/C++ 绑定层，包括 `sensor`、`image`、`display`、`imageio` 和 `espdl`。 |
-| `components/imlib` | ESP-IDF 组件，包含 MIT 许可证的 OpenMV `imlib` 子集和 ESP32-P4 兼容层。 |
+| `components/imlib` | ESP-IDF 组件，包含选定的 OpenMV `imlib` 源文件和 ESP32-P4 兼容层。 |
 | `models` | 可选 `.espdl` 模型资源，运行时从 `/flash` 或 `/sdcard` 等板端文件系统加载。 |
 | `example` | MicroPython 示例脚本，覆盖 camera、preview、storage、display、image processing 和 ESP-DL 使用流程。 |
 | `vscode-extension` | VSCode 上位机扩展，负责串口连接、脚本启停和 JPG 预览。 |
@@ -75,13 +75,14 @@ make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
 
 ## 许可证
 
-ESP-VISION 自有代码以 Apache License 2.0 发布。引入的第三方代码保持各文件 SPDX 头中声明的原始许可证。
+ESP-VISION 自有代码以 Apache License 2.0 发布。引入的第三方代码保持各文件 SPDX 或许可证头中声明的原始许可证。
 
 | 仓库 | 本地路径 | 用途 | 许可证 |
 | --- | --- | --- | --- |
 | [MicroPython](https://github.com/micropython/micropython) | `lib/micropython` | MicroPython 运行时及 ESP32 移植基础 | MIT |
 | [micropython-ulab](https://github.com/v923z/micropython-ulab) | `lib/ulab` | `ulab` 数值计算模块 | MIT |
-| [OpenMV](https://github.com/openmv/openmv) `imlib` MIT 子集 (v4.8.1) | `components/imlib` | 图像处理与绘制算法 | MIT |
+| [OpenMV](https://github.com/openmv/openmv) `imlib` MIT 子集，不含下方单独列出的文件 (v4.8.1) | `components/imlib` | 图像处理与绘制算法 | MIT |
+| OpenMV `imlib` 中的 AprilTag 算法 | `components/imlib/upstream/apriltag.c` | AprilTag 和矩形检测 | BSD-2-Clause |
 | [ESP-DL](https://github.com/espressif/esp-dl) | 来自 ESP Component Registry | 模型推理运行时 | MIT |
 | [ESP-IDF](https://github.com/espressif/esp-idf) | 外部 SDK | ESP32-P4 构建系统、驱动、JPEG/PPA/Camera 等组件 | Apache-2.0 |
 | [node-serialport](https://github.com/serialport/node-serialport) | `vscode-extension` npm 依赖 | VSCode 扩展串口传输 | MIT |
