@@ -18,7 +18,26 @@ list(APPEND MICROPY_QSTRDEFS_PORT
 
 set(MICROPY_ESP32_MAIN_SOURCE "${ESP_VISION_ROOT}/platform/main.c")
 
+set(ESP_VISION_MODULE_SOURCES
+    ${ESP_VISION_ROOT}/modules/py_display.c
+    ${ESP_VISION_ROOT}/modules/py_image.c
+    ${ESP_VISION_ROOT}/modules/py_imageio.c
+    ${ESP_VISION_ROOT}/modules/py_helper.c
+    ${ESP_VISION_ROOT}/modules/py_sensor.c
+)
+
+if((IDF_TARGET STREQUAL "esp32p4") OR (IDF_TARGET STREQUAL "esp32s3"))
+    list(APPEND ESP_VISION_MODULE_SOURCES
+        ${ESP_VISION_ROOT}/modules/py_espdl.cpp
+    )
+endif()
+
+set(ESP_VISION_CAMERA_SOURCE "${ESP_VISION_ROOT}/platform/camera.c")
 set(ESP_VISION_BOARD_SOURCES)
+if(EXISTS "${ESP_VISION_BOARD_DIR}/camera.c")
+    set(ESP_VISION_CAMERA_SOURCE "${ESP_VISION_BOARD_DIR}/camera.c")
+endif()
+
 foreach(source sdcard.c display.c)
     if(EXISTS "${ESP_VISION_BOARD_DIR}/${source}")
         list(APPEND ESP_VISION_BOARD_SOURCES "${ESP_VISION_BOARD_DIR}/${source}")
@@ -28,13 +47,8 @@ endforeach()
 add_library(usermod_esp_vision_platform INTERFACE)
 
 target_sources(usermod_esp_vision_platform INTERFACE
-    ${ESP_VISION_ROOT}/modules/py_espdl.cpp
-    ${ESP_VISION_ROOT}/modules/py_display.c
-    ${ESP_VISION_ROOT}/modules/py_image.c
-    ${ESP_VISION_ROOT}/modules/py_imageio.c
-    ${ESP_VISION_ROOT}/modules/py_helper.c
-    ${ESP_VISION_ROOT}/modules/py_sensor.c
-    ${ESP_VISION_ROOT}/platform/camera.c
+    ${ESP_VISION_MODULE_SOURCES}
+    ${ESP_VISION_CAMERA_SOURCE}
     ${ESP_VISION_ROOT}/platform/debug.c
     ${ESP_VISION_ROOT}/platform/display.c
     ${ESP_VISION_ROOT}/platform/jpeg.c

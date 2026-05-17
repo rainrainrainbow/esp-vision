@@ -18,6 +18,7 @@ extern "C" {
 typedef struct image image_t;
 
 void esp_vision_jpeg_deinit(void);
+esp_err_t esp_vision_jpeg_decode(const uint8_t *jpeg_buf, size_t jpeg_size, image_t *dst);
 esp_err_t esp_vision_jpeg_encode(const image_t *img, int quality, uint8_t **jpeg_buf, size_t *jpeg_size);
 
 #ifdef __cplusplus

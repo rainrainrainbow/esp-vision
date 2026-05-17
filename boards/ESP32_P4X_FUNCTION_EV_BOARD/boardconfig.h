@@ -39,9 +39,7 @@
 #define ESP_VISION_CAMERA_SCCB_I2C_SDA_PIN          (7)
 #define ESP_VISION_CAMERA_SENSOR_RESET_PIN          (-1)
 #define ESP_VISION_CAMERA_SENSOR_PWDN_PIN           (-1)
-#define ESP_VISION_CAMERA_XCLK_PIN                  (-1)
 #define ESP_VISION_CAMERA_SCCB_I2C_FREQ             (400000)
-#define ESP_VISION_CAMERA_XCLK_FREQ                 (24000000)
 
 /* Display configuration. */
 #define ESP_VISION_LCD_WIDTH                        (1024)

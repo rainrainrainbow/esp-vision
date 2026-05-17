@@ -2,9 +2,6 @@
     "deploy": [
         "../deploy.md"
     ],
-    "deploy_options": {
-        "flash_offset": "0x2000"
-    },
     "docs": "",
     "features": [
         "ISP",

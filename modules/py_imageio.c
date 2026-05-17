@@ -44,7 +44,13 @@
 void framebuffer_update_preview(image_t *src);
 
 #ifndef __WFI
-#define __WFI() __asm__ volatile ("wfi" ::: "memory")
+#if defined(CONFIG_IDF_TARGET_ARCH_RISCV)
+#define __WFI() __asm__ volatile ("wfi\n")
+#elif defined(CONFIG_IDF_TARGET_ARCH_XTENSA)
+#define __WFI() __asm__ volatile ("waiti 0\n")
+#else
+#define __WFI() mp_hal_delay_us(50)
+#endif
 #endif
 
 #define OLD_BINARY_BPP          0

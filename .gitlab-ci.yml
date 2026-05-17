@@ -70,6 +70,7 @@ firmware:
       - BOARD:
           - ESP32_P4X_EYE
           - ESP32_P4X_FUNCTION_EV_BOARD
+          - ESP32_S3_EYE
   before_script:
     - git submodule sync -- lib/micropython lib/ulab
     - git submodule update --init --depth 1 lib/micropython lib/ulab
