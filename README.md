@@ -4,7 +4,7 @@
 
 ## Quickstart
 
-Prerequisites: ESP-IDF v5.5.3 with the export script sourced (`idf.py` on `PATH`), and an ESP32-P4 target board.
+Prerequisites: ESP-IDF v5.5.4 with the export script sourced (`idf.py` on `PATH`), and a supported ESP32-P4 or ESP32-S3 target board.
 
 ```bash
 git clone --recursive <this-repo> esp-vision
@@ -12,13 +12,15 @@ cd esp-vision
 make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 build flash monitor
 ```
 
+Set `BOARD` to the board package name under `boards/` and `overlay/micropython/ports/esp32/boards/`.
+
 Other useful targets: `make menuconfig`, `make size`, `make erase`, `make clean`, `make distclean`.
 
 Before invoking `idf.py`, the top-level Makefile runs `prepare-micropython`: it verifies that `lib/micropython` is checked out at MicroPython v1.28.0 commit `e0e9fbb17ed6fd06bb76e266ae554784c9c80804`, then applies `overlay/micropython/` to the submodule working tree.
 
 ## Architecture
 
-ESP-VISION is an ESP32-P4 MicroPython vision runtime with a VSCode-based host tool.
+ESP-VISION is an ESP32-P4/ESP32-S3 MicroPython vision runtime with a VSCode-based host tool.
 
 ### Source Tree
 
@@ -32,7 +34,7 @@ ESP-VISION is an ESP32-P4 MicroPython vision runtime with a VSCode-based host to
 | `boards` | Board packages containing per-board configuration, frozen manifests, and board-specific peripheral implementations. |
 | `platform` | Runtime services shared by Python modules, including camera, preview, storage, display, USB, JPEG, and debug support. |
 | `modules` | MicroPython C/C++ bindings exposed to scripts, including `sensor`, `image`, `display`, `imageio`, and `espdl`. |
-| `components/imlib` | ESP-IDF component containing the selected OpenMV `imlib` sources and the ESP32-P4 compatibility layer. |
+| `components/imlib` | ESP-IDF component containing the selected OpenMV `imlib` sources and the ESP32 compatibility layer. |
 | `models` | Optional `.espdl` model assets loaded at runtime from board storage such as `/flash` or `/sdcard`. |
 | `example` | MicroPython example scripts for camera, preview, storage, display, image processing, and ESP-DL workflows. |
 | `vscode-extension` | Host-side VSCode extension for serial connection, script run/stop, and JPG preview. |
@@ -64,6 +66,7 @@ A board package is split across two locations: the MicroPython ESP32 port overla
 | `boardconfig.h` | Pin assignments and board runtime constants. |
 | `imlib_config.h` | OpenMV `imlib` feature switches. |
 | `manifest.py` | Frozen Python modules. |
+| `camera.c` | Board-specific camera backend. |
 | `display.c` | LCD panel and backlight implementation. |
 | `sdcard.c` | SD card power and card-detect implementation. |
 

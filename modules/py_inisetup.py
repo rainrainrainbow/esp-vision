@@ -8,18 +8,12 @@ import os
 _MARKER = "/.esp_vision_disk"
 
 _MAIN_PY = """\
-import sensor
 import time
 
-sensor.reset()
-sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.QVGA)
-sensor.skip_frames(time=1000)
+print("ESP-VISION ready")
 
 while True:
-    img = sensor.snapshot()
-    img.flush()
-    time.sleep_ms(20)
+    time.sleep_ms(1000)
 """
 
 _README_TXT = """\
@@ -27,7 +21,7 @@ ESP-VISION
 
 Edit main.py to run your Python vision script.
 Use the ESP-VISION VSCode extension to run scripts and preview frames.
-The default main.py starts the camera and sends preview frames with img.flush().
+The default main.py keeps the board idle so host tools can take control.
 """
 
 

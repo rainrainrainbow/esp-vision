@@ -4,7 +4,7 @@
 
 ## 快速开始
 
-环境要求：ESP-IDF v5.5.3（已 source `export.sh`，`idf.py` 可用），以及 ESP32-P4 目标板。
+环境要求：ESP-IDF v5.5.4（已 source `export.sh`，`idf.py` 可用），以及受支持的 ESP32-P4 或 ESP32-S3 目标板。
 
 ```bash
 git clone --recursive <本仓库> esp-vision
@@ -12,13 +12,15 @@ cd esp-vision
 make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 build flash monitor
 ```
 
+`BOARD` 设置为 `boards/` 和 `overlay/micropython/ports/esp32/boards/` 下的板级包名。
+
 其他常用目标：`make menuconfig`、`make size`、`make erase`、`make clean`、`make distclean`。
 
 顶层 Makefile 在调用 `idf.py` 前执行 `prepare-micropython`：检查 `lib/micropython` 是否处于 MicroPython v1.28.0 commit `e0e9fbb17ed6fd06bb76e266ae554784c9c80804`，随后将 `overlay/micropython/` 应用到该子模块工作区。
 
 ## 项目架构
 
-ESP-VISION 是面向 ESP32-P4 的 MicroPython 视觉运行时，并配套 VSCode 上位机工具。
+ESP-VISION 是面向 ESP32-P4/ESP32-S3 的 MicroPython 视觉运行时，并配套 VSCode 上位机工具。
 
 ### 源码目录
 
@@ -32,7 +34,7 @@ ESP-VISION 是面向 ESP32-P4 的 MicroPython 视觉运行时，并配套 VSCode
 | `boards` | 板级包目录，包含每板配置、冻结脚本清单和板级外设实现。 |
 | `platform` | 供 Python 模块复用的运行时服务层，包括 camera、preview、storage、display、USB、JPEG 和 debug 支持。 |
 | `modules` | 暴露给脚本的 MicroPython C/C++ 绑定层，包括 `sensor`、`image`、`display`、`imageio` 和 `espdl`。 |
-| `components/imlib` | ESP-IDF 组件，包含选定的 OpenMV `imlib` 源文件和 ESP32-P4 兼容层。 |
+| `components/imlib` | ESP-IDF 组件，包含选定的 OpenMV `imlib` 源文件和 ESP32 兼容层。 |
 | `models` | 可选 `.espdl` 模型资源，运行时从 `/flash` 或 `/sdcard` 等板端文件系统加载。 |
 | `example` | MicroPython 示例脚本，覆盖 camera、preview、storage、display、image processing 和 ESP-DL 使用流程。 |
 | `vscode-extension` | VSCode 上位机扩展，负责串口连接、脚本启停和 JPG 预览。 |
@@ -64,6 +66,7 @@ ESP-VISION 以 MicroPython v1.28.0 作为固定上游基线。针对 MicroPython
 | `boardconfig.h` | 引脚分配和板级运行时常量。 |
 | `imlib_config.h` | OpenMV `imlib` 功能开关。 |
 | `manifest.py` | 冻结的 Python 模块。 |
+| `camera.c` | 板级 camera 后端实现。 |
 | `display.c` | LCD 面板和背光实现。 |
 | `sdcard.c` | SD 卡电源和卡检测实现。 |
 
