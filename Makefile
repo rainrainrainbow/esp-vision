@@ -34,6 +34,7 @@ prepare-micropython:
 	if [ -d "$(MP_OVERLAY)" ]; then cp -a $(MP_OVERLAY)/. $(MP_REPO)/; fi
 
 ensure-build-source: prepare-micropython
+	if [ -f "$(BUILD)/CMakeCache.txt" ] && [ ! -f "$(BUILD)/build.ninja" ]; then rm -rf $(BUILD); fi
 	if [ -f "$(BUILD)/CMakeCache.txt" ] && ! grep -qx "CMAKE_HOME_DIRECTORY:INTERNAL=$(MP_PORT)" "$(BUILD)/CMakeCache.txt"; then rm -rf $(BUILD); fi
 
 build: ensure-build-source

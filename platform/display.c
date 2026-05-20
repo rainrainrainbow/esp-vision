@@ -20,6 +20,14 @@
 
 #include "imlib.h"
 
+#ifndef ESP_VISION_LCD_WIDTH
+#define ESP_VISION_LCD_WIDTH (0)
+#endif
+
+#ifndef ESP_VISION_LCD_HEIGHT
+#define ESP_VISION_LCD_HEIGHT (0)
+#endif
+
 esp_err_t esp_vision_board_display_init_panel(uint32_t width,
                                               uint32_t height,
                                               esp_lcd_panel_io_handle_t *io_handle,
@@ -99,6 +107,9 @@ esp_err_t esp_vision_display_init(uint32_t width, uint32_t height, uint32_t back
     }
     if (height == 0) {
         height = ESP_VISION_LCD_HEIGHT;
+    }
+    if ((width == 0) || (height == 0)) {
+        return ESP_ERR_NOT_SUPPORTED;
     }
 
     if (s_display.ready) {

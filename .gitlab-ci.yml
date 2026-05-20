@@ -63,7 +63,7 @@ vscode_extension:
 firmware:
   stage: build
   image:
-    name: espressif/idf:v5.5.3
+    name: espressif/idf:v5.5.4
     entrypoint: [""]
   parallel:
     matrix:
@@ -71,6 +71,7 @@ firmware:
           - ESP32_P4X_EYE
           - ESP32_P4X_FUNCTION_EV_BOARD
           - ESP32_S3_EYE
+          - TEMPLATE
   before_script:
     - git submodule sync -- lib/micropython lib/ulab
     - git submodule update --init --depth 1 lib/micropython lib/ulab

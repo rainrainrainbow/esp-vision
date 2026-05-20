@@ -1,0 +1,12 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "mcu": "esp32p4x",
+    "product": "ESP-VISION-TEMPLATE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}
