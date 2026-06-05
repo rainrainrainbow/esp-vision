@@ -5,6 +5,7 @@
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "driver/gpio.h"
@@ -12,6 +13,7 @@
 #include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_lcd_io_spi.h"
+#include "esp_lcd_panel_interface.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_vendor.h"
@@ -19,6 +21,26 @@
 #include "boardconfig.h"
 
 static bool s_backlight_inited;
+
+// S3-EYE ST7789 reads RGB565 big-endian over SPI, but imlib framebuffers are
+// native little-endian: byte-swap each pixel in a draw_bitmap wrapper.
+static esp_err_t (*s_st7789_draw_bitmap)(esp_lcd_panel_t *panel,
+                                         int x_start, int y_start,
+                                         int x_end, int y_end,
+                                         const void *color_data);
+
+static esp_err_t esp_vision_s3_eye_draw_bitmap(esp_lcd_panel_t *panel,
+                                               int x_start, int y_start,
+                                               int x_end, int y_end,
+                                               const void *color_data)
+{
+    uint16_t *pixels = (uint16_t *)color_data;
+    size_t count = (size_t)(x_end - x_start) * (size_t)(y_end - y_start);
+    for (size_t i = 0; i < count; i++) {
+        pixels[i] = (uint16_t)((pixels[i] >> 8) | (pixels[i] << 8));
+    }
+    return s_st7789_draw_bitmap(panel, x_start, y_start, x_end, y_end, color_data);
+}
 
 void esp_vision_board_display_deinit_panel(esp_lcd_panel_io_handle_t io_handle,
                                            esp_lcd_panel_handle_t panel_handle);
@@ -120,7 +142,7 @@ esp_err_t esp_vision_board_display_init_panel(uint32_t width,
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = ESP_VISION_LCD_PIN_RST,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
-        .data_endian = LCD_RGB_DATA_ENDIAN_LITTLE,
+        .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
         .bits_per_pixel = ESP_VISION_LCD_BPP,
         .flags.reset_active_high = 0,
     };
@@ -132,6 +154,10 @@ esp_err_t esp_vision_board_display_init_panel(uint32_t width,
         spi_bus_free(spi_host);
         return ret;
     }
+
+    // Install the byte-swap wrapper.
+    s_st7789_draw_bitmap = (*panel_handle)->draw_bitmap;
+    (*panel_handle)->draw_bitmap = esp_vision_s3_eye_draw_bitmap;
 
     ret = esp_lcd_panel_reset(*panel_handle);
     if (ret == ESP_OK) {
