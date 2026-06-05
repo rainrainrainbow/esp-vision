@@ -84,6 +84,12 @@ static esp_err_t esp_vision_display_alloc_framebuffer(uint32_t width, uint32_t h
     return ESP_OK;
 }
 
+static esp_err_t esp_vision_display_panel_disp_on_off(bool on)
+{
+    esp_err_t ret = esp_lcd_panel_disp_on_off(s_display.panel_handle, on);
+    return (ret == ESP_ERR_NOT_SUPPORTED) ? ESP_OK : ret;
+}
+
 void esp_vision_display_init0(void)
 {
     esp_vision_display_deinit();
@@ -196,10 +202,10 @@ esp_err_t esp_vision_display_clear(bool display_off)
     }
 
     if (display_off) {
-        return esp_lcd_panel_disp_on_off(s_display.panel_handle, false);
+        return esp_vision_display_panel_disp_on_off(false);
     }
 
-    esp_err_t ret = esp_lcd_panel_disp_on_off(s_display.panel_handle, true);
+    esp_err_t ret = esp_vision_display_panel_disp_on_off(true);
     if (ret != ESP_OK) {
         return ret;
     }
