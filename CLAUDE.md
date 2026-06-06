@@ -6,7 +6,7 @@ ESP-VISION is a MicroPython vision runtime for ESP32-P4 / ESP32-S3 boards. It bu
 
 ## Build Commands
 
-The top-level `Makefile` is the only supported entry point — it wraps `idf.py` with the right flags. The default IDF project root is the generated MicroPython copy under `build/micropython/idf<ESP_IDF_VERSION>/micropython/ports/esp32`; never create a standalone IDF app at the repo root.
+The top-level `Makefile` is the primary stable entry point, and repository-root `idf.py --board <BOARD> ...` is also supported through `idf_ext.py`. Both paths build the generated MicroPython copy under `build/micropython/idf<ESP_IDF_VERSION>/micropython/ports/esp32`; never create a standalone IDF app at the repo root.
 
 - Build: `make BOARD=ESP32_P4X_EYE build`
 - Build + flash: `make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 deploy`
@@ -16,12 +16,13 @@ The top-level `Makefile` is the only supported entry point — it wraps `idf.py`
 - Erase flash: `make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 erase`
 - Clean board build output: `make BOARD=ESP32_P4X_EYE clean`
 - Wipe all build output: `make distclean`
-- Requires ESP-IDF release/v5.5 with `idf.py` on `PATH` (source the IDF `export.sh` if it isn't).
+- Equivalent `idf.py` path: `idf.py --board ESP32_P4X_EYE -p /dev/ttyACM0 build flash monitor`
+- Requires ESP-IDF release/v5.5, release/v6.0, or master with `idf.py` on `PATH` (source the IDF `export.sh` if it isn't).
 
 Notes:
-- `BOARD` must exist in both `boards/<BOARD>/` and `overlay/micropython/ports/esp32/boards/<BOARD>/`. Boards: `ESP32_P4X_EYE`, `ESP32_P4X_FUNCTION_EV_BOARD`, `ESP32_S3_EYE`; `TEMPLATE` is for new-board bring-up.
+- `BOARD` must exist in both `boards/<BOARD>/` and `overlay/micropython/ports/esp32/boards/<BOARD>/`. Boards: `ESP32_P4X_EYE`, `ESP32_P4X_FUNCTION_EV_BOARD`, `ESP32_S3_EYE`, `ESP32_S31_KORVO`; `TEMPLATE` is for new-board bring-up.
 - After changing the build system, board config, platform drivers, or imlib options, verify the `ESP32_P4X_EYE` build first; other boards only when the task touches them.
-- Firmware build/flash/monitor/config targets first run `prepare-micropython`: it asserts `lib/micropython` is at the pinned commit (`v1.28.0`, `e0e9fbb17ed6fd06bb76e266ae554784c9c80804`), recreates a clean MicroPython copy under `build/micropython/`, then applies `overlay/micropython/` to that copy. Use `MICROPY_OVERLAY_TARGET=lib` only when intentionally inspecting the generated MicroPython diff in the submodule.
+- Firmware build/flash/monitor/config targets first run `prepare-micropython`: it asserts `lib/micropython` is at the pinned commit (`v1.28.0`, `e0e9fbb17ed6fd06bb76e266ae554784c9c80804`), recreates a clean MicroPython copy under `build/micropython/`, then applies `overlay/micropython/` to that copy. The `idf_ext.py` entry follows the same build-copy strategy and does not dirty `lib/micropython`. Use `MICROPY_OVERLAY_TARGET=lib` only when intentionally inspecting the generated MicroPython diff in the submodule.
 
 ## Lint & Checks
 
@@ -41,6 +42,7 @@ Layered by whether code touches MicroPython (`mp_obj_t` / `py/*.h`):
 - `modules/`: the `USER_C_MODULES` binding layer (`py_*`). The four real MicroPython modules — `image`, `sensor`, `display`, `espdl` — self-register via `MP_REGISTER_MODULE`. `py_imageio.c` provides the `image.ImageIO` type and `py_helper.c` is shared binding-layer helper code (neither is a standalone module). Board-feature-gated qstrs live in `modules/qstrdefs_esp_vision.h`.
 - `boards/<BOARD>/`: per-board config — `boardconfig.h` (`ESP_VISION_*` macros), `imlib_config.h` (imlib switches), `manifest.py` (frozen modules), optional `camera.c`/`display.c`/`sdcard.c` overriding platform defaults, optional `board.cmake` setting `ESP_VISION_ENABLE_BARCODE` to opt into the zxing-cpp 1D backend.
 - `micropython.cmake`: the wiring hub — injects `platform/main.c` as MP main source, lists module/platform sources + include paths, picks per-board backends when present, conditionally links `idf::zxing`, pulls in `ulab`.
+- `idf_ext.py`: repository-root `idf.py` extension; requires `--board`, prepares the generated MicroPython build copy, then redirects `idf.py` to that generated ESP32 port project.
 - `example/`: numbered MicroPython example scripts; `stubs/`: `.pyi` stubs for the C modules; `models/`: optional `.espdl` assets loaded at runtime.
 
 A board's definition is split across two trees: the MicroPython port side (`overlay/micropython/ports/esp32/boards/<BOARD>/`: IDF target, sdkconfig, partitions, USB strings) and the ESP-VISION side (`boards/<BOARD>/`).

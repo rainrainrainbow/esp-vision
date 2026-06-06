@@ -44,6 +44,7 @@ python_stubs:
   image: python:3.11-slim
   script:
     - python -m py_compile stubs/*.pyi
+    - python -m py_compile idf_ext.py
 
 .firmware_base:
   stage: build
@@ -81,6 +82,18 @@ firmware:
           - ESP32_S3_EYE
           - TEMPLATE
 
+# Keep the board-aware idf.py extension honest without duplicating the full
+# firmware matrix covered by the make entry point above.
+firmware_idf_py:
+  extends: .firmware_base
+  script:
+    - idf.py --board "$BOARD" build
+  parallel:
+    matrix:
+      - IDF_IMAGE: ["release-v5.5", "release-v6.0"]
+        BOARD:
+          - ESP32_P4X_EYE
+
 # IDF master (currently 6.1-dev) is a moving target: track it but don't block the pipeline.
 firmware_master:
   extends: .firmware_base
@@ -94,3 +107,14 @@ firmware_master:
           - ESP32_S3_EYE
           - ESP32_S31_KORVO
           - TEMPLATE
+
+firmware_idf_py_master:
+  extends: .firmware_base
+  allow_failure: true
+  script:
+    - idf.py --board "$BOARD" build
+  parallel:
+    matrix:
+      - IDF_IMAGE: ["latest"]
+        BOARD:
+          - ESP32_P4X_EYE
