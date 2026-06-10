@@ -8,13 +8,23 @@ The vision algorithms in the :doc:`../api-reference/image` module come from Open
 A typical processing pipeline
 -----------------------------
 
-Most color-tracking or inspection scripts follow the same shape:
+Most color-tracking or inspection scripts follow this processing flow:
 
-#. **Capture** a frame with :py:func:`sensor.snapshot`.
-#. **Pre-process** to reduce noise and normalize: convert with :py:meth:`image.Image.to_grayscale`, smooth with :py:meth:`image.Image.gaussian`, optionally correct lighting with :py:meth:`image.Image.histeq`.
-#. **Segment** the pixels of interest with :py:meth:`image.Image.binary` against a color threshold.
-#. **Analyze** the result: :py:meth:`image.Image.find_blobs`, :py:meth:`image.Image.get_statistics`, or a feature detector.
-#. **Annotate / act** using the drawing methods.
+.. blockdiag::
+
+   blockdiag {
+     orientation = portrait;
+
+     capture    [label = "Capture\nsensor.snapshot()"];
+     preprocess [label = "Pre-process\nconvert / denoise / normalize"];
+     segment    [label = "Segment\nbinary thresholds"];
+     analyze    [label = "Analyze\nblobs / statistics / features"];
+     output     [label = "Annotate or act"];
+
+     capture -> preprocess -> segment -> analyze -> output;
+   }
+
+Pre-processing can combine :py:meth:`image.Image.to_grayscale`, :py:meth:`image.Image.gaussian`, and :py:meth:`image.Image.histeq`; segmentation commonly uses :py:meth:`image.Image.binary`; analysis then uses :py:meth:`image.Image.find_blobs`, :py:meth:`image.Image.get_statistics`, or a feature detector before the application draws results or takes an action.
 
 Thresholding and segmentation
 -----------------------------

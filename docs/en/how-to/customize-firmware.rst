@@ -8,12 +8,12 @@ ESP-VISION separates application-facing modules, image algorithms, standard Micr
 Choose the Customization Scope
 ------------------------------
 
-Before editing configuration, decide whether the change belongs to every ESP-VISION firmware or only one board. Changes to the root ``micropython.cmake`` affect every board whose target matches the edited condition. Changes under ``boards/<BOARD>/`` or ``overlay/micropython/ports/esp32/boards/<BOARD>/`` are board-specific. For a product variant, create a dedicated board package as described in :doc:`add-board` instead of changing a shared development-board profile.
+Before editing configuration, decide whether the change belongs to every ESP-VISION firmware or only one board. Changes to the root ``micropython.cmake`` affect every board whose chip matches the edited condition. Changes under ``boards/<BOARD>/`` or ``overlay/micropython/ports/esp32/boards/<BOARD>/`` are board-specific. For a product variant, create a dedicated board package as described in :doc:`add-board` instead of changing a shared development-board profile.
 
 Customize ESP-VISION Python Modules
 -----------------------------------
 
-The ``ESP_VISION_MODULE_SOURCES`` list in ``micropython.cmake`` defines the C/C++ bindings exposed to Python. Remove a source only together with any helper source it requires, or append a new source as described in :doc:`add-python-module`. Target-specific modules belong inside an ``IDF_TARGET`` condition; for example, H.264 and RTSP are currently enabled only for ``esp32p4``.
+The ``ESP_VISION_MODULE_SOURCES`` list in ``micropython.cmake`` defines the C/C++ bindings exposed to Python. Remove a source only together with any helper source it requires, or append a new source as described in :doc:`add-python-module`. Chip-specific modules belong inside an ``IDF_TARGET`` condition; for example, H.264 and RTSP are currently enabled only for ``esp32p4``.
 
 .. code-block:: cmake
 
@@ -66,7 +66,7 @@ The board's ``boards/<BOARD>/manifest.py`` controls Python modules frozen into f
    freeze("$(ESP_VISION_ROOT)/boards/<BOARD>", "board_inisetup.py")
    include("$(MPY_DIR)/extmod/asyncio")
 
-Freezing code improves deployment consistency and startup availability but consumes firmware flash. Files intended to remain replaceable during development or after deployment should stay on ``/flash`` or ``/sdcard`` instead.
+Freezing code improves deployment consistency and startup availability but consumes firmware flash. Files intended to remain replaceable during development or after deployment should stay on the root filesystem, such as packages under ``/lib``, or on ``/sdcard`` instead.
 
 Customize Board Services and Optional Components
 ------------------------------------------------

@@ -17,7 +17,7 @@ MicroPython 移植侧
    * - 文件
      - 用途
    * - ``mpconfigboard.cmake``
-     - IDF 目标与 ``SDKCONFIG_DEFAULTS`` 链。
+     - ``IDF_TARGET`` 配置值与 ``SDKCONFIG_DEFAULTS`` 链。
    * - ``mpconfigboard.h``
      - MicroPython 功能开关与 USB 字符串。
    * - ``sdkconfig.board``

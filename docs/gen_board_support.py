@@ -140,7 +140,7 @@ def _render(lang):
             'note': (
                 'The support summary is generated from ``mpconfigport.h``, '
                 'each board ``mpconfigboard.h`` and ``imlib_config.h``, and '
-                'the target module selection.'
+                'the chip-specific module selection.'
             ),
         },
         'zh_CN': {
@@ -155,7 +155,7 @@ def _render(lang):
             'vision': '视觉能力',
             'note': (
                 '支持摘要根据 ``mpconfigport.h``、各开发板的 '
-                '``mpconfigboard.h`` 与 ``imlib_config.h``，以及 target '
+                '``mpconfigboard.h`` 与 ``imlib_config.h``，以及芯片相关的'
                 '模块选择自动生成。'
             ),
         },

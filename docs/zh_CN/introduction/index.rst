@@ -20,6 +20,6 @@ ESP-VISION 是乐鑫面向端侧智能视觉打造的低代码开发框架，深
 支持的开发板
 ------------
 
-ESP-VISION 面向 ESP32-P4、ESP32-S3 与 ESP32-S31 开发板。当前支持的板级包包括 ``ESP32_P4X_EYE``、``ESP32_P4X_FUNCTION_EV_BOARD``、``ESP32_S3_EYE`` 与 ``ESP32_S31_KORVO``，其中 ``TEMPLATE`` 用于新板卡的初始适配。各 target 的模块和 限制见 :doc:`../target-support/index`\ 。
+ESP-VISION 支持基于 ESP32-P4、ESP32-S3 与 ESP32-S31 的开发板。完整开发板列表以及各芯片的模块和限制见 :doc:`../target-support/index`\ 。
 
 构建与烧录固件请参阅 :doc:`../get-started/index`，整体架构请参阅 :doc:`../architecture/index`。

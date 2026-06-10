@@ -31,7 +31,23 @@ Recording sequences: ImageIO
    Network streaming: RTSP
    -----------------------
 
-   :py:class:`rtsp.RTSPServer` serves encoded H.264 frames over RTSP so a client such as VLC or ffplay can view the camera at ``rtsp://<board-ip>:8554/``. The typical loop is *capture → encode → send*: feed each :py:meth:`h264.H264Encoder.encode` result to :py:meth:`rtsp.RTSPServer.send`. The server keeps a short, in-order frame queue; if a client is slow or absent it drops whole frames rather than blocking your capture loop or sending a partial frame that would corrupt the stream.
+   :py:class:`rtsp.RTSPServer` serves encoded H.264 frames over RTSP so a client such as VLC or ffplay can view the camera at ``rtsp://<board-ip>:8554/``. Feed each :py:meth:`h264.H264Encoder.encode` result to :py:meth:`rtsp.RTSPServer.send`.
+
+   .. blockdiag::
+
+      blockdiag {
+        orientation = portrait;
+
+        capture [label = "Capture\nsensor.snapshot()"];
+        encode  [label = "Encode\nH264Encoder.encode()"];
+        queue   [label = "Queue complete frames\nRTSPServer.send()"];
+        client  [label = "Stream to\nRTSP client"];
+
+        capture -> encode -> queue -> client;
+        client -> capture [label = "next frame"];
+      }
+
+   The server keeps a short, in-order frame queue; if a client is slow or absent it drops whole frames rather than blocking the capture loop or sending a partial frame that would corrupt the stream.
 
 Host preview: USB CDC
 ---------------------

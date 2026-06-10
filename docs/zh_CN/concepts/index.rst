@@ -1,5 +1,5 @@
-概念
-====
+基础概念
+========
 
 :link_to_translation:`en:[English]`
 
@@ -8,8 +8,11 @@
 .. toctree::
    :maxdepth: 1
 
+   micropython-language
+   packages
    image-model
    image-processing
    ai-inference
    camera-pipeline
    codec-streaming
+   boot-sequence

@@ -12,10 +12,10 @@ ESP-VISION 是乐鑫面向端侧智能视觉打造的低代码开发框架，深
 
    introduction/index
    target-support/index
-   project-relationship/index
    get-started/index
-   architecture/index
    concepts/index
    api-reference/index
    how-to/index
-   examples/index
+   architecture/index
+   project-relationship/index
+   license/index

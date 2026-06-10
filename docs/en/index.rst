@@ -12,10 +12,10 @@ This guide is organized as follows.
 
    introduction/index
    target-support/index
-   project-relationship/index
    get-started/index
-   architecture/index
    concepts/index
    api-reference/index
    how-to/index
-   examples/index
+   architecture/index
+   project-relationship/index
+   license/index

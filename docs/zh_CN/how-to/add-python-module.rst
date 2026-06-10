@@ -69,7 +69,7 @@ C++ 模块使用 ``.cpp``（参见 ``modules/py_espdl.cpp``）；构建已为 C+
        ...
    )
 
-若模块仅在部分目标上有效，请放入对应的 ``IDF_TARGET`` 判断块中（H.264 与 RTSP 模块即以此 方式限定为 ``esp32p4``）。若需额外组件，可像 ``idf::zxing`` 那样用 ``target_link_libraries`` 链接。
+若模块仅在部分芯片上有效，请放入对应的 ``IDF_TARGET`` 判断块中（H.264 与 RTSP 模块即以此方式限定为 ``esp32p4``）。若需额外组件，可像 ``idf::zxing`` 那样用 ``target_link_libraries`` 链接。
 
 4. 添加类型存根
 ---------------

@@ -8,11 +8,22 @@
 从传感器到图像
 --------------
 
-#. **配置。** :py:func:`sensor.reset` 通过控制总线启动图像传感器并应用板级默认配置； :py:func:`sensor.set_pixformat` 与 :py:func:`sensor.set_framesize` 选择输出格式与 分辨率。
-#. **取流。** 传感器经摄像头接口（MIPI-CSI 或 DVP）把像素通过 DMA 送入 PSRAM 中的 帧缓冲。采集采用双缓冲：处理当前帧的同时填充下一帧。
-#. **转换。** 原始传感器数据（通常是 Bayer 或 YUV）被转换为请求的像素格式。在 ESP32-P4 上由硬件 **PPA**\ （像素处理加速器）完成缩放与色彩转换；在 ESP32-S3 上 则由软件完成。
-#. **稳定。** 自动曝光与自动白平衡需要若干帧才能收敛，因此示例会在配置后调用 ``sensor.skip_frames(time=2000)``\ 。
-#. **快照。** :py:func:`sensor.snapshot` 把最新帧作为共享帧缓冲内存的 :py:class:`image.Image` 返回（见 :doc:`image-model`\ ）。
+.. blockdiag::
+
+   blockdiag {
+     orientation = portrait;
+
+     config  [label = "配置传感器\n复位 / 像素格式 / 分辨率"];
+     stream  [label = "经 MIPI-CSI 或 DVP 输出像素\n并通过 DMA 写入帧缓冲"];
+     convert [label = "使用 PPA 或软件\n缩放并转换像素格式"];
+     settle  [label = "等待自动曝光和\n自动白平衡稳定"];
+     capture [label = "sensor.snapshot()"];
+     image   [label = "共享可复用帧缓冲的\nimage.Image"];
+
+     config -> stream -> convert -> settle -> capture -> image;
+   }
+
+取流前，传感器控制总线会应用开发板默认配置以及请求的图像格式。双缓冲允许处理当前帧的同时填充下一帧。ESP32-P4 使用硬件 PPA 完成缩放和色彩转换，ESP32-S3 则由软件完成转换。配置后调用 ``sensor.skip_frames(time=2000)``，可为自动曝光和自动白平衡预留收敛时间。
 
 各开发板后端
 ------------

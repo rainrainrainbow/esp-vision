@@ -8,8 +8,11 @@ This section explains the ideas behind the ESP-VISION API: how images are repres
 .. toctree::
    :maxdepth: 1
 
+   micropython-language
+   packages
    image-model
    image-processing
    ai-inference
    camera-pipeline
    codec-streaming
+   boot-sequence

@@ -3,7 +3,10 @@ h264 -- H.264 编码
 
 :link_to_translation:`en:[English]`
 
-``h264`` 模块把图像编码成 H.264 NAL 单元，可用于把视频录制到存储，或送入 :doc:`rtsp` 服务器。
+``h264`` 模块把图像编码成 Annex-B H.264 NAL 单元，可用于将视频录制到存储，或送入 :doc:`rtsp` 服务器。该模块可用于 ESP32-P4 构建。
+
+编码单帧图像
+------------
 
 .. code-block:: python
 
@@ -11,9 +14,54 @@ h264 -- H.264 编码
 
    enc = h264.H264Encoder(320, 240, fps=15)
    nal = enc.encode(sensor.snapshot())
+   print("bytes:", len(nal), "keyframe:", enc.keyframe())
+   enc.close()
+
+编码器尺寸必须与每一帧输入图像一致。``encode()`` 以 ``bytes`` 返回一帧编码数据，``keyframe()`` 用于判断最近编码的图像是否为 IDR/I 帧。
+
+录制 H.264 裸码流
+------------------
+
+.. code-block:: python
+
+   import sensor, h264
+
+   FRAME_COUNT = 300
+   OUT_PATH = "/sdcard/out.h264"
+
+   sensor.reset()
+   sensor.set_pixformat(sensor.RGB565)
+   sensor.set_framesize(sensor.QVGA)
+   sensor.skip_frames(time=1000)
+
+   first = sensor.snapshot()
+   enc = h264.H264Encoder(
+       first.width(),
+       first.height(),
+       fps=15,
+       bitrate=1_500_000,
+       gop=15,
+   )
+
+   try:
+       with open(OUT_PATH, "wb") as output:
+           output.write(enc.encode(first))
+           for _ in range(FRAME_COUNT - 1):
+               output.write(enc.encode(sensor.snapshot()))
+   finally:
+       enc.close()
+
+该示例写入不包含 MP4 容器的 Annex-B 基本码流，可使用 ``ffplay out.h264`` 播放，或在主机上重新封装。``bitrate`` 表示目标每秒比特数，``gop`` 表示以帧为单位的关键帧间隔，QP 上下限则控制允许的质量与体积范围。
+
+资源与吞吐量注意事项
+--------------------
+
+应为固定分辨率创建一个编码器，并在整个视频流中持续复用，使用完毕后再将其关闭。如果采集或存储无法维持配置的帧率和码率，应降低分辨率、帧率或码率，而不是反复创建编码器。
 
 .. seealso::
 
    :doc:`../concepts/codec-streaming` 说明了“编码—推流”流程，以及 H.264 关键帧 与 RTSP 传输之间的关系。
+
+   可运行示例：``example/01-Camera/01-H264/record_h264.py``\ 。
 
 .. include:: _generated/h264.rst

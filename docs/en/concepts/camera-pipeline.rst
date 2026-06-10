@@ -8,11 +8,22 @@ The Camera Pipeline
 From sensor to image
 --------------------
 
-#. **Configuration.** :py:func:`sensor.reset` brings up the image sensor over its control bus and applies the board default configuration. :py:func:`sensor.set_pixformat` and :py:func:`sensor.set_framesize` select the output format and resolution.
-#. **Streaming.** The sensor pushes pixels over a camera interface (MIPI-CSI or DVP) into a DMA-fed frame buffer in PSRAM. Capture is double-buffered so the next frame fills while the current one is processed.
-#. **Conversion.** The raw sensor data (often Bayer or YUV) is converted to the requested pixel format. On ESP32-P4 a hardware **PPA** (Pixel Processing Accelerator) performs scaling and color conversion; on ESP32-S3 this is done in software.
-#. **Settling.** Auto-exposure and auto-white-balance need a few frames to converge, which is why examples call ``sensor.skip_frames(time=2000)`` after configuration.
-#. **Snapshot.** :py:func:`sensor.snapshot` hands back the latest frame as an :py:class:`image.Image` that shares the frame-buffer memory (see :doc:`image-model`).
+.. blockdiag::
+
+   blockdiag {
+     orientation = portrait;
+
+     config  [label = "Configure sensor\nreset / pixel format / frame size"];
+     stream  [label = "Stream pixels over MIPI-CSI or DVP\ninto DMA frame buffers"];
+     convert [label = "Scale and convert pixel format\nwith PPA or software"];
+     settle  [label = "Wait for exposure and\nwhite balance to settle"];
+     capture [label = "sensor.snapshot()"];
+     image   [label = "image.Image\nsharing reusable framebuffer"];
+
+     config -> stream -> convert -> settle -> capture -> image;
+   }
+
+The sensor control bus applies the board defaults and requested format before streaming begins. Double buffering allows the next frame to fill while the current frame is processed. ESP32-P4 uses the hardware PPA for scaling and color conversion, while ESP32-S3 performs conversion in software. Calling ``sensor.skip_frames(time=2000)`` after configuration gives automatic exposure and white balance time to converge.
 
 Per-board backends
 ------------------

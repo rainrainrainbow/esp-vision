@@ -69,7 +69,7 @@ Add the source to ``ESP_VISION_MODULE_SOURCES`` in ``micropython.cmake``:
        ...
    )
 
-If the module is only valid on some targets, add it inside the matching ``IDF_TARGET`` block (the H.264 and RTSP modules are gated to ``esp32p4`` this way). If it needs an extra component, link it via ``target_link_libraries`` like ``idf::zxing``.
+If the module is only valid on some chips, add it inside the matching ``IDF_TARGET`` block (the H.264 and RTSP modules are gated to ``esp32p4`` this way). If it needs an extra component, link it via ``target_link_libraries`` like ``idf::zxing``.
 
 4. Add a Type Stub
 ------------------

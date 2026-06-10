@@ -8,13 +8,23 @@
 典型处理流水线
 --------------
 
-多数颜色跟踪或检测脚本都遵循相同结构：
+多数颜色跟踪或检测脚本都遵循以下处理流程：
 
-#. 用 :py:func:`sensor.snapshot` **采集** 一帧。
-#. **预处理** 以降噪与归一化：用 :py:meth:`image.Image.to_grayscale` 转换、用 :py:meth:`image.Image.gaussian` 平滑，必要时用 :py:meth:`image.Image.histeq` 校正光照。
-#. 用 :py:meth:`image.Image.binary` 按颜色阈值 **分割** 出感兴趣像素。
-#. **分析** 结果：:py:meth:`image.Image.find_blobs`\ 、 :py:meth:`image.Image.get_statistics` 或某个特征检测器。
-#. 用绘图方法 **标注/响应**\ 。
+.. blockdiag::
+
+   blockdiag {
+     orientation = portrait;
+
+     capture    [label = "采集\nsensor.snapshot()"];
+     preprocess [label = "预处理\n转换 / 降噪 / 归一化"];
+     segment    [label = "分割\n二值化阈值"];
+     analyze    [label = "分析\n色块 / 统计 / 特征"];
+     output     [label = "标注或响应"];
+
+     capture -> preprocess -> segment -> analyze -> output;
+   }
+
+预处理可以组合使用 :py:meth:`image.Image.to_grayscale`、:py:meth:`image.Image.gaussian` 和 :py:meth:`image.Image.histeq`；分割通常使用 :py:meth:`image.Image.binary`；分析阶段再使用 :py:meth:`image.Image.find_blobs`、:py:meth:`image.Image.get_statistics` 或特征检测器，随后由应用绘制结果或执行相应操作。
 
 阈值化与分割
 ------------

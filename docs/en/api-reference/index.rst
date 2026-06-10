@@ -3,10 +3,13 @@ API Reference
 
 :link_to_translation:`zh_CN:[中文]`
 
-ESP-VISION exposes its functionality through C-implemented MicroPython modules. The public module names stay OpenMV-compatible: the camera module is ``sensor``, with ``image``, ``display``, and ``espdl`` alongside it. The codec stream type is exposed as ``image.ImageIO``. This page only lists modules compiled for the selected target.
+ESP-VISION provides Python APIs for camera capture, image processing, display, video encoding and streaming, and AI inference. Developers can also directly use the standard MicroPython APIs enabled in the firmware for hardware control, networking, file access, system services, and general application development. ESP-VISION maintains compatibility with commonly used OpenMV module names where applicable, including ``sensor`` and ``image``, and additionally provides modules such as ``display`` and ``espdl``.
 
-The pages below are the reference for each module. They are kept in sync with the type stubs under ``stubs/``, which are also usable for IDE completion. Module availability is derived from ``micropython.cmake`` during the documentation build.
+The ESP-VISION module pages are kept in sync with the type stubs under ``stubs/``, which are also usable for IDE completion. Their availability is derived from ``micropython.cmake`` during the documentation build. The :doc:`micropython` page indexes the language, standard-library, hardware, networking, filesystem, and runtime APIs that ESP-VISION firmware inherits from the pinned MicroPython version.
 
-This guide covers ESP-VISION modules. Standard MicroPython modules are selected by ``overlay/micropython/ports/esp32/mpconfigport.h``, board-level ``mpconfigboard.h`` overrides, ESP-IDF version checks, and SoC capability macros. Their availability therefore cannot always be determined from target alone.
+.. toctree::
+   :maxdepth: 1
+
+   micropython
 
 .. include:: _generated/module-toctrees.rst

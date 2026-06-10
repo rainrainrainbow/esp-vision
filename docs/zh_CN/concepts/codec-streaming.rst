@@ -31,7 +31,23 @@
    网络推流：RTSP
    --------------
 
-   :py:class:`rtsp.RTSPServer` 通过 RTSP 发送编码后的 H.264 帧，使 VLC、ffplay 等 客户端能在 ``rtsp://<board-ip>:8554/`` 观看摄像头画面。典型循环是 *采集 → 编码 → 发送*\ ：把每个 :py:meth:`h264.H264Encoder.encode` 的结果交给 :py:meth:`rtsp.RTSPServer.send`\ 。服务器维护一个短小且有序的帧队列；若客户端 缓慢或缺席，它会整帧丢弃，而不是阻塞采集循环或发送会破坏码流的半帧。
+   :py:class:`rtsp.RTSPServer` 通过 RTSP 发送编码后的 H.264 帧，使 VLC、ffplay 等客户端能在 ``rtsp://<board-ip>:8554/`` 观看摄像头画面。应将每个 :py:meth:`h264.H264Encoder.encode` 的结果交给 :py:meth:`rtsp.RTSPServer.send`。
+
+   .. blockdiag::
+
+      blockdiag {
+        orientation = portrait;
+
+        capture [label = "采集\nsensor.snapshot()"];
+        encode  [label = "编码\nH264Encoder.encode()"];
+        queue   [label = "完整帧入队\nRTSPServer.send()"];
+        client  [label = "向 RTSP 客户端\n发送码流"];
+
+        capture -> encode -> queue -> client;
+        client -> capture [label = "下一帧"];
+      }
+
+   服务器维护一个短小且有序的帧队列；若客户端缓慢或缺席，它会整帧丢弃，而不是阻塞采集循环或发送会破坏码流的半帧。
 
 主机预览：USB CDC
 -----------------

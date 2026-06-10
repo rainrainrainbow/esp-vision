@@ -79,7 +79,7 @@ Source Tree
    * - ``platform/``
      - Shared runtime services (camera, preview, storage, display, USB, JPEG).
    * - ``modules/``
-     - MicroPython C/C++ bindings (``sensor``, ``image``, ``display``, ``imageio``, ``espdl``, plus target-dependent ``h264`` and ``rtsp``).
+     - MicroPython C/C++ bindings (``sensor``, ``image``, ``display``, ``imageio``, ``espdl``, plus chip-dependent ``h264`` and ``rtsp``).
    * - ``components/``
      - ESP-IDF components, including OpenMV ``imlib`` and the ZXing backend.
    * - ``models/``
@@ -94,13 +94,13 @@ Board Composition
 
 A board's definition is split across two trees:
 
-- MicroPython port side: ``overlay/micropython/ports/esp32/boards/<BOARD>/`` (IDF target, sdkconfig, partitions, USB strings).
+- MicroPython port side: ``overlay/micropython/ports/esp32/boards/<BOARD>/`` (``IDF_TARGET`` value, sdkconfig, partitions, USB strings).
 - ESP-VISION side: ``boards/<BOARD>/`` (``boardconfig.h``, ``imlib_config.h``, ``manifest.py``, and optional ``camera.c`` / ``display.c`` / ``sdcard.c``).
 
 See :doc:`../how-to/add-board` for the step-by-step procedure.
 
-Target-Dependent Sources
-------------------------
+Chip-Dependent Sources
+----------------------
 
 ``micropython.cmake`` selects modules from ``IDF_TARGET`` and the board profile. The ESP32-P4 build includes ``h264`` and ``rtsp``; the current P4 board profiles also enable the ZXing-C++ barcode backend. See :doc:`../target-support/index` for the resulting public API matrix.
 
@@ -109,72 +109,4 @@ MicroPython Overlay
 
 ESP-VISION uses MicroPython v1.28.0 as a fixed upstream baseline. Project changes to the ESP32 port live under ``overlay/micropython/``. The ``prepare-micropython`` build step applies that tree to a generated copy under ``build/micropython/idf<ESP_IDF_VERSION>/micropython/``; the ``lib/micropython`` submodule remains a clean upstream reference.
 
-Adding a New Board
-------------------
-
-A board package is split across two locations:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 34 66
-
-   * - Location
-     - Contents
-   * - ``overlay/micropython/ports/esp32/boards/<BOARD>/``
-     - ``mpconfigboard.cmake`` for the IDF target and sdkconfig chain, ``mpconfigboard.h`` for MicroPython feature flags, partition tables, and board metadata.
-   * - ``boards/<BOARD>/``
-     - Pin and runtime configuration, ``imlib_config.h``, frozen manifests, and optional camera, display, and SD card backends.
-
-See :doc:`../how-to/add-board` for the complete procedure.
-
-Licensing
----------
-
-ESP-VISION's own code is released under Apache License 2.0. Vendored code keeps the license declared by its source file, SPDX identifier, or upstream license.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 24 20 36 20
-
-   * - Repository
-     - Local path
-     - Usage
-     - License
-   * - `MicroPython <https://github.com/micropython/micropython>`__
-     - ``lib/micropython``
-     - Runtime and ESP32 port baseline
-     - MIT
-   * - `micropython-ulab <https://github.com/v923z/micropython-ulab>`__
-     - ``lib/ulab``
-     - Numerical module
-     - MIT
-   * - `OpenMV <https://github.com/openmv/openmv>`__ ``imlib`` subset
-     - ``components/imlib``
-     - Image processing and drawing algorithms
-     - MIT, with separately licensed files
-   * - OpenMV AprilTag implementation
-     - ``components/imlib/upstream/apriltag.c``
-     - AprilTag and rectangle detection
-     - BSD-2-Clause
-   * - `ZXing-C++ <https://github.com/zxing-cpp/zxing-cpp>`__
-     - ``lib/zxing-cpp``
-     - 1D barcode reader backend
-     - Apache-2.0
-   * - `ESP-DL <https://github.com/espressif/esp-dl>`__
-     - Component Registry
-     - Model inference runtime
-     - MIT
-   * - `esp_new_jpeg <https://github.com/espressif/esp-adf-libs/tree/master/esp_new_jpeg>`__
-     - Component Registry
-     - Software JPEG codec
-     - Espressif MIT
-   * - `esp32-camera <https://github.com/espressif/esp32-camera>`__
-     - Component Registry
-     - Camera driver
-     - Apache-2.0
-   * - `ESP-IDF <https://github.com/espressif/esp-idf>`__
-     - External SDK
-     - Build system, drivers, and media components
-     - Apache-2.0
-
-For per-file obligations and the relationship to upstream projects, see :doc:`../project-relationship/index`.
+For how ESP-VISION relates to its upstream projects, see :doc:`../project-relationship/index`; for the license of each component, see :doc:`../license/index`.

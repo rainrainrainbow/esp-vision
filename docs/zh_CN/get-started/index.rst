@@ -6,12 +6,8 @@
 前置条件
 --------
 
-- ESP-IDF ``release/v5.5``、``release/v6.0`` 或 ``master``，并已 source 导出脚本， 使 ``idf.py`` 位于 ``PATH`` 中。
-- 一块列在 :doc:`../target-support/index` 中且与所选 target 对应的开发板。
-
-.. only:: esp32s31
-
-   ESP32-S31 当前需要 ESP-IDF ``master`` 环境。
+- 受支持的 ESP-IDF 环境，并已 source 导出脚本，使 ``idf.py`` 位于 ``PATH`` 中；当前分支兼容性请查看项目 README。
+- 一块列在 :doc:`../target-support/index` 中且与所选芯片对应的开发板。
 
 构建、烧录与监视
 ----------------
@@ -70,4 +66,4 @@
 运行第一个脚本
 --------------
 
-烧录完成后，通过 REPL 连接并尝试相机功能。可直接运行的脚本请参阅 :doc:`../examples/index`。
+烧录完成后，通过 REPL 连接并尝试相机功能。每个 :doc:`../api-reference/index` 模块页面都会链接到对应 API 的可运行 ``example/`` 脚本。

@@ -6,12 +6,8 @@ Get Started
 Prerequisites
 -------------
 
-- ESP-IDF ``release/v5.5``, ``release/v6.0``, or ``master`` with the export script sourced so that ``idf.py`` is on ``PATH``.
-- A board listed in :doc:`../target-support/index` for the selected target.
-
-.. only:: esp32s31
-
-   ESP32-S31 currently requires an ESP-IDF ``master`` environment.
+- A supported ESP-IDF environment with its export script sourced so that ``idf.py`` is on ``PATH``; see the project README for the maintained branch compatibility.
+- A board listed in :doc:`../target-support/index` for the selected chip.
 
 Build, Flash, and Monitor
 -------------------------
@@ -70,4 +66,4 @@ Common idf.py Commands
 Run Your First Script
 ---------------------
 
-After flashing, connect over the REPL and try the camera. See :doc:`../examples/index` for ready-to-run scripts.
+After flashing, connect over the REPL and try the camera. Each :doc:`../api-reference/index` module page links the runnable ``example/`` scripts for that API.

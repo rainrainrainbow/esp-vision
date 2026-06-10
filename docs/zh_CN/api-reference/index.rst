@@ -3,10 +3,13 @@ API 参考
 
 :link_to_translation:`en:[English]`
 
-ESP-VISION 通过以 C 实现的 MicroPython 模块对外暴露功能。公开模块名保持与 OpenMV 兼容： 相机模块为 ``sensor``，并提供 ``image``、``display`` 与 ``espdl``。编解码流类型以 ``image.ImageIO`` 暴露。本页只列出所选 target 默认编译的模块。
+ESP-VISION 提供摄像头采集、图像处理、画面显示、视频编码与传输以及 AI 推理等 Python API。开发者还可以直接使用固件中启用的 MicroPython 标准 API，完成硬件控制、网络通信、文件访问、系统管理及通用应用开发。ESP-VISION 在适用范围内兼容常用的 OpenMV 模块名称，包括 ``sensor`` 和 ``image``，并进一步提供 ``display``、``espdl`` 等模块。
 
-下列页面为各模块的参考文档，与 ``stubs/`` 下的类型存根保持同步，存根同样可用于 IDE 补全。模块可用性在文档构建时根据 ``micropython.cmake`` 自动推导。
+ESP-VISION 模块页面与 ``stubs/`` 下的类型存根保持同步，存根同样可用于 IDE 补全；其可用性在文档构建时根据 ``micropython.cmake`` 自动推导。:doc:`micropython` 页面索引 ESP-VISION 固件从固定 MicroPython 版本沿用的语言、标准库、硬件、网络、文件系统和运行时 API。
 
-本指南覆盖 ESP-VISION 模块。标准 MicroPython 模块由 ``overlay/micropython/ports/esp32/mpconfigport.h``、板级 ``mpconfigboard.h`` 覆盖项、ESP-IDF 版本条件和 SoC 能力宏共同决定，因此仅凭 target 不一定能准确判断其可用性。
+.. toctree::
+   :maxdepth: 1
+
+   micropython
 
 .. include:: _generated/module-toctrees.rst

@@ -17,7 +17,7 @@ In ``overlay/micropython/ports/esp32/boards/<BOARD>/``:
    * - File
      - Purpose
    * - ``mpconfigboard.cmake``
-     - IDF target and ``SDKCONFIG_DEFAULTS`` chain.
+     - ``IDF_TARGET`` value and ``SDKCONFIG_DEFAULTS`` chain.
    * - ``mpconfigboard.h``
      - MicroPython feature flags and USB strings.
    * - ``sdkconfig.board``

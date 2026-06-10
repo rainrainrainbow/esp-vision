@@ -3,7 +3,10 @@ h264 -- H.264 Encoding
 
 :link_to_translation:`zh_CN:[中文]`
 
-The ``h264`` module encodes images into H.264 NAL units, for example to record video to storage or to feed the :doc:`rtsp` server.
+The ``h264`` module encodes images into Annex-B H.264 NAL units, for example to record video to storage or to feed the :doc:`rtsp` server. It is available on ESP32-P4 builds.
+
+Encode One Frame
+----------------
 
 .. code-block:: python
 
@@ -11,9 +14,54 @@ The ``h264`` module encodes images into H.264 NAL units, for example to record v
 
    enc = h264.H264Encoder(320, 240, fps=15)
    nal = enc.encode(sensor.snapshot())
+   print("bytes:", len(nal), "keyframe:", enc.keyframe())
+   enc.close()
+
+The encoder dimensions must match every input image. ``encode()`` returns one encoded frame as ``bytes`` and ``keyframe()`` reports whether the most recently encoded frame is an IDR/I frame.
+
+Record a Raw H.264 Stream
+-------------------------
+
+.. code-block:: python
+
+   import sensor, h264
+
+   FRAME_COUNT = 300
+   OUT_PATH = "/sdcard/out.h264"
+
+   sensor.reset()
+   sensor.set_pixformat(sensor.RGB565)
+   sensor.set_framesize(sensor.QVGA)
+   sensor.skip_frames(time=1000)
+
+   first = sensor.snapshot()
+   enc = h264.H264Encoder(
+       first.width(),
+       first.height(),
+       fps=15,
+       bitrate=1_500_000,
+       gop=15,
+   )
+
+   try:
+       with open(OUT_PATH, "wb") as output:
+           output.write(enc.encode(first))
+           for _ in range(FRAME_COUNT - 1):
+               output.write(enc.encode(sensor.snapshot()))
+   finally:
+       enc.close()
+
+This writes an elementary Annex-B stream without an MP4 container. It can be played with ``ffplay out.h264`` or remuxed on a host. ``bitrate`` is the target number of bits per second, ``gop`` is the keyframe interval in frames, and the QP bounds control the permitted quality/size range.
+
+Resource and Throughput Considerations
+--------------------------------------
+
+Create one encoder for a fixed resolution and reuse it throughout the stream. Close it when finished. If capture or storage cannot sustain the configured frame rate and bitrate, reduce the resolution, frame rate, or bitrate instead of repeatedly recreating the encoder.
 
 .. seealso::
 
    :doc:`../concepts/codec-streaming` explains the encode-then-stream pipeline and how H.264 keyframes interact with RTSP delivery.
+
+   Runnable example: ``example/01-Camera/01-H264/record_h264.py``.
 
 .. include:: _generated/h264.rst
