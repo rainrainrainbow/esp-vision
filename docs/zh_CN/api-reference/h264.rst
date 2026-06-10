@@ -3,8 +3,7 @@ h264 -- H.264 编码
 
 :link_to_translation:`en:[English]`
 
-``h264`` 模块把图像编码成 H.264 NAL 单元，可用于把视频录制到存储，或送入
-:doc:`rtsp` 服务器。
+``h264`` 模块把图像编码成 H.264 NAL 单元，可用于把视频录制到存储，或送入 :doc:`rtsp` 服务器。
 
 .. code-block:: python
 
@@ -15,7 +14,6 @@ h264 -- H.264 编码
 
 .. seealso::
 
-   :doc:`../concepts/codec-streaming` 说明了“编码—推流”流程，以及 H.264 关键帧
-   与 RTSP 传输之间的关系。
+   :doc:`../concepts/codec-streaming` 说明了“编码—推流”流程，以及 H.264 关键帧 与 RTSP 传输之间的关系。
 
 .. include:: _generated/h264.rst

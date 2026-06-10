@@ -24,6 +24,7 @@ docs_impact_check:
     - python -m pip install --upgrade -r docs/requirements.txt
     - python -m pip show esp-docs
     - build-docs --help | grep -q esp32s31
+    - python tools/ci/check_docs_format.py
     - python tools/ci/check_docs_lang_sync.py
   script:
     - cd docs

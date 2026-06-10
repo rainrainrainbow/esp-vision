@@ -18,16 +18,17 @@ from esp_docs.conf_docs import *  # noqa: F403, F401
 # instead of shadowing it (the wildcard import above brings it into scope).
 _esp_docs_setup = globals().get('setup')
 
-# Make the API generator (docs/gen_api.py) importable.
+# Make the documentation generators importable.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_api  # noqa: E402
+import gen_board_support  # noqa: E402
 from targets import TARGETS, unavailable_module_pages  # noqa: E402
 
 
 def setup(app):
-    # Regenerate docs/<lang>/api-reference/_generated/*.rst from stubs/*.pyi on
-    # every build so the API reference signatures stay in sync with the code.
+    # Regenerate derived API and board support fragments on every build.
     gen_api.generate(app)
+    gen_board_support.generate(app)
     if _esp_docs_setup is not None:
         return _esp_docs_setup(app)
     return None

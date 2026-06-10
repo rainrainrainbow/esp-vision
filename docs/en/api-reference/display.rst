@@ -3,9 +3,7 @@ display -- LCD Output
 
 :link_to_translation:`zh_CN:[中文]`
 
-The ``display`` module drives the board LCD. Construct one
-:py:class:`ESP32Display` (aliased as ``display.Display``) and push frames to it
-with :py:meth:`ESP32Display.write`.
+The ``display`` module drives the board LCD. Construct one :py:class:`ESP32Display` (aliased as ``display.Display``) and push frames to it with :py:meth:`ESP32Display.write`.
 
 .. code-block:: python
 

@@ -3,10 +3,7 @@ Add a New Python Module
 
 :link_to_translation:`zh_CN:[中文]`
 
-ESP-VISION exposes Python modules through the MicroPython ``USER_C_MODULES``
-mechanism. The binding layer lives in ``modules/`` and only does object
-conversion plus light API adaptation; heavy logic belongs in pure C or in
-``platform/``. This guide adds a module named ``foo``.
+ESP-VISION exposes Python modules through the MicroPython ``USER_C_MODULES`` mechanism. The binding layer lives in ``modules/`` and only does object conversion plus light API adaptation; heavy logic belongs in pure C or in ``platform/``. This guide adds a module named ``foo``.
 
 Overview
 --------
@@ -22,10 +19,7 @@ Overview
 1. Create the Binding Source
 ----------------------------
 
-Add ``modules/py_foo.c``. Define the module's functions, build a globals dict,
-and self-register the module. Existing modules are the best templates; for a
-simple function-only module follow ``modules/py_sensor.c``, and for a
-type/class module follow ``modules/py_display.c``.
+Add ``modules/py_foo.c``. Define the module's functions, build a globals dict, and self-register the module. Existing modules are the best templates; for a simple function-only module follow ``modules/py_sensor.c``, and for a type/class module follow ``modules/py_display.c``.
 
 .. code-block:: c
 
@@ -54,16 +48,12 @@ type/class module follow ``modules/py_display.c``.
 
    MP_REGISTER_MODULE(MP_QSTR_foo, mp_module_foo);
 
-C++ modules use ``.cpp`` (see ``modules/py_espdl.cpp``); the build already sets
-``-std=gnu++2b`` for C++ sources.
+C++ modules use ``.cpp`` (see ``modules/py_espdl.cpp``); the build already sets ``-std=gnu++2b`` for C++ sources.
 
 2. Register qstrs If Needed
 ---------------------------
 
-Most qstrs (``MP_QSTR_foo``, ``MP_QSTR_hello``) are collected automatically from
-the source. Only add entries to ``modules/qstrdefs_esp_vision.h`` for names that
-are board-feature-gated or otherwise not seen by the qstr scanner, using the
-``Q(name)`` form.
+Most qstrs (``MP_QSTR_foo``, ``MP_QSTR_hello``) are collected automatically from the source. Only add entries to ``modules/qstrdefs_esp_vision.h`` for names that are board-feature-gated or otherwise not seen by the qstr scanner, using the ``Q(name)`` form.
 
 3. Wire the Source into the Build
 ---------------------------------
@@ -79,31 +69,24 @@ Add the source to ``ESP_VISION_MODULE_SOURCES`` in ``micropython.cmake``:
        ...
    )
 
-If the module is only valid on some targets, add it inside the matching
-``IDF_TARGET`` block (the H.264 and RTSP modules are gated to ``esp32p4`` this
-way). If it needs an extra component, link it via ``target_link_libraries`` like
-``idf::zxing``.
+If the module is only valid on some targets, add it inside the matching ``IDF_TARGET`` block (the H.264 and RTSP modules are gated to ``esp32p4`` this way). If it needs an extra component, link it via ``target_link_libraries`` like ``idf::zxing``.
 
 4. Add a Type Stub
 ------------------
 
-Create ``stubs/foo.pyi`` describing the public surface so IDEs can complete it.
-Keep the Apache SPDX header and match the style of the existing stubs.
+Create ``stubs/foo.pyi`` describing the public surface so IDEs can complete it. Keep the Apache SPDX header and match the style of the existing stubs.
 
 5. Document the Module
 ----------------------
 
-Add ``docs/en/api-reference/foo.rst`` and ``docs/zh_CN/api-reference/foo.rst``
-using the Python-domain directives (``.. py:module::``, ``.. py:function::``,
-``.. py:class::``), and add ``foo`` to the ``toctree`` in
-``api-reference/index.rst`` for both languages.
+Add ``docs/en/api-reference/foo.rst`` and ``docs/zh_CN/api-reference/foo.rst`` using the Python-domain directives (``.. py:module::``, ``.. py:function::``, ``.. py:class::``), and add ``foo`` to the ``toctree`` in ``api-reference/index.rst`` for both languages.
 
 6. Build and Verify
 -------------------
 
 .. code-block:: bash
 
-   make BOARD=ESP32_P4X_EYE build
+   idf.py --board ESP32_P4X_EYE build
 
 Then check from the REPL:
 

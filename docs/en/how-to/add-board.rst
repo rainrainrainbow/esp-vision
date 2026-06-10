@@ -3,9 +3,7 @@ Add a New Board
 
 :link_to_translation:`zh_CN:[中文]`
 
-A board package is split across two locations: the MicroPython ESP32 port overlay
-(``overlay/micropython/ports/esp32/boards/<BOARD>/``) and the ESP-VISION repo
-(``boards/<BOARD>/``). Start from the ``TEMPLATE`` board.
+A board package is split across two locations: the MicroPython ESP32 port overlay (``overlay/micropython/ports/esp32/boards/<BOARD>/``) and the ESP-VISION repo (``boards/<BOARD>/``). Start from the ``TEMPLATE`` board.
 
 MicroPython Port Side
 ---------------------
@@ -53,19 +51,15 @@ In ``boards/<BOARD>/``:
    * - ``sdcard.c``
      - SD card power and card-detect implementation.
 
-``micropython.cmake`` automatically picks up ``camera.c``, ``display.c``, and
-``sdcard.c`` from the board directory when present, and includes the board's
-optional ``board.cmake``.
+``micropython.cmake`` automatically picks up ``camera.c``, ``display.c``, and ``sdcard.c`` from the board directory when present, and includes the board's optional ``board.cmake``.
 
 Build and Flash
 ---------------
 
 .. code-block:: bash
 
-   make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
    idf.py --board <NEW_BOARD> -p /dev/ttyACM0 build flash monitor
 
 .. note::
 
-   This page is a starting outline. Detailed bring-up steps (sensor selection,
-   PPA configuration, display timing) will be expanded.
+   This page is a starting outline. Detailed bring-up steps (sensor selection, PPA configuration, display timing) will be expanded.

@@ -3,9 +3,7 @@
 
 :link_to_translation:`en:[English]`
 
-一块开发板的定义分布在两处：MicroPython ESP32 移植 overlay
-（``overlay/micropython/ports/esp32/boards/<BOARD>/``）与 ESP-VISION 仓库
-（``boards/<BOARD>/``）。建议从 ``TEMPLATE`` 板开始。
+一块开发板的定义分布在两处：MicroPython ESP32 移植 overlay （``overlay/micropython/ports/esp32/boards/<BOARD>/``）与 ESP-VISION 仓库 （``boards/<BOARD>/``）。建议从 ``TEMPLATE`` 板开始。
 
 MicroPython 移植侧
 ------------------
@@ -53,15 +51,13 @@ ESP-VISION 侧
    * - ``sdcard.c``
      - SD 卡供电与插卡检测实现。
 
-当板目录下存在 ``camera.c``、``display.c``、``sdcard.c`` 时，``micropython.cmake`` 会
-自动选用它们，并包含板卡可选的 ``board.cmake``。
+当板目录下存在 ``camera.c``、``display.c``、``sdcard.c`` 时，``micropython.cmake`` 会 自动选用它们，并包含板卡可选的 ``board.cmake``。
 
 构建与烧录
 ----------
 
 .. code-block:: bash
 
-   make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
    idf.py --board <NEW_BOARD> -p /dev/ttyACM0 build flash monitor
 
 .. note::

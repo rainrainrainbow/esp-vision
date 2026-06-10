@@ -3,9 +3,7 @@ ESP-VISION 编程指南
 
 :link_to_translation:`en:[English]`
 
-ESP-VISION 是面向乐鑫 ESP32-P4、ESP32-S3 与 ESP32-S31 开发板的 MicroPython 视觉运行时。
-它整合了 MicroPython ESP32 移植、OpenMV ``imlib`` 图像处理算法以及 ESP-DL 模型推理，
-让你可以使用 Python 构建嵌入式视觉应用。
+ESP-VISION 是乐鑫面向端侧智能视觉打造的低代码开发框架，深度整合了摄像头采集、图像处理、视频编解码、网络传输、模型部署和 AI 推理等核心能力，并提供统一标准化的 Python 接口，赋能开发者快速构建集视觉采集、智能识别、画面显示与流媒体传输于一体的边缘应用。
 
 本指南的章节结构如下。
 

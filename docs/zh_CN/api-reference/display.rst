@@ -3,8 +3,7 @@ display -- LCD 显示
 
 :link_to_translation:`en:[English]`
 
-``display`` 模块驱动开发板上的 LCD。创建一个 :py:class:`ESP32Display`\ （别名为
-``display.Display``\ ），并用 :py:meth:`ESP32Display.write` 把图像帧送到屏幕。
+``display`` 模块驱动开发板上的 LCD。创建一个 :py:class:`ESP32Display`\ （别名为 ``display.Display``\ ），并用 :py:meth:`ESP32Display.write` 把图像帧送到屏幕。
 
 .. code-block:: python
 

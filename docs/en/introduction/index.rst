@@ -6,33 +6,20 @@ Introduction
 What Is ESP-VISION
 ------------------
 
-ESP-VISION is a MicroPython vision runtime for the ESP32 platform. It builds a
-custom firmware from the upstream MicroPython ESP32 port plus an ESP-VISION
-overlay, a set of C modules exposed to Python, a self-written platform layer,
-and OpenMV's ``imlib`` as a vision component.
+ESP-VISION is Espressif's low-code framework for intelligent edge vision. It deeply integrates essential capabilities including camera capture, image processing, video encoding and decoding, network transmission, model deployment, and AI inference, while providing unified and standardized Python APIs that enable developers to rapidly build edge applications combining visual capture, intelligent recognition, display, and media streaming.
 
 Key Features
 ------------
 
-- ``sensor``, ``image``, and ``display`` Python APIs for camera capture, image
-  processing, preview, and LCD output.
-- Common board runtime services for camera, display, storage, USB preview,
-  JPEG, and board-specific peripherals.
-- Vision algorithms based in part on OpenMV ``imlib``, covering drawing,
-  filtering, color tracking, feature detection, QR code, barcode, and AprilTag
-  workflows.
-- ESP-DL model inference helpers for object detection, pose detection, and
-  image classification.
-- Development through a VSCode-based host tool or Web IDE, with firmware builds
-  available through ``make`` or ``idf.py``.
+- Unified camera, image, display, video encoding, preview, and streaming APIs across supported chips and boards.
+- Image processing capabilities covering drawing, filtering, color tracking, feature detection, QR codes, barcodes, and AprilTags.
+- ESP-DL-powered object detection, pose estimation, and image classification, with a streamlined path for deploying models to edge devices.
+- Efficient C/C++ foundation components work closely with on-chip multimedia peripherals and hardware acceleration modules to deliver high-performance, real-time application execution.
+- Development through a VSCode-based host tool or Web IDE, with firmware builds managed through ``idf.py``.
 
 Supported Boards
 ----------------
 
-ESP-VISION targets ESP32-P4, ESP32-S3, and ESP32-S31 boards. The supported board packages
-are ``ESP32_P4X_EYE``, ``ESP32_P4X_FUNCTION_EV_BOARD``, ``ESP32_S3_EYE``, and
-``ESP32_S31_KORVO``. ``TEMPLATE`` is provided for new-board bring-up. See
-:doc:`../target-support/index` for target-specific modules and constraints.
+ESP-VISION targets ESP32-P4, ESP32-S3, and ESP32-S31 boards. The supported board packages are ``ESP32_P4X_EYE``, ``ESP32_P4X_FUNCTION_EV_BOARD``, ``ESP32_S3_EYE``, and ``ESP32_S31_KORVO``. ``TEMPLATE`` is provided for new-board bring-up. See :doc:`../target-support/index` for target-specific modules and constraints.
 
-See :doc:`../get-started/index` to build and flash the firmware, and
-:doc:`../architecture/index` for how the pieces fit together.
+See :doc:`../get-started/index` to build and flash the firmware, and :doc:`../architecture/index` for how the pieces fit together.

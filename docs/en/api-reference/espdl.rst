@@ -3,10 +3,7 @@ espdl -- Model Inference
 
 :link_to_translation:`zh_CN:[中文]`
 
-The ``espdl`` module runs ESP-DL ``.espdl`` models on captured images. It
-provides task-specific wrappers for object detection
-(:py:class:`ESPDet`, :py:class:`YOLO11`), pose estimation
-(:py:class:`YOLO11nPose`), and image classification (:py:class:`ImageNetCls`).
+The ``espdl`` module runs ESP-DL ``.espdl`` models on captured images. It provides task-specific wrappers for object detection (:py:class:`ESPDet`, :py:class:`YOLO11`), pose estimation (:py:class:`YOLO11nPose`), and image classification (:py:class:`ImageNetCls`).
 
 .. code-block:: python
 
@@ -26,8 +23,6 @@ Result tuples
 
 .. seealso::
 
-   :doc:`../concepts/ai-inference` describes the ESP-DL inference pipeline,
-   the ``.espdl`` format, quantization, and pre-/post-processing. To deploy a
-   new model, see :doc:`../how-to/add-model`.
+   :doc:`../concepts/ai-inference` describes the ESP-DL inference pipeline, the ``.espdl`` format, quantization, and pre-/post-processing. To deploy a new model, see :doc:`../how-to/add-model`.
 
 .. include:: _generated/espdl.rst

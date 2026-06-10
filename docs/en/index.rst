@@ -3,10 +3,7 @@ ESP-VISION Programming Guide
 
 :link_to_translation:`zh_CN:[中文]`
 
-ESP-VISION is a MicroPython vision runtime for Espressif ESP32-P4, ESP32-S3,
-and ESP32-S31 boards. It combines the MicroPython ESP32 port, the OpenMV ``imlib`` image
-processing algorithms, and ESP-DL model inference so you can build embedded
-vision applications in Python.
+ESP-VISION is Espressif's low-code framework for intelligent edge vision. It deeply integrates essential capabilities including camera capture, image processing, video encoding and decoding, network transmission, model deployment, and AI inference, while providing unified and standardized Python APIs that enable developers to rapidly build edge applications combining visual capture, intelligent recognition, display, and media streaming.
 
 This guide is organized as follows.
 

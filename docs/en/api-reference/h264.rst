@@ -3,8 +3,7 @@ h264 -- H.264 Encoding
 
 :link_to_translation:`zh_CN:[中文]`
 
-The ``h264`` module encodes images into H.264 NAL units, for example to record
-video to storage or to feed the :doc:`rtsp` server.
+The ``h264`` module encodes images into H.264 NAL units, for example to record video to storage or to feed the :doc:`rtsp` server.
 
 .. code-block:: python
 
@@ -15,7 +14,6 @@ video to storage or to feed the :doc:`rtsp` server.
 
 .. seealso::
 
-   :doc:`../concepts/codec-streaming` explains the encode-then-stream pipeline
-   and how H.264 keyframes interact with RTSP delivery.
+   :doc:`../concepts/codec-streaming` explains the encode-then-stream pipeline and how H.264 keyframes interact with RTSP delivery.
 
 .. include:: _generated/h264.rst

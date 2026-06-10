@@ -9,5 +9,6 @@ Task-oriented guides for extending ESP-VISION.
    :maxdepth: 1
 
    add-python-module
+   customize-firmware
    add-model
    add-board

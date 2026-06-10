@@ -3,8 +3,7 @@ rtsp -- RTSP 推流
 
 :link_to_translation:`en:[English]`
 
-``rtsp`` 模块通过 RTSP 协议发送 H.264 NAL 单元，使客户端（如 VLC 或 ffplay）能在
-网络上观看摄像头画面。需与 :doc:`h264` 配合使用。
+``rtsp`` 模块通过 RTSP 协议发送 H.264 NAL 单元，使客户端（如 VLC 或 ffplay）能在 网络上观看摄像头画面。需与 :doc:`h264` 配合使用。
 
 .. code-block:: python
 
