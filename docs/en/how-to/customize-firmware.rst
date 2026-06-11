@@ -8,7 +8,7 @@ ESP-VISION separates application-facing modules, image algorithms, standard Micr
 Choose the Customization Scope
 ------------------------------
 
-Before editing configuration, decide whether the change belongs to every ESP-VISION firmware or only one board. Changes to the root ``micropython.cmake`` affect every board whose chip matches the edited condition. Changes under ``boards/<BOARD>/`` or ``overlay/micropython/ports/esp32/boards/<BOARD>/`` are board-specific. For a product variant, create a dedicated board package as described in :doc:`add-board` instead of changing a shared development-board profile.
+Before editing configuration, decide whether the change belongs to every ESP-VISION firmware or only one board. Changes to the root ``micropython.cmake`` affect every board whose chip matches the edited condition. Changes under ``boards/<BOARD>/`` (including the MicroPython-port files in ``boards/<BOARD>/port/``) are board-specific. For a product variant, create a dedicated board package as described in :doc:`add-board` instead of changing a shared development-board profile.
 
 Customize ESP-VISION Python Modules
 -----------------------------------
@@ -44,7 +44,7 @@ Some Python methods remain present in the binding even when their backend is dis
 Customize Standard MicroPython Features
 ---------------------------------------
 
-Use ``overlay/micropython/ports/esp32/boards/<BOARD>/mpconfigboard.h`` to override standard MicroPython feature macros for one board, such as networking, Bluetooth, ESP-NOW, ADC, SD card, USB, or other ``MICROPY_PY_*`` and ``MICROPY_HW_*`` options. Use ``mpconfigboard.cmake`` for CMake-level options and the board's sdkconfig chain.
+Use ``boards/<BOARD>/port/mpconfigboard.h`` to override standard MicroPython feature macros for one board, such as networking, Bluetooth, ESP-NOW, ADC, SD card, USB, or other ``MICROPY_PY_*`` and ``MICROPY_HW_*`` options. Use ``mpconfigboard.cmake`` for CMake-level options and the board's sdkconfig chain.
 
 .. code-block:: c
 

@@ -3,12 +3,12 @@ Add a New Board
 
 :link_to_translation:`zh_CN:[中文]`
 
-A board package is split across two locations: the MicroPython ESP32 port overlay (``overlay/micropython/ports/esp32/boards/<BOARD>/``) and the ESP-VISION repo (``boards/<BOARD>/``). Start from the ``TEMPLATE`` board.
+A board package lives in a single tree, ``boards/<BOARD>/``: the ESP-VISION files at the top level and the MicroPython ESP32 port files under the ``boards/<BOARD>/port/`` subdirectory. The build projects ``boards/<BOARD>/port/`` onto ``ports/esp32/boards/<BOARD>/`` of the generated MicroPython copy. Start from the ``TEMPLATE`` board.
 
 MicroPython Port Side
 ---------------------
 
-In ``overlay/micropython/ports/esp32/boards/<BOARD>/``:
+In ``boards/<BOARD>/port/``:
 
 .. list-table::
    :header-rows: 1

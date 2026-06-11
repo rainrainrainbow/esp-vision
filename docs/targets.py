@@ -17,8 +17,10 @@ DOCS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DOCS_DIR.parent
 MICROPYTHON_CMAKE = REPO_ROOT / 'micropython.cmake'
 MP_CONFIG_PORT = REPO_ROOT / 'overlay/micropython/ports/esp32/mpconfigport.h'
-MP_BOARD_ROOT = REPO_ROOT / 'overlay/micropython/ports/esp32/boards'
 BOARD_ROOT = REPO_ROOT / 'boards'
+# Each board's MicroPython-port files live under boards/<BOARD>/port/ and are
+# projected onto ports/esp32/boards/<BOARD>/ at build time.
+MP_BOARD_ROOT = BOARD_ROOT
 
 TARGETS = ('esp32p4', 'esp32s3', 'esp32s31')
 DOCUMENTED_MODULES = ('sensor', 'image', 'display', 'espdl', 'imageio', 'h264', 'rtsp')
@@ -79,13 +81,14 @@ def _read_module_targets():
 
 def _read_board_targets():
     boards = {target: [] for target in TARGETS}
-    for path in sorted(MP_BOARD_ROOT.glob('*/mpconfigboard.cmake')):
-        if path.parent.name == 'TEMPLATE':
+    for path in sorted(MP_BOARD_ROOT.glob('*/port/mpconfigboard.cmake')):
+        board_name = path.parent.parent.name
+        if board_name == 'TEMPLATE':
             continue
         text = path.read_text(encoding='utf-8')
         match = re.search(r'set\(IDF_TARGET\s+([A-Za-z0-9_]+)\)', text)
         if match and match.group(1) in boards:
-            boards[match.group(1)].append(path.parent.name)
+            boards[match.group(1)].append(board_name)
     return {target: tuple(names) for target, names in boards.items()}
 
 

@@ -15,7 +15,7 @@ Chip Versus Board Capabilities
 
 The selected chip controls chip-level source selection. For example, ``h264`` and ``rtsp`` are added by ``micropython.cmake`` only when ``IDF_TARGET`` is ``esp32p4``. A board profile can further enable or disable features such as the ZXing-C++ barcode backend through ``boards/<BOARD>/board.cmake``.
 
-The API navigation and chip-specific symbol conditions are generated from these build files. This makes ``micropython.cmake``, ``overlay/micropython/ports/esp32/boards/*/mpconfigboard.cmake``, and board ``board.cmake`` files authoritative for ESP-VISION API availability.
+The API navigation and chip-specific symbol conditions are generated from these build files. This makes ``micropython.cmake``, ``boards/*/port/mpconfigboard.cmake``, and board ``board.cmake`` files authoritative for ESP-VISION API availability.
 
 Standard MicroPython Features
 -----------------------------

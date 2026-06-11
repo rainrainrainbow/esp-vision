@@ -3,12 +3,12 @@
 
 :link_to_translation:`en:[English]`
 
-一块开发板的定义分布在两处：MicroPython ESP32 移植 overlay （``overlay/micropython/ports/esp32/boards/<BOARD>/``）与 ESP-VISION 仓库 （``boards/<BOARD>/``）。建议从 ``TEMPLATE`` 板开始。
+一块开发板的板级包集中在单棵目录树 ``boards/<BOARD>/`` 中：顶层为 ESP-VISION 文件，``boards/<BOARD>/port/`` 子目录为 MicroPython ESP32 移植文件。构建时会将 ``boards/<BOARD>/port/`` 投射到生成的 MicroPython 副本的 ``ports/esp32/boards/<BOARD>/``。建议从 ``TEMPLATE`` 板开始。
 
 MicroPython 移植侧
 ------------------
 
-位于 ``overlay/micropython/ports/esp32/boards/<BOARD>/``：
+位于 ``boards/<BOARD>/port/``：
 
 .. list-table::
    :header-rows: 1

@@ -37,7 +37,7 @@ Clone the repository with submodules, then use the board-aware ``idf.py`` extens
 
       idf.py --board ESP32_S31_KORVO -p /dev/ttyACM0 build flash monitor
 
-The command first runs ``prepare-micropython``: it verifies that ``lib/micropython`` is checked out at the pinned MicroPython v1.28.0 commit, exports a clean MicroPython build copy under ``build/micropython/``, then applies ``overlay/micropython/`` to that copy. ``lib/micropython`` is never dirtied.
+The command first runs ``prepare-micropython``: it verifies that ``lib/micropython`` is checked out at the pinned MicroPython v1.28.0 commit, exports a clean MicroPython build copy under ``build/micropython/``, applies ``overlay/micropython/`` to that copy, then projects each ``boards/<BOARD>/port/`` onto the copy's ``ports/esp32/boards/<BOARD>/``. ``lib/micropython`` is never dirtied.
 
 Common idf.py Commands
 ----------------------

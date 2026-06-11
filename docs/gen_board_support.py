@@ -93,10 +93,10 @@ def _defined_macros(path):
 
 def _board_info(board, target):
     metadata = json.loads(
-        (MP_BOARD_ROOT / board / 'board.json').read_text(encoding='utf-8')
+        (MP_BOARD_ROOT / board / 'port' / 'board.json').read_text(encoding='utf-8')
     )
     port_macros = _defined_macros(MP_CONFIG_PORT)
-    port_macros.update(_defined_macros(MP_BOARD_ROOT / board / 'mpconfigboard.h'))
+    port_macros.update(_defined_macros(MP_BOARD_ROOT / board / 'port' / 'mpconfigboard.h'))
     imlib_macros = _defined_macros(BOARD_ROOT / board / 'imlib_config.h')
     modules = TARGET_CAPABILITIES[target]['modules']
     if board in TARGET_CAPABILITIES[target]['barcode_boards']:

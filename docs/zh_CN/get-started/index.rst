@@ -37,7 +37,7 @@
 
       idf.py --board ESP32_S31_KORVO -p /dev/ttyACM0 build flash monitor
 
-该命令会先运行 ``prepare-micropython``：校验 ``lib/micropython`` 已检出到固定的 MicroPython v1.28.0 提交，在 ``build/micropython/`` 下导出干净的 MicroPython 构建副本，再将 ``overlay/micropython/`` 应用到该副本，``lib/micropython`` 始终保持干净。
+该命令会先运行 ``prepare-micropython``：校验 ``lib/micropython`` 已检出到固定的 MicroPython v1.28.0 提交，在 ``build/micropython/`` 下导出干净的 MicroPython 构建副本，再将 ``overlay/micropython/`` 应用到该副本，然后将每个 ``boards/<BOARD>/port/`` 投射到该副本的 ``ports/esp32/boards/<BOARD>/``。``lib/micropython`` 始终保持干净。
 
 常用 idf.py 命令
 ----------------

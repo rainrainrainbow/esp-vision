@@ -58,6 +58,7 @@ python_stubs:
 
 .firmware_base:
   stage: build
+  extends: .rules:build:firmware
   tags:
     - build
   variables:

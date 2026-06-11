@@ -92,10 +92,10 @@ Source Tree
 Board Composition
 -----------------
 
-A board's definition is split across two trees:
+A board is defined in a single tree, ``boards/<BOARD>/``:
 
-- MicroPython port side: ``overlay/micropython/ports/esp32/boards/<BOARD>/`` (``IDF_TARGET`` value, sdkconfig, partitions, USB strings).
-- ESP-VISION side: ``boards/<BOARD>/`` (``boardconfig.h``, ``imlib_config.h``, ``manifest.py``, and optional ``camera.c`` / ``display.c`` / ``sdcard.c``).
+- ESP-VISION side (top level): ``boardconfig.h``, ``imlib_config.h``, ``manifest.py``, and optional ``camera.c`` / ``display.c`` / ``sdcard.c``.
+- MicroPython port side (``boards/<BOARD>/port/``): ``IDF_TARGET`` value, sdkconfig, partitions, and USB strings. The build projects this subdirectory onto ``ports/esp32/boards/<BOARD>/`` of the generated MicroPython copy.
 
 See :doc:`../how-to/add-board` for the step-by-step procedure.
 
