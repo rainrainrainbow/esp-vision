@@ -4,106 +4,65 @@
 
 ## 概述
 
-ESP-VISION 是面向 ESP32 平台的 MicroPython 视觉运行时。它将 MicroPython ESP32 port、图像处理算法以及 ESP-DL 模型推理能力组合在一起，使开发者可以用 Python 脚本构建嵌入式视觉应用。
+ESP-VISION 是乐鑫面向端侧智能视觉打造的低代码开发框架，深度整合了摄像头采集、图像处理、视频编解码、网络传输、模型部署和 AI 推理等核心能力，并提供统一标准化的 Python 接口，赋能开发者快速构建集视觉采集、智能识别、画面显示与流媒体传输于一体的边缘应用。
 
-主要特性包括：
+- 为受支持的芯片和开发板统一提供标准化的 Python 接口，覆盖摄像头采集、图像输入、显示、视频编码、预览与推流，支持低代码应用开发。
+- 提供绘图、滤波、颜色追踪、特征检测、二维码、条码和 AprilTag 等图像处理能力。
+- 基于 ESP-DL 提供目标检测、姿态估计和图像分类等 AI 推理能力，并简化端侧模型部署流程。
+- 底层高效的 C/C++ 基础组件深度协同芯片的多媒体外设与硬件加速模块，切实保障应用的高效与实时运行性能。
+- 可通过 VSCode 上位机工具或 [Web IDE](https://esp-vision-ide.espressif.tools/) 开发，并使用 `idf.py` 管理固件构建。
 
-- 提供 `sensor`、`image` 和 `display` Python API，用于 camera 采集、图像处理、预览和 LCD 输出。
-- 提供通用板级运行时服务，覆盖 camera、display、storage、USB preview、JPEG 和板级外设。
-- 图像算法部分基于 OpenMV `imlib`，覆盖绘图、滤波、颜色追踪、特征检测、二维码、条码和 AprilTag 等视觉流程。
-- 提供 ESP-DL 模型推理封装，支持目标检测、姿态检测和图像分类。
-- 可通过 VSCode 上位机工具或 [Web IDE](https://esp-vision-ide.espressif.tools/) 开发，并支持使用 `make` 或 `idf.py` 构建固件。
+**文档中心**：
+
+- [中文](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/)
+- [English](https://docs.espressif.com/projects/esp-vision/en/latest/)
+
+## 方案架构
+
+![ESP-VISION 分层架构](docs/_static/esp-vision-architecture.svg)
+
+各层的职责说明见 [方案架构与许可证](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/architecture/index.html)。
 
 ## 快速开始
 
-环境要求：ESP-IDF release/v5.5、release/v6.0 或 master（已 source `export.sh`，`idf.py` 可用），以及受支持的 ESP32-P4、ESP32-S3 或 ESP32-S31 目标板。
-
-使用 `make` 构建、烧录并打开串口监视器：
+环境要求：ESP-IDF release/v5.5、release/v6.0 或 master（已 source `export.sh`， `idf.py` 可用），以及一块 [受支持的开发板](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/target-support/index.html)。
 
 ```bash
-git clone --recursive <本仓库> esp-vision
+git clone --recursive https://github.com/espressif/esp-vision.git esp-vision
 cd esp-vision
-make BOARD=ESP32_P4X_EYE ESPPORT=/dev/ttyACM0 build flash monitor
-```
-
-也可以在仓库根目录使用支持板级选择的 `idf.py` 扩展：
-
-```bash
 idf.py --board ESP32_P4X_EYE -p /dev/ttyACM0 build flash monitor
 ```
 
-顶层 Makefile 和 `idf.py` 扩展都会执行 `prepare-micropython`：检查 `lib/micropython` 是否处于 MicroPython v1.28.0 commit `e0e9fbb17ed6fd06bb76e266ae554784c9c80804`，随后在 `build/micropython/` 下导出干净的 MicroPython 构建副本，并将 `overlay/micropython/` 应用到该副本。
+- `--board ESP32_P4X_EYE`：选择开发板配置；需要使用其他开发板时，请将 `ESP32_P4X_EYE` 替换为受支持的开发板。
+- `-p /dev/ttyACM0`：选择设备端口；请将 `/dev/ttyACM0` 替换为开发主机识别到的端口。
+- `build`：配置项目并编译固件。
+- `flash`：将生成的固件镜像烧录到所连接的设备。
+- `monitor`：烧录后打开串口终端；按 `Ctrl-]` 退出。
 
-## 项目架构
+## ESP-IDF 兼容性
 
-本仓库围绕 MicroPython 固件构建、板级硬件后端、共享平台服务和面向 Python 的视觉模块组织。
-
-### 源码目录
-
-| 路径 | 职责 |
-| --- | --- |
-| `Makefile` | 顶层 `make` 构建入口，包装 `idf.py` 并传入 MicroPython ESP32 port 所需参数。 |
-| `idf_ext.py` | 支持板级选择的 `idf.py` 扩展，用于从 ESP-VISION 仓库根目录构建。 |
-| `micropython.cmake` | ESP-VISION 的 MicroPython 集成入口，注册用户模块、平台源码、板级源码、头文件路径和 `ulab`。 |
-| `lib` | 固定版本的第三方子模块，包括 MicroPython、`ulab` 和 ZXing-C++。 |
-| `overlay/micropython` | ESP-VISION 的 MicroPython 增量目录，路径结构与 MicroPython 仓库保持一致。 |
-| `boards` | 板级包目录，包含每板配置、冻结脚本清单和板级外设实现。 |
-| `platform` | 供 Python 模块复用的运行时服务层，包括 camera、preview、storage、display、USB、JPEG 和 debug 支持。 |
-| `modules` | 暴露给脚本的 MicroPython C/C++ 绑定层，包括 `sensor`、`image`、`display`、`imageio` 和 `espdl`。 |
-| `components` | ESP-IDF 组件，包括 OpenMV `imlib` 和 ZXing 条码后端。 |
-| `models` | 可选 `.espdl` 模型资源，运行时从 `/flash` 或 `/sdcard` 等板端文件系统加载。 |
-| `example` | MicroPython 示例脚本，覆盖 camera、preview、storage、display、image processing 和 ESP-DL 使用流程。 |
-
-### MicroPython Overlay
-
-ESP-VISION 以 MicroPython v1.28.0 作为固定上游基线。针对 MicroPython ESP32 port 的项目增量统一维护在 `overlay/micropython/`。
-
-`prepare-micropython` 会将 overlay 应用到 `build/micropython/idf<ESP_IDF_VERSION>/micropython/` 下的生成副本。`lib/micropython` 子模块只作为干净的上游参考，不应承载 overlay 变更。
-
-### 适配新板
-
-板级包分布在两处：MicroPython ESP32 port overlay (`overlay/micropython/ports/esp32/boards/<BOARD>/`) 和 ESP-VISION 主仓库 (`boards/<BOARD>/`)。
-
-**1. MicroPython port 侧** — `overlay/micropython/ports/esp32/boards/<BOARD>/`：
-
-| 文件 | 作用 |
-| --- | --- |
-| `mpconfigboard.cmake` | IDF target 和 `SDKCONFIG_DEFAULTS` 串联 |
-| `mpconfigboard.h` | MicroPython feature flag |
-| `sdkconfig.board` | 板级 ESP-IDF Kconfig 覆盖 |
-| `partitions-*.csv` | 分区表。 |
-| `board.json`、`board.md` | 上游 board manifest 元数据 |
-
-**2. ESP-VISION 侧** — `boards/<BOARD>/`：
-
-| 文件 | 作用 |
-| --- | --- |
-| `boardconfig.h` | 引脚分配和板级运行时常量。 |
-| `imlib_config.h` | OpenMV `imlib` 功能开关。 |
-| `manifest.py` | 冻结的 Python 模块。 |
-| `camera.c` | 板级 camera 后端实现。 |
-| `display.c` | LCD 面板和背光实现。 |
-| `sdcard.c` | SD 卡电源和卡检测实现。 |
-
-**3. 构建和烧录**：
-
-```bash
-make BOARD=<NEW_BOARD> ESPPORT=/dev/ttyACM0 build flash monitor
-idf.py --board <NEW_BOARD> -p /dev/ttyACM0 build flash monitor
-```
-
-## 许可证
-
-ESP-VISION 自有代码以 Apache License 2.0 发布。引入的第三方代码保持各文件 SPDX 或许可证头中声明的原始许可证。
-
-| 仓库 | 本地路径 | 用途 | 许可证 |
+| ESP-IDF 分支 | 支持状态 | 标准 MicroPython 功能 | 说明 |
 | --- | --- | --- | --- |
-| [MicroPython](https://github.com/micropython/micropython) | `lib/micropython` | MicroPython 运行时及 ESP32 移植基础 | MIT |
-| [micropython-ulab](https://github.com/v923z/micropython-ulab) | `lib/ulab` | `ulab` 数值计算模块 | MIT |
-| [OpenMV](https://github.com/openmv/openmv) `imlib` MIT 子集，不含下方单独列出的文件 (v4.8.1) | `components/imlib` | 图像处理与绘制算法 | MIT |
-| OpenMV `imlib` 中的 AprilTag 算法 | `components/imlib/upstream/apriltag.c` | AprilTag 和矩形检测 | BSD-2-Clause |
-| [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp) | `lib/zxing-cpp` | 1D 条码识别后端 | Apache-2.0 |
-| [ESP-DL](https://github.com/espressif/esp-dl) | 来自 ESP Component Registry | 模型推理运行时 | MIT |
-| [esp_new_jpeg](https://github.com/espressif/esp-adf-libs/tree/master/esp_new_jpeg) | 来自 ESP Component Registry | 软件 JPEG codec 库 | MIT |
-| [esp32-camera](https://github.com/espressif/esp32-camera) | 来自 ESP Component Registry | Camera 驱动库 | Apache-2.0 |
-| [ESP-IDF](https://github.com/espressif/esp-idf) | 外部 SDK | ESP32 构建系统、驱动、JPEG/PPA/Camera 等组件 | Apache-2.0 |
+| `release/v5.5` | 支持 | 提供更完整的功能集，包括 SSL/TLS、`cryptolib`、WebSocket、WebREPL、socket events，以及受支持芯片上的 `machine.I2S`、ESP32 PCNT 和 I2C target 模式。 | 需要上述可选 MicroPython 功能时推荐使用。 |
+| `release/v6.0` | 支持 | 提供 `network`、WLAN 和 socket；使用当前 ESP-VISION overlay 时，`release/v5.5` 中列出的可选功能仍保持关闭。 | 当前不支持构建 ESP32-S31。 |
+| `master` | 支持 | 提供 `network`、WLAN 和 socket；使用当前 ESP-VISION overlay 时，`release/v5.5` 中列出的可选功能仍保持关闭。 | ESP32-S31 必须使用此分支。 |
+
+## 效果演示
+
+|||
+| --- | --- |
+| Hand Detect | Cat Detect |
+| ![Hand Detect demo](https://dl.espressif.com/AE/esp-vision/hand-detection.gif) | ![Cat Detect](https://dl.espressif.com/AE/esp-vision/cat-detection.gif) |
+| AprilTag | Canny |
+| ![AprilTag demo](https://dl.espressif.com/AE/esp-vision/apriltag.gif) | ![Canny demo](https://dl.espressif.com/AE/esp-vision/edge-detection.gif) |
+| Color Detect | QR Code |
+| ![Color detection demo](https://dl.espressif.com/AE/esp-vision/color-recognition.gif) | ![QR code demo](https://dl.espressif.com/AE/esp-vision/qr-code-recognition.gif) |
+|||
+
+## 资源
+
+- [芯片与开发板支持](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/target-support/index.html)
+- [Web IDE](https://esp-vision-ide.espressif.tools/)
+- [示例](example/)
+- [客制化固件功能](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/how-to/customize-firmware.html)
+- [方案架构与许可证](https://docs.espressif.com/projects/esp-vision/zh_CN/latest/architecture/index.html)

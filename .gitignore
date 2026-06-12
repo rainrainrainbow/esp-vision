@@ -2,6 +2,12 @@
 /build/
 /dist/
 
+# Documentation build output
+/docs/_build/
+
+# Auto-generated API reference fragments (produced from stubs/*.pyi at build time)
+docs/**/_generated/
+
 # ESP-IDF generated
 sdkconfig
 sdkconfig.old
@@ -33,6 +39,7 @@ vscode-extension/
 
 # Editors / IDE
 .vscode/
+.specs/
 .codex/
 .claude/
 .idea/
