@@ -9,6 +9,9 @@ docs_impact_check:
     - build
   variables:
     GIT_DEPTH: "0"
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends git
   script:
     - python tools/ci/check_docs_impact.py
   allow_failure: true
