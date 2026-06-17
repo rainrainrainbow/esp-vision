@@ -2,6 +2,10 @@
 /build/
 /dist/
 
+# esp-launchpad packing output (merged bins + config.toml from
+# tools/ci/launchpad/generate_launchpad.py; produced in CI / dry-run)
+/binaries/
+
 # Documentation build output
 /docs/_build/
 
