@@ -65,6 +65,19 @@ python_stubs:
     - python -m py_compile stubs/*.pyi
     - python -m py_compile idf_ext.py
 
+# Catch board-config drift early: build config.toml's [website] region from the
+# board configs without IDF/esptool (--dry-run). This exercises board_model and
+# generate_launchpad on every pipeline, not just at tag release, so a broken
+# board.json / imlib_config.h fails here instead of at publish time.
+launchpad_config_check:
+  stage: check
+  tags:
+    - build
+  image: python:3.11-slim
+  script:
+    - python -m pip install --upgrade rtoml pyyaml
+    - python tools/ci/launchpad/generate_launchpad.py --dry-run "${CI_COMMIT_TAG:-v0.0.0-dev}"
+
 # Dead-link check for markdown files (relative paths + web URLs). Network
 # flakiness shouldn't block the pipeline, so only report 404s and allow failure.
 check_readme_links:
