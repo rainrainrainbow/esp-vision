@@ -1,0 +1,12 @@
+{
+    "name": "YOLO11n-Pose COCO",
+    "architecture": "YOLO11n-Pose",
+    "api": "espdl.YOLO11nPose",
+    "task": "pose",
+    "input": "160x160",
+    "inputFormat": "RGB565",
+    "dataset": "COCO",
+    "labels": ["person"],
+    "sizeBytes": 3128144,
+    "description": "Detects people and estimates 17 COCO body keypoints (human pose) in camera images."
+}

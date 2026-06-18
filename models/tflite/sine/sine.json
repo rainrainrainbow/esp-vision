@@ -1,0 +1,12 @@
+{
+    "name": "Sine",
+    "architecture": "MLP",
+    "api": "tflite.Model",
+    "task": "regression",
+    "input": "1",
+    "inputFormat": "FLOAT32",
+    "dataset": "Synthetic",
+    "labels": [],
+    "sizeBytes": 2488,
+    "description": "TensorFlow Lite Micro \"hello world\" model: approximates sin(x) for x in [0, 2*pi] from a single scalar input."
+}

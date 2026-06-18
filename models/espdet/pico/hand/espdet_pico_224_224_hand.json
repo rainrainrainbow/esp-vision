@@ -1,0 +1,12 @@
+{
+    "name": "ESPDet Pico Hand",
+    "architecture": "ESPDet Pico",
+    "api": "espdl.ESPDet",
+    "task": "detection",
+    "input": "224x224",
+    "inputFormat": "RGB565",
+    "dataset": "Hand",
+    "labels": ["hand"],
+    "sizeBytes": 497296,
+    "description": "Detects human hands in camera images."
+}

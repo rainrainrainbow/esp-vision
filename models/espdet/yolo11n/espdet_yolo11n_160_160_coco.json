@@ -1,0 +1,12 @@
+{
+    "name": "YOLO11n COCO",
+    "architecture": "YOLO11n",
+    "api": "espdl.YOLO11",
+    "task": "detection",
+    "input": "160x160",
+    "inputFormat": "RGB565",
+    "dataset": "COCO",
+    "labels": [],
+    "sizeBytes": 2861408,
+    "description": "Detects the 80 COCO object classes in camera images."
+}

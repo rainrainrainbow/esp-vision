@@ -1,0 +1,12 @@
+{
+    "name": "ESPDet Pico Face",
+    "architecture": "ESPDet Pico",
+    "api": "espdl.ESPDet",
+    "task": "detection",
+    "input": "224x224",
+    "inputFormat": "RGB565",
+    "dataset": "Face",
+    "labels": ["face"],
+    "sizeBytes": 495840,
+    "description": "Detects human faces in camera images."
+}
