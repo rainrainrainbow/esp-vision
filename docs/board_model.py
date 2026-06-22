@@ -47,7 +47,7 @@ BOARD_IMAGES = {
         'https://raw.githubusercontent.com/espressif/esp-who/master/'
         'docs/_static/get-started/ESP32-S3-EYE-isometric.png'
     ),
-    'ESP32_VISION_P4X': '../../_static/boards/ESP32_VISION_P4X/ESP32-VISION-P4X.png',
+    'ESP32_P4X_VISION': '../../_static/boards/ESP32_P4X_VISION/ESP32-P4X-VISION.png',
 }
 
 # Canonical (English) getting-started URL override; falls back to board.json's

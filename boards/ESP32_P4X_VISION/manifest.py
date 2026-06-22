@@ -3,5 +3,5 @@
 
 freeze("$(PORT_DIR)/modules")
 freeze("$(ESP_VISION_ROOT)/modules", "py_inisetup.py")
-freeze("$(ESP_VISION_ROOT)/boards/ESP32_VISION_P4X", "board_inisetup.py")
+freeze("$(ESP_VISION_ROOT)/boards/ESP32_P4X_VISION", "board_inisetup.py")
 include("$(MPY_DIR)/extmod/asyncio")
