@@ -1,0 +1,12 @@
+{
+    "name": "Person Detection",
+    "architecture": "MobileNet",
+    "api": "tflite.Model",
+    "task": "classification",
+    "input": "96x96",
+    "inputFormat": "GRAYSCALE",
+    "dataset": "Visual Wake Words",
+    "labels": ["no person", "person"],
+    "sizeBytes": 300568,
+    "description": "TensorFlow Lite Micro person-detection model: classifies whether a person is present in a 96x96 grayscale camera frame."
+}

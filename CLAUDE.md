@@ -56,6 +56,13 @@ A board is defined in a single tree, `boards/<BOARD>/`: the ESP-VISION side at t
 - Code touching DMA, PSRAM, cache coherency, PPA, or USB CDC/MSC must handle error paths explicitly. Avoid dynamic allocation on hot paths — reuse the framebuffer / `fb_alloc` / lifetime-scoped buffers.
 - Prefer changes via `overlay/` and `USER_C_MODULES` over editing `lib/micropython/`; only patch the submodule when genuinely unavoidable.
 - Don't commit build output, temporary sdkconfig files, logs, or local device paths.
+- Markdown (`.md`): don't hard-wrap prose — one line per paragraph or list item, let it soft-wrap. (Tables, code blocks, and front matter are exempt.)
+
+## Changelog
+
+- Track notable, user-facing changes in the repository-root `CHANGELOG.md` only ([Keep a Changelog](https://keepachangelog.com/) style); there is no separate per-component changelog.
+- Each released version maps to a git tag. The first tag is the initial release and stays a one-liner (not detailed); later tags get real entries.
+- Accumulate new changes under `## [Unreleased]`, grouped as `Added` / `Changed` / `Fixed` / `Removed`. At release time, rename the `[Unreleased]` block to the new tag.
 
 ## Licensing (high priority — this repo will be open-sourced)
 

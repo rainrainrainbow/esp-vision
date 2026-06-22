@@ -1,4 +1,4 @@
-# ESP32_VISION_P4X 16MiB flash partition table.
+# ESP32_P4X_VISION 16MiB flash partition table.
 #
 # Name,   Type, SubType, Offset,  Size, Flags
 nvs,      data, nvs,     0x9000,  0x6000,

@@ -1,0 +1,12 @@
+{
+    "name": "ESPDet Pico Dog",
+    "architecture": "ESPDet Pico",
+    "api": "espdl.ESPDet",
+    "task": "detection",
+    "input": "224x224",
+    "inputFormat": "RGB565",
+    "dataset": "Dog",
+    "labels": ["dog"],
+    "sizeBytes": 497904,
+    "description": "Detects dogs in camera images."
+}

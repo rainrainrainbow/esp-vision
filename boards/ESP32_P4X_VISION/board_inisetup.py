@@ -5,14 +5,14 @@
 MAIN_PY = """\
 import time
 
-print("ESP32_VISION_P4X ready")
+print("ESP32_P4X_VISION ready")
 
 while True:
     time.sleep_ms(1000)
 """
 
 README_TXT = """\
-ESP32_VISION_P4X
+ESP32_P4X_VISION
 
 Edit main.py to run your Python vision script.
 The default main.py keeps the board idle so host tools can take control.

@@ -1,0 +1,12 @@
+{
+    "name": "ESPDet Pico Cat",
+    "architecture": "ESPDet Pico",
+    "api": "espdl.ESPDet",
+    "task": "detection",
+    "input": "224x224",
+    "inputFormat": "RGB565",
+    "dataset": "Cat",
+    "labels": ["cat"],
+    "sizeBytes": 499184,
+    "description": "Detects cats in camera images."
+}

@@ -1,4 +1,4 @@
-The following firmware is applicable to the ESP32-VISION-P4X development board
+The following firmware is applicable to the ESP32-P4X-VISION development board
 based on ESP32-P4.
 
 This board must be equipped with at least 16 MiB external SPI Flash and PSRAM.
