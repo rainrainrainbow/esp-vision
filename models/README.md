@@ -32,7 +32,7 @@ Required keys:
 
 Optional keys: `description` (what the model does — do not repeat the resolution/format already captured by other keys), `datasetUrl`.
 
-`file`, `path`, and `slug` are derived from the file location and must not be hand-written in the sidecar.
+`file`, `path`, `slug`, and `downloadUrl` are derived from the file location and must not be hand-written in the sidecar. `downloadUrl` points to the same model file on the public `espressif/esp-vision` GitHub `master` branch for the website download button.
 
 ## Download
 
