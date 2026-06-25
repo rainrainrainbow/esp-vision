@@ -4,6 +4,10 @@ All notable changes to ESP-VISION are recorded here. The format follows [Keep a 
 
 ## [Unreleased]
 
+### Added
+
+- Added an ESPDet Pico hardhat model and English/Chinese documentation for training ESPDet Pico models.
+
 ## [2026.06.22]
 
 ### Added

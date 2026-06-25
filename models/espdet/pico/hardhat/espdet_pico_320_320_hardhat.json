@@ -1,0 +1,12 @@
+{
+    "name": "ESPDet Pico Hardhat",
+    "architecture": "ESPDet Pico",
+    "api": "espdl.ESPDet",
+    "task": "detection",
+    "input": "320x320",
+    "inputFormat": "RGB565",
+    "dataset": "Hard Hat Workers Computer Vision Model",
+    "labels": ["helmet"],
+    "sizeBytes": 574864,
+    "description": "Detects safety helmets in camera images."
+}
