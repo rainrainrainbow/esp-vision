@@ -11,4 +11,5 @@ Task-oriented guides for extending ESP-VISION.
    add-python-module
    customize-firmware
    add-model
+   train-espdet-pico
    add-board
