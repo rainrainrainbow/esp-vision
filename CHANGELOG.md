@@ -2,7 +2,7 @@
 
 All notable changes to ESP-VISION are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/); each released version corresponds to a git tag. Unreleased changes accumulate at the top and are folded into the next tag at release time.
 
-## [Unreleased]
+## [2026.06.27]
 
 ### Added
 
