@@ -21,8 +21,8 @@ The config.toml carries two regions in one file:
     plus ``flashable`` / ``bin`` linking each board to the standard region. It
     also carries ``[[website.models]]``: the bundled ``.espdl`` models shipped
     under ``models/``, read straight from each model's same-named ``.json``
-    sidecar, with size/architecture/task so the site can list them. Finally it
-    carries ``releases`` (every published tag, newest first) plus
+    sidecar, with size/architecture/task/download URLs so the site can list and
+    link them. Finally it carries ``releases`` (every published tag, newest first) plus
     ``binaryNameTemplate``: because every image is named
     ``esp-vision-<board>-<tag>.bin``, the site can offer *all* historical
     versions by templating the URL itself (``firmware_images_url`` + filled
@@ -70,6 +70,7 @@ from board_model import board_info  # noqa: E402
 
 # Bundled .espdl models live here, each with a same-named .json metadata sidecar.
 MODELS_DIR = os.path.join(REPO_ROOT, "models")
+MODEL_DOWNLOAD_BASE_URL = "https://raw.githubusercontent.com/espressif/esp-vision/master/"
 
 # Keys every model sidecar must define (see models/README.md). sizeBytes is
 # authored but cross-checked against the actual .espdl below.
@@ -95,7 +96,7 @@ MODEL_SENTINEL_KEYS = frozenset({"architecture", "api"})
 # consumers keep working by ignoring unknown keys, breaking changes bump MAJOR.
 # Bump this whenever the [website] shape changes, and note it in the repo-root
 # CHANGELOG.md.
-WEBSITE_SCHEMA_VERSION = "1.1.0"
+WEBSITE_SCHEMA_VERSION = "1.2.0"
 
 # board_model imlib feature labels -> website vision tokens. Unmapped labels
 # fall back to a slugified label. This is website *presentation* shaping, not
@@ -224,8 +225,8 @@ def collect_models() -> list:
     A JSON that is not a model description (lacks the sentinel keys) is ignored;
     one that looks like a model but misses a required key, or whose authored
     sizeBytes does not match its sibling binary, is an error. The binary is the
-    same-stem sibling of any extension. slug/file/path come from the file
-    location so the listing can never drift from what ships.
+    same-stem sibling of any extension. slug/file/path/downloadUrl come from
+    the file location so the listing can never drift from what ships.
     """
     records = []
     for sidecar in glob.glob(os.path.join(MODELS_DIR, "**", "*.json"), recursive=True):
@@ -261,6 +262,7 @@ def collect_models() -> list:
         rec["slug"] = "-".join(os.path.dirname(model_rel).split(os.sep))
         rec["file"] = os.path.basename(model_path)
         rec["path"] = "models/" + model_rel.replace(os.sep, "/")
+        rec["downloadUrl"] = MODEL_DOWNLOAD_BASE_URL + rec["path"]
         records.append(rec)
     records.sort(key=lambda r: r["slug"])
     return records
