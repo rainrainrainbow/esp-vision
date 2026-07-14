@@ -15,6 +15,30 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Fix berkeley-db GCC compatibility
+        shell: bash
+        run: |
+          python3 << 'EOF'
+          import os
+          import glob
+          patch_text = '''#ifndef __P
+#define __P(args) args
+#endif
+#ifndef __BEGIN_DECLS
+#define __BEGIN_DECLS
+#endif
+#ifndef __END_DECLS
+#define __END_DECLS
+#endif
+'''
+          for f in glob.glob('lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db/*.h'):
+              with open(f, 'r') as fh:
+                  content = fh.read()
+              with open(f, 'w') as fh:
+                  fh.write(patch_text + content)
+              print(f'Patched {f}')
+          EOF
+
       - name: Cache managed components
         uses: actions/cache@v4
         with:
@@ -29,8 +53,7 @@ jobs:
         shell: bash
         run: |
           . $IDF_PATH/export.sh
-          export EXTRA_CFLAGS="-DMICROPY_PY_BTREE=0"
-          make BOARD=HIWONDER_S3 EXTRA_CFLAGS="$EXTRA_CFLAGS" all
+          make BOARD=HIWONDER_S3 all
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
