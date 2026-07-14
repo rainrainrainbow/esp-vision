@@ -1,25 +1,13 @@
 name: ESP32-S3 Hiwonder Vision Build
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'boards/HIWONDER_S3/**'
-      - 'platform/**'
-      - 'modules/**'
-      - 'components/**'
-      - 'micropython.cmake'
-      - 'Makefile'
-      - 'idf_ext.py'
-  pull_request:
-    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     name: Build Hiwonder S3 Firmware
     runs-on: ubuntu-latest
-    container: espressif/idf:v6.1
+    container: espressif/idf:release-v6.1
 
     steps:
       - name: Checkout repository
@@ -61,9 +49,7 @@ jobs:
         run: |
           . $IDF_PATH/export.sh
           cd build
-          esptool.py --chip esp32s3 merge_bin \
-            -o firmware_merged.bin \
-            @flash_args
+          esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args
 
       - name: Upload merged firmware
         uses: actions/upload-artifact@v4
