@@ -1,0 +1,14 @@
+name: Test Container
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: ubuntu:22.04
+    steps:
+      - name: Hello
+        run: echo "Hello from container"
