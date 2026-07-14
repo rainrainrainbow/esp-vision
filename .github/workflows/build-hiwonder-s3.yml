@@ -57,34 +57,3 @@ jobs:
           name: firmware-hiwonder-s3-merged
           path: build/firmware_merged.bin
           retention-days: 30
-
-  release:
-    name: Create Release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download firmware artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: firmware-hiwonder-s3
-          path: firmware
-
-      - name: Download merged firmware
-        uses: actions/download-artifact@v4
-        with:
-          name: firmware-hiwonder-s3-merged
-          path: firmware
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            firmware/*.bin
-            firmware/flasher_args.json
-          generate_release_notes: true
-          draft: false
-          prerelease: false
