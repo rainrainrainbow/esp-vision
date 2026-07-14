@@ -1,0 +1,21 @@
+name: Test Multiline Path
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo "test1" > test1.txt
+          echo "test2" > test2.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-artifact
+          path: |
+            test1.txt
+            test2.txt
