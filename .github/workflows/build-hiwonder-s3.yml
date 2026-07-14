@@ -19,7 +19,7 @@ jobs:
   build:
     name: Build Hiwonder S3 Firmware
     runs-on: ubuntu-latest
-    container: espressif/idf:latest
+    container: espressif/idf:v6.1
 
     steps:
       - name: Checkout repository
