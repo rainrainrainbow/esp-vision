@@ -1,0 +1,13 @@
+name: Test Minimal Docker
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker run --rm ubuntu:latest echo hello
