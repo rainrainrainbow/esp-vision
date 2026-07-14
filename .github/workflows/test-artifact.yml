@@ -1,0 +1,17 @@
+name: Test Artifact
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "test" > test.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-artifact
+          path: test.txt
