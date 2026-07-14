@@ -1,0 +1,13 @@
+name: Test IDF Image
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker run --rm espressif/idf:release-v6.0 idf.py --version
