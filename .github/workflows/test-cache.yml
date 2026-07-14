@@ -1,0 +1,17 @@
+name: Test Cache
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/cache
+          key: test-key
+      - run: echo "done"
