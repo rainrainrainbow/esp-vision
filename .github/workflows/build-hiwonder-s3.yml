@@ -29,7 +29,8 @@ jobs:
         shell: bash
         run: |
           . $IDF_PATH/export.sh
-          make BOARD=HIWONDER_S3 all
+          export EXTRA_CFLAGS="-DMICROPY_PY_BTREE=0"
+          make BOARD=HIWONDER_S3 EXTRA_CFLAGS="$EXTRA_CFLAGS" all
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
