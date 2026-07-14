@@ -1,6 +1,9 @@
 name: ESP32-S3 Hiwonder Vision Build
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
@@ -19,7 +22,6 @@ jobs:
         shell: bash
         run: |
           python3 << 'EOF'
-          import os
           import glob
           patch_text = '''#ifndef __P
 #define __P(args) args
