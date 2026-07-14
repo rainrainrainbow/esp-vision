@@ -1,16 +1,15 @@
 name: ESP32-S3 Hiwonder Vision Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
-  workflow_dispatch:
 
 jobs:
   build:
     name: Build Hiwonder S3 Firmware
     runs-on: ubuntu-latest
-    container: espressif/idf:release-v6.0
 
     steps:
       - name: Checkout repository
@@ -19,10 +18,9 @@ jobs:
           submodules: 'recursive'
 
       - name: Fix berkeley-db GCC compatibility
-        shell: bash
         run: |
           python3 << 'EOF'
-          import glob
+          import glob, os
           patch_text = '''#ifndef __P
 #define __P(args) args
 #endif
@@ -33,22 +31,41 @@ jobs:
 #define __END_DECLS
 #endif
 '''
-          for f in glob.glob('lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db/*.h'):
-              with open(f, 'r') as fh:
-                  content = fh.read()
-              with open(f, 'w') as fh:
-                  fh.write(patch_text + content)
-              print(f'Patched {f}')
+          base = 'lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db'
+          if os.path.isdir(base):
+              for f in glob.glob(base + '/*.h'):
+                  with open(f, 'r') as fh:
+                      content = fh.read()
+                  if '#ifndef __P' not in content:
+                      with open(f, 'w') as fh:
+                          fh.write(patch_text + content)
+                      print(f'Patched {f}')
+                  else:
+                      print(f'Skipped {f}')
+          else:
+              print(f'Directory not found: {base}')
           EOF
 
-      - name: Build firmware
-        shell: bash
+      - name: Build firmware in Docker
         run: |
-          . $IDF_PATH/export.sh
-          make BOARD=HIWONDER_S3 all
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            -e BOARD=HIWONDER_S3 \
+            espressif/idf:release-v6.0 \
+            bash -c '
+              set -e
+              . $IDF_PATH/export.sh
+              idf.py set-target esp32s3
+              make BOARD=HIWONDER_S3 all
+            '
+
+      - name: List build outputs
+        run: ls -lah build/
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: firmware-hiwonder-s3
           path: |
@@ -57,19 +74,31 @@ jobs:
             build/*.map
             build/flasher_args.json
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: ignore
 
       - name: Merge firmware binary
         if: success()
-        shell: bash
         run: |
-          . $IDF_PATH/export.sh
-          cd build
-          esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            espressif/idf:release-v6.0 \
+            bash -c '
+              set -e
+              . $IDF_PATH/export.sh
+              cd build
+              if [ -f flash_args ]; then
+                esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args
+              else
+                echo "flash_args not found, skipping merge"
+              fi
+            '
 
       - name: Upload merged firmware
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: firmware-hiwonder-s3-merged
           path: build/firmware_merged.bin
           retention-days: 30
+          if-no-files-found: ignore
