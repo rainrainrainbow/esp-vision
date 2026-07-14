@@ -1,0 +1,14 @@
+name: Minimal Build Test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Building..."
+      - run: ls -la
