@@ -10,7 +10,6 @@ jobs:
   build:
     name: Build Hiwonder S3 Firmware
     runs-on: ubuntu-latest
-    container: espressif/idf:release-v6.0
 
     steps:
       - name: Checkout repository
@@ -41,21 +40,12 @@ jobs:
               print(f'Patched {f}')
           EOF
 
-      - name: Cache managed components
-        uses: actions/cache@v4
-        with:
-          path: |
-            managed_components
-            lib/micropython
-          key: hiwonder-s3-${{ hashFiles('idf_component_manager.lock', '.gitmodules') }}
-          restore-keys: |
-            hiwonder-s3-
-
       - name: Build firmware
-        shell: bash
-        run: |
-          . $IDF_PATH/export.sh
-          make BOARD=HIWONDER_S3 all
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: release-v6.0
+          target: esp32s3
+          command: make BOARD=HIWONDER_S3 all
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
