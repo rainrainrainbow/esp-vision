@@ -40,12 +40,20 @@ jobs:
               print(f'Patched {f}')
           EOF
 
+      - name: Install ESP-IDF
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+          git clone -b release/v6.0 --recursive --depth 1 https://github.com/espressif/esp-idf.git ~/esp-idf
+          cd ~/esp-idf
+          ./install.sh esp32s3
+
       - name: Build firmware
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: release-v6.0
-          target: esp32s3
-          command: make BOARD=HIWONDER_S3 all
+        shell: bash
+        run: |
+          . ~/esp-idf/export.sh
+          make BOARD=HIWONDER_S3 all
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
@@ -63,7 +71,7 @@ jobs:
         if: success()
         shell: bash
         run: |
-          . $IDF_PATH/export.sh
+          . ~/esp-idf/export.sh
           cd build
           esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args
 
