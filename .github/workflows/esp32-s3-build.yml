@@ -19,7 +19,6 @@ jobs:
           docker run --rm             -v "${{ github.workspace }}:/project"             -w /project             -e BOARD=ESP32_S3_EYE             espressif/idf:release-v6.0             bash -c '
               set -e
               . $IDF_PATH/export.sh
-              idf.py set-target esp32s3
               make BOARD=ESP32_S3_EYE all
             '
 
