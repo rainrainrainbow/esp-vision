@@ -31,5 +31,10 @@ jobs:
               print(f'Directory not found: {base}')
           EOF
 
-      - name: Test IDF version
-        run: docker run --rm espressif/idf:release-v6.0 idf.py --version
+      - name: Build firmware
+        run: |
+          docker run --rm \
+            -v "$PWD:/project" \
+            -w /project \
+            espressif/idf:release-v6.0 \
+            bash -c ". /opt/esp/idf/export.sh && idf.py set-target esp32s3 && make BOARD=HIWONDER_S3 all"
