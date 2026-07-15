@@ -23,18 +23,19 @@ jobs:
             bash -c '
               git config --global --add safe.directory "*"
               . /opt/esp/idf/export.sh
+              rm -rf build/
               make BOARD=HIWONDER_S3 all > /project/build_output.log 2>&1
-              echo "EXIT_CODE=$?"
+              exit $?
             '
 
       - name: Collect firmware
         if: always()
         run: |
-          echo "=== Build log tail ==="
-          tail -30 build_output.log
+          echo "=== Build log tail (40 lines) ==="
+          tail -40 build_output.log
           mkdir -p firmware_out
           BUILD_DIR="build/HIWONDER_S3/idf5.5"
-          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json; do
+          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json micropython.elf; do
             src="$BUILD_DIR/$f"
             if [ -f "$src" ]; then
               cp "$src" firmware_out/
