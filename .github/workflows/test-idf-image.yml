@@ -35,32 +35,30 @@ jobs:
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all 2>&1; echo EXIT_CODE=\$?" \
-            2>&1 | tee build_output.log || true
+            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
 
-      - name: List and check build
+      - name: Collect firmware files
         if: always()
         run: |
-          echo "=== build_output.log (last 50 lines) ==="
-          tail -50 build_output.log 2>/dev/null || echo "No build log"
+          echo "=== build_output.log tail ==="
+          tail -30 build_output.log 2>/dev/null || true
           echo ""
-          echo "=== All .bin files ==="
-          find build/ -name "*.bin" 2>/dev/null || echo "No .bin files"
+          echo "=== find all files in build ==="
+          find build/ -type f 2>/dev/null | head -100
           echo ""
-          echo "=== All .elf files ==="
-          find build/ -name "*.elf" 2>/dev/null || echo "No .elf files"
-          echo ""
-          echo "=== flash_args files ==="
-          find build/ -name "flash_args" 2>/dev/null || echo "No flash_args"
-          echo ""
-          echo "=== Build directory tree (depth 3) ==="
-          find build/ -maxdepth 3 -type f 2>/dev/null | head -60
+          mkdir -p firmware_out
+          # Copy all bin, elf, map, json files to firmware_out
+          find build/ \( -name "*.bin" -o -name "*.elf" -o -name "*.map" -o -name "flash_args" -o -name "flasher_args.json" \) -exec cp {} firmware_out/ \; 2>/dev/null || true
+          echo "=== firmware_out ==="
+          ls -lah firmware_out/ 2>/dev/null || echo "Empty"
+          # Also save the build output log
+          cp build_output.log firmware_out/ 2>/dev/null || true
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: firmware-hiwonder-s3
-          path: build/
+          path: firmware_out/
           retention-days: 30
-          if-no-files-found: ignore
+          if-no-files-found: warn
