@@ -12,4 +12,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      - run: docker run --rm espressif/idf:release-v6.0 idf.py --version
+
+      - name: Fix berkeley-db
+        run: |
+          python3 << 'EOF'
+          import glob, os
+          patch_text = '#ifndef __P\n#define __P(args) args\n#endif\n#ifndef __BEGIN_DECLS\n#define __BEGIN_DECLS\n#endif\n#ifndef __END_DECLS\n#define __END_DECLS\n#endif\n'
+          base = 'lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db'
+          if os.path.isdir(base):
+              for f in glob.glob(base + '/*.h'):
+                  with open(f, 'r') as fh:
+                      content = fh.read()
+                  if '#ifndef __P' not in content:
+                      with open(f, 'w') as fh:
+                          fh.write(patch_text + content)
+                      print(f'Patched {f}')
+          else:
+              print(f'Directory not found: {base}')
+          EOF
+
+      - name: Test IDF version
+        run: docker run --rm espressif/idf:release-v6.0 idf.py --version
