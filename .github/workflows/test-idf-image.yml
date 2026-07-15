@@ -35,24 +35,16 @@ jobs:
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
+            bash -c "git config --global --add safe.directory '*' && . /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
 
       - name: Collect firmware files
         if: always()
         run: |
-          echo "=== build_output.log tail ==="
-          tail -30 build_output.log 2>/dev/null || true
-          echo ""
-          echo "=== find all files in build ==="
-          find build/ -type f 2>/dev/null | head -100
-          echo ""
           mkdir -p firmware_out
-          # Copy all bin, elf, map, json files to firmware_out
           find build/ \( -name "*.bin" -o -name "*.elf" -o -name "*.map" -o -name "flash_args" -o -name "flasher_args.json" \) -exec cp {} firmware_out/ \; 2>/dev/null || true
-          echo "=== firmware_out ==="
-          ls -lah firmware_out/ 2>/dev/null || echo "Empty"
-          # Also save the build output log
           cp build_output.log firmware_out/ 2>/dev/null || true
+          ls -lah firmware_out/
+          du -sh firmware_out/
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
