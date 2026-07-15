@@ -21,38 +21,44 @@ jobs:
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
             bash -c '
-              set -e
               git config --global --add safe.directory "*"
               . /opt/esp/idf/export.sh
+
+              # Step 1: prepare micropython (creates build/micropython/ copy)
               make BOARD=HIWONDER_S3 prepare-micropython
-              # Patch berkeley-db headers in the BUILD copy
-              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__P(/__attribute__((unused)) /g" {} \;
-              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__BEGIN_DECLS//"g {} \;
-              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__END_DECLS//"g {} \;
-              echo "Berkeley-db headers patched"
+
+              # Step 2: patch berkeley-db headers in BUILD copy
+              PATCH="#ifndef __P\n#define __P(x) x\n#endif\n#ifndef __BEGIN_DECLS\n#define __BEGIN_DECLS\n#endif\n#ifndef __END_DECLS\n#define __END_DECLS\n#endif\n"
+              for f in $(find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h"); do
+                if ! grep -q "#ifndef __P" "$f"; then
+                  printf "%s" "$PATCH" > "$f.tmp"
+                  cat "$f" >> "$f.tmp"
+                  mv "$f.tmp" "$f"
+                  echo "Patched: $f"
+                fi
+              done
+
+              # Step 3: build
               make BOARD=HIWONDER_S3 build
-            ' 2>&1 | tee build_output.log || true
+            ' 2>&1 | tee build_output.log
 
       - name: Collect firmware
         if: always()
         run: |
           mkdir -p firmware_out
-          # Get the actual firmware files from the build output directory
           BUILD_DIR="build/HIWONDER_S3/idf6.0"
-          if [ -d "$BUILD_DIR" ]; then
-            cp "$BUILD_DIR/bootloader/bootloader.bin" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/partition_table/partition-table.bin" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/ota_data_initial.bin" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/micropython.bin" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/flash_args" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/flasher_args.json" firmware_out/ 2>/dev/null || true
-            cp "$BUILD_DIR/micropython.elf" firmware_out/ 2>/dev/null || true
-          fi
+          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json micropython.elf; do
+            src="$BUILD_DIR/$f"
+            if [ -f "$src" ]; then
+              cp "$src" firmware_out/
+              echo "Copied: $f ($(du -h "$src" | cut -f1))"
+            else
+              echo "Missing: $f"
+            fi
+          done
           cp build_output.log firmware_out/ 2>/dev/null || true
-          echo "=== firmware_out ==="
+          echo "=== Output ==="
           ls -lah firmware_out/
-          echo "=== Total size ==="
-          du -sh firmware_out/
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
