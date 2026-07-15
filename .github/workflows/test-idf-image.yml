@@ -19,8 +19,8 @@ jobs:
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
-            -e ESP_IDF_VERSION=6.0 \
-            espressif/idf:release-v6.0 \
+            -e ESP_IDF_VERSION=5.5 \
+            espressif/idf:release-v5.5 \
             bash -c '
               set -o pipefail
               git config --global --add safe.directory "*"
@@ -31,11 +31,10 @@ jobs:
       - name: Collect firmware
         if: always()
         run: |
-          echo "=== Build log tail (50 lines) ==="
-          tail -50 build_output.log
-          echo ""
+          echo "=== Build log tail ==="
+          tail -30 build_output.log
           mkdir -p firmware_out
-          BUILD_DIR="build/HIWONDER_S3/idf6.0"
+          BUILD_DIR="build/HIWONDER_S3/idf5.5"
           echo "=== Checking $BUILD_DIR ==="
           ls -la "$BUILD_DIR/" 2>/dev/null || echo "Dir not found"
           for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json; do
