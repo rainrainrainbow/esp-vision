@@ -29,7 +29,11 @@ jobs:
             '
 
       - name: List build outputs
-        run: ls -lah build/
+        run: |
+          echo "=== build directory ==="
+          find build -type f \( -name "*.bin" -o -name "*.elf" \) | sort
+          echo "=== flash args ==="
+          cat build/ESP32_S3_EYE/idf6.0/flash_args 2>/dev/null || true
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
@@ -37,18 +41,9 @@ jobs:
         with:
           name: firmware-esp32s3-eye
           path: |
-            build/*.bin
-            build/*.elf
-            build/*.map
-            build/flasher_args.json
-          retention-days: 30
-          if-no-files-found: ignore
-
-      - name: Upload merged firmware
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: firmware-esp32s3-eye-merged
-          path: build/firmware_merged.bin
+            build/**/*.bin
+            build/**/*.elf
+            build/**/*.map
+            build/**/flasher_args.json
           retention-days: 30
           if-no-files-found: ignore
