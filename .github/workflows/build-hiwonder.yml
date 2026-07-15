@@ -1,59 +1,99 @@
 name: Build HIWONDER_AI_MODULE Firmware
 
 on:
-  workflow_dispatch:
   push:
     branches: [feature/hiwonder-aimodule]
-
-env:
-  BOARD: HIWONDER_AI_MODULE
-  IDF_IMAGE: espressif/idf:release-v6.1
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build ${{ env.BOARD }} Firmware
+    name: Build HIWONDER_AI_MODULE Firmware
     runs-on: ubuntu-latest
-    container:
-      image: ${{ env.IDF_IMAGE }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 1
 
-      - name: Sync submodules
+      - name: Fix berkeley-db GCC compatibility
         run: |
-          git submodule sync -- lib/micropython lib/ulab lib/zxing-cpp
-          git submodule update --init --depth 1 lib/micropython lib/ulab lib/zxing-cpp
-          git -C lib/micropython submodule sync -- lib/micropython-lib
-          git -C lib/micropython submodule update --init --depth 1 lib/micropython-lib
+          python3 << 'EOF'
+          import glob, os
+          patch_text = '''#ifndef __P
+#define __P(args) args
+#endif
+#ifndef __BEGIN_DECLS
+#define __BEGIN_DECLS
+#endif
+#ifndef __END_DECLS
+#define __END_DECLS
+#endif
+'''
+          base = 'lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db'
+          if os.path.isdir(base):
+              for f in glob.glob(base + '/*.h'):
+                  with open(f, 'r') as fh:
+                      content = fh.read()
+                  if '#ifndef __P' not in content:
+                      with open(f, 'w') as fh:
+                          fh.write(patch_text + content)
+                      print(f'Patched {f}')
+                  else:
+                      print(f'Skipped {f}')
+          else:
+              print(f'Directory not found: {base}')
+          EOF
 
-      - name: Build with ESP-VISION
+      - name: Build firmware with ESP-VISION
         run: |
-          . /opt/esp/idf/export.sh
-          idf.py --board $BOARD build
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            -e BOARD=HIWONDER_AI_MODULE \
+            espressif/idf:release-v6.0 \
+            bash -c '
+              set -e
+              . /opt/esp/idf/export.sh
+              idf.py --board $BOARD build
+            '
+
+      - name: List build outputs
+        run: ls -lah build/
 
       - name: Create merged binary
+        if: success()
         run: |
-          . /opt/esp/idf/export.sh
-          BDIR=$(ls -d build/$BOARD/idf* 2>/dev/null | head -1)
-          if [ -n "$BDIR" ] && [ -f "$BDIR/flash_args" ]; then
-            esptool.py --chip esp32s3 merge_bin \
-              --output build/$BOARD/firmware-combined.bin \
-              --flash_mode qio --flash_freq 80m --flash_size 8MB \
-              @"$BDIR/flash_args"
-          fi
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            espressif/idf:release-v6.0 \
+            bash -c '
+              set -e
+              . /opt/esp/idf/export.sh
+              BDIR=$(ls -d build/HIWONDER_AI_MODULE/idf* 2>/dev/null | head -1)
+              if [ -n "$BDIR" ] && [ -f "$BDIR/flash_args" ]; then
+                esptool.py --chip esp32s3 merge_bin \
+                  --output build/HIWONDER_AI_MODULE/firmware-combined.bin \
+                  --flash_mode qio --flash_freq 80m --flash_size 8MB \
+                  @"$BDIR/flash_args"
+                echo "Merged firmware created!"
+              else
+                echo "flash_args not found at $BDIR, skipping merge"
+              fi
+            '
 
-      - name: Upload artifacts
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: hiwonder-aimodule-firmware
           path: |
-            build/$BOARD/firmware-combined.bin
-            build/$BOARD/idf*/bootloader/bootloader.bin
-            build/$BOARD/idf*/partition_table/partition-table.bin
-            build/$BOARD/idf*/micropython.bin
-            build/$BOARD/idf*/flash_args
+            build/HIWONDER_AI_MODULE/firmware-combined.bin
+            build/HIWONDER_AI_MODULE/idf*/bootloader/bootloader.bin
+            build/HIWONDER_AI_MODULE/idf*/partition_table/partition-table.bin
+            build/HIWONDER_AI_MODULE/idf*/micropython.bin
+            build/HIWONDER_AI_MODULE/idf*/flash_args
           retention-days: 30
           if-no-files-found: warn
