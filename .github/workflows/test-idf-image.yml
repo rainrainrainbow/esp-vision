@@ -18,23 +18,52 @@ jobs:
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
-            -e ESP_IDF_VERSION=5.5 \
-            espressif/idf:release-v5.5 \
+            -e ESP_IDF_VERSION=6.0 \
+            espressif/idf:release-v6.0 \
             bash -c '
               git config --global --add safe.directory "*"
               . /opt/esp/idf/export.sh
-              rm -rf build/
-              make BOARD=HIWONDER_S3 all > /project/build_output.log 2>&1
-              exit $?
+
+              # Step 1: prepare (creates build/micropython/ copy)
+              make BOARD=HIWONDER_S3 prepare-micropython
+
+              # Step 2: patch berkeley-db headers in the BUILD copy
+              PATCH="#ifndef __P
+#define __P(x) x
+#endif
+#ifndef __BEGIN_DECLS
+#define __BEGIN_DECLS
+#endif
+#ifndef __END_DECLS
+#define __END_DECLS
+#endif
+#ifndef __PMT
+#define __PMT(args) args
+#endif
+#ifndef __const
+#define __const const
+#endif
+"
+              for f in $(find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h"); do
+                if ! grep -q "#ifndef __P$" "$f"; then
+                  printf "%s" "$PATCH" > "$f.tmp"
+                  cat "$f" >> "$f.tmp"
+                  mv "$f.tmp" "$f"
+                  echo "Patched: $f"
+                fi
+              done
+
+              # Step 3: build (skip prepare since already done)
+              make BOARD=HIWONDER_S3 build
             '
 
       - name: Collect firmware
         if: always()
         run: |
-          echo "=== Build log tail (40 lines) ==="
-          tail -40 build_output.log
+          echo "=== Build log from docker ==="
+          tail -30 build_output.log 2>/dev/null || true
           mkdir -p firmware_out
-          BUILD_DIR="build/HIWONDER_S3/idf5.5"
+          BUILD_DIR="build/HIWONDER_S3/idf6.0"
           for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json micropython.elf; do
             src="$BUILD_DIR/$f"
             if [ -f "$src" ]; then
@@ -44,7 +73,6 @@ jobs:
               echo "MISSING: $f"
             fi
           done
-          cp build_output.log firmware_out/ 2>/dev/null || true
           echo ""
           echo "=== firmware_out ==="
           ls -lah firmware_out/
