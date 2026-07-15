@@ -32,15 +32,22 @@ jobs:
           EOF
 
       - name: Build firmware
-        env:
-          ESP_IDF_VERSION: "6.0"
         run: |
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all"
+            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
+
+      - name: Upload build log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: build_output.log
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
@@ -51,26 +58,5 @@ jobs:
             build/*.bin
             build/*.elf
             build/flasher_args.json
-          retention-days: 30
-          if-no-files-found: ignore
-
-      - name: Merge firmware
-        if: success()
-        env:
-          ESP_IDF_VERSION: "6.0"
-        run: |
-          docker run --rm \
-            -v "$PWD:/project" \
-            -w /project \
-            -e ESP_IDF_VERSION=6.0 \
-            espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && cd build && esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args"
-
-      - name: Upload merged firmware
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: firmware-hiwonder-s3-merged
-          path: build/firmware_merged.bin
           retention-days: 30
           if-no-files-found: ignore
