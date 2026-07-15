@@ -1,4 +1,4 @@
-name: Test IDF Image
+name: Build Hiwonder S3
 
 on:
   push:
@@ -27,8 +27,6 @@ jobs:
                       with open(f, 'w') as fh:
                           fh.write(patch_text + content)
                       print(f'Patched {f}')
-          else:
-              print(f'Directory not found: {base}')
           EOF
 
       - name: Build firmware
@@ -38,25 +36,22 @@ jobs:
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
+            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all"
 
-      - name: Upload build log
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-log
-          path: build_output.log
-          retention-days: 7
-          if-no-files-found: ignore
+      - name: List build outputs
+        run: |
+          echo "=== Top-level build ==="
+          ls -la build/ 2>/dev/null || echo "No build/ dir"
+          echo "=== Board build ==="
+          find build/ -name "*.bin" -o -name "*.elf" -o -name "flash_args" 2>/dev/null | head -30
+          echo "=== Full tree ==="
+          find build/ -maxdepth 4 -type f 2>/dev/null | head -50
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: firmware-hiwonder-s3
-          path: |
-            build/*.bin
-            build/*.elf
-            build/flasher_args.json
+          path: build/
           retention-days: 30
           if-no-files-found: ignore
