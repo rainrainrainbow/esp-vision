@@ -1,5 +1,12 @@
+#ifndef MICROPY_BOARD_H
+#define MICROPY_BOARD_H
+
 #define MICROPY_HW_BOARD_NAME "Hiwonder S3 Vision"
 #define MICROPY_HW_MCU_NAME   "ESP32-S3"
 
-// 禁用 btree 模块，绕过 berkeley-db 在 GCC 15 下的兼容性问题
+// Disable btree (berkeley-db has GCC 15 incompatibility in ESP-IDF 6.0)
+#ifndef MICROPY_PY_BTREE
 #define MICROPY_PY_BTREE (0)
+#endif
+
+#endif
