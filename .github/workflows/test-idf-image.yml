@@ -15,49 +15,41 @@ jobs:
 
       - name: Build firmware
         run: |
+          set -o pipefail
           docker run --rm \
             -v "$PWD:/project" \
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
             bash -c '
+              set -o pipefail
               git config --global --add safe.directory "*"
               . /opt/esp/idf/export.sh
-
-              # Step 1: prepare micropython (creates build/micropython/ copy)
-              make BOARD=HIWONDER_S3 prepare-micropython
-
-              # Step 2: patch berkeley-db headers in BUILD copy
-              PATCH="#ifndef __P\n#define __P(x) x\n#endif\n#ifndef __BEGIN_DECLS\n#define __BEGIN_DECLS\n#endif\n#ifndef __END_DECLS\n#define __END_DECLS\n#endif\n"
-              for f in $(find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h"); do
-                if ! grep -q "#ifndef __P" "$f"; then
-                  printf "%s" "$PATCH" > "$f.tmp"
-                  cat "$f" >> "$f.tmp"
-                  mv "$f.tmp" "$f"
-                  echo "Patched: $f"
-                fi
-              done
-
-              # Step 3: build
-              make BOARD=HIWONDER_S3 build
-            ' 2>&1 | tee build_output.log
+              make BOARD=HIWONDER_S3 all 2>&1
+            ' | tee build_output.log
 
       - name: Collect firmware
         if: always()
         run: |
+          echo "=== Build log tail (50 lines) ==="
+          tail -50 build_output.log
+          echo ""
           mkdir -p firmware_out
           BUILD_DIR="build/HIWONDER_S3/idf6.0"
-          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json micropython.elf; do
+          echo "=== Checking $BUILD_DIR ==="
+          ls -la "$BUILD_DIR/" 2>/dev/null || echo "Dir not found"
+          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json; do
             src="$BUILD_DIR/$f"
             if [ -f "$src" ]; then
               cp "$src" firmware_out/
-              echo "Copied: $f ($(du -h "$src" | cut -f1))"
+              echo "OK: $f ($(stat -c%s "$src") bytes)"
             else
-              echo "Missing: $f"
+              echo "MISSING: $f"
             fi
           done
           cp build_output.log firmware_out/ 2>/dev/null || true
-          echo "=== Output ==="
+          echo ""
+          echo "=== firmware_out ==="
           ls -lah firmware_out/
 
       - name: Upload firmware
