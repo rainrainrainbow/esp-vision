@@ -77,12 +77,9 @@
 #define ESP_VISION_LCD_BACKLIGHT_PWM_HZ             (5000)
 #define ESP_VISION_LCD_BACKLIGHT_OUTPUT_INVERT      (1)
 
-/* SD card configuration. */
-#define ESP_VISION_SDCARD_MOUNT_PATH                "/sdcard"
-#define ESP_VISION_SDCARD_SLOT                      (0)
-#define ESP_VISION_SDCARD_BUS_WIDTH                 (1)
-#define ESP_VISION_SDCARD_CLK_PIN                   (39)
-#define ESP_VISION_SDCARD_CMD_PIN                   (38)
-#define ESP_VISION_SDCARD_D0_PIN                    (40)
+/*
+ * SD card removed — no SD card interface on custom hardware.
+ * I2C (SCCB) bus shared between camera (SCL=5, SDA=4) and ES8311 audio codec.
+ */
 
 #endif /* ESP_VISION_BOARD_CONFIG_H */
