@@ -9,4 +9,9 @@
 #define MICROPY_PY_BTREE (0)
 #endif
 
+// Disable Bluetooth (nimble headers not available without BT component)
+#ifndef MICROPY_PY_BLUETOOTH
+#define MICROPY_PY_BLUETOOTH (0)
+#endif
+
 #endif
