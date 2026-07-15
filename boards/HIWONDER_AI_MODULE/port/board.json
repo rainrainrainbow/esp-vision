@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "DVP",
+        "OV2640"
+    ],
+    "mcu": "esp32s3",
+    "product": "HIWONDER-AI-MODULE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Hiwonder"
+}
