@@ -23,8 +23,8 @@
 #define ESP_VISION_JPEG_QUALITY_HIGH                (60)
 #define ESP_VISION_JPEG_QUALITY_THRESHOLD           (320 * 240 * 2)
 
-/* Camera: GC2145 + ES8311 (shared I2C bus). */
-#define ESP_VISION_CAMERA_SENSOR_ID                 (0x2145)
+/* Camera: GC2145 (PID=0x21) + ES8311 (shared I2C bus SCL=5 SDA=4). */
+#define ESP_VISION_CAMERA_SENSOR_ID                 (0x21)
 #define ESP_VISION_CAMERA_RAW_INPUT_WIDTH           (320)
 #define ESP_VISION_CAMERA_RAW_INPUT_HEIGHT          (240)
 #define ESP_VISION_CAMERA_ACTIVE_INPUT_WIDTH        (320)
@@ -41,7 +41,7 @@
 #define ESP_VISION_CAMERA_SENSOR_PWDN_PIN           (-1)
 #define ESP_VISION_CAMERA_SCCB_I2C_FREQ             (400000)
 #define ESP_VISION_CAMERA_XCLK_PIN                  (15)
-#define ESP_VISION_CAMERA_XCLK_FREQ                 (24000000)
+#define ESP_VISION_CAMERA_XCLK_FREQ                 (20000000)
 #define ESP_VISION_CAMERA_XCLK_LEDC_TIMER           (1)
 #define ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL         (2)
 #define ESP_VISION_CAMERA_DVP_PCLK_PIN              (13)
@@ -79,9 +79,9 @@
 
 /*
  * No SD card interface on custom hardware.
- * I2C (SCCB / I2C0) bus shared between GC2145 camera and ES8311 audio codec
- * (SCL=5, SDA=4).
- * PSRAM: OPI (Octal) — CONFIG_SPIRAM_MODE_OCT=y in sdkconfig.
+ * I2C (SCCB / I2C0) bus shared between GC2145 camera and ES8311 audio codec.
+ * PSRAM: OPI Octal 8MB (CONFIG_SPIRAM_MODE_OCT=y).
+ * Flash: 16MB.
  */
 
 #endif /* ESP_VISION_BOARD_CONFIG_H */
