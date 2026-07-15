@@ -1,0 +1,21 @@
+name: ESP32-S3 EYE Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ESP32_S3_EYE Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Fix berkeley-db GCC compatibility
+        run: |
+          python3 << 'EOF'
+import glob, os
+patch_text = 
