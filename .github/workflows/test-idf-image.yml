@@ -13,21 +13,6 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Fix berkeley-db
-        run: |
-          python3 << 'EOF'
-          import glob, os
-          patch_text = '#ifndef __P\n#define __P(args) args\n#endif\n#ifndef __BEGIN_DECLS\n#define __BEGIN_DECLS\n#endif\n#ifndef __END_DECLS\n#define __END_DECLS\n#endif\n'
-          base = 'lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db'
-          if os.path.isdir(base):
-              for f in glob.glob(base + '/*.h'):
-                  with open(f, 'r') as fh:
-                      content = fh.read()
-                  if '#ifndef __P' not in content:
-                      with open(f, 'w') as fh:
-                          fh.write(patch_text + content)
-          EOF
-
       - name: Build firmware
         run: |
           docker run --rm \
@@ -35,15 +20,38 @@ jobs:
             -w /project \
             -e ESP_IDF_VERSION=6.0 \
             espressif/idf:release-v6.0 \
-            bash -c "git config --global --add safe.directory '*' && . /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all" 2>&1 | tee build_output.log || true
+            bash -c '
+              set -e
+              git config --global --add safe.directory "*"
+              . /opt/esp/idf/export.sh
+              make BOARD=HIWONDER_S3 prepare-micropython
+              # Patch berkeley-db headers in the BUILD copy
+              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__P(/__attribute__((unused)) /g" {} \;
+              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__BEGIN_DECLS//"g {} \;
+              find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h" -exec sed -i "s/__END_DECLS//"g {} \;
+              echo "Berkeley-db headers patched"
+              make BOARD=HIWONDER_S3 build
+            ' 2>&1 | tee build_output.log || true
 
-      - name: Collect firmware files
+      - name: Collect firmware
         if: always()
         run: |
           mkdir -p firmware_out
-          find build/ \( -name "*.bin" -o -name "*.elf" -o -name "*.map" -o -name "flash_args" -o -name "flasher_args.json" \) -exec cp {} firmware_out/ \; 2>/dev/null || true
+          # Get the actual firmware files from the build output directory
+          BUILD_DIR="build/HIWONDER_S3/idf6.0"
+          if [ -d "$BUILD_DIR" ]; then
+            cp "$BUILD_DIR/bootloader/bootloader.bin" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/partition_table/partition-table.bin" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/ota_data_initial.bin" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/micropython.bin" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/flash_args" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/flasher_args.json" firmware_out/ 2>/dev/null || true
+            cp "$BUILD_DIR/micropython.elf" firmware_out/ 2>/dev/null || true
+          fi
           cp build_output.log firmware_out/ 2>/dev/null || true
+          echo "=== firmware_out ==="
           ls -lah firmware_out/
+          echo "=== Total size ==="
           du -sh firmware_out/
 
       - name: Upload firmware
