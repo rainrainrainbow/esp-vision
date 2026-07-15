@@ -1,10 +1,8 @@
 name: Build Hiwonder S3
-
 on:
   push:
     branches:
       - master
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,73 +10,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-
-      - name: Build firmware
+      - run: docker run --rm -v "$PWD:/project" -w /project espressif/idf:release-v6.0 bash /project/build_hiwonder.sh > build_output.log 2>&1; echo EXIT=$?
+      - if: always()
         run: |
-          docker run --rm \
-            -v "$PWD:/project" \
-            -w /project \
-            -e ESP_IDF_VERSION=6.0 \
-            espressif/idf:release-v6.0 \
-            bash -c '
-              git config --global --add safe.directory "*"
-              . /opt/esp/idf/export.sh
-
-              # Step 1: prepare (creates build/micropython/ copy)
-              make BOARD=HIWONDER_S3 prepare-micropython
-
-              # Step 2: patch berkeley-db headers in the BUILD copy
-              PATCH="#ifndef __P
-#define __P(x) x
-#endif
-#ifndef __BEGIN_DECLS
-#define __BEGIN_DECLS
-#endif
-#ifndef __END_DECLS
-#define __END_DECLS
-#endif
-#ifndef __PMT
-#define __PMT(args) args
-#endif
-#ifndef __const
-#define __const const
-#endif
-"
-              for f in $(find build/micropython/ -path "*/berkeley-db/include/berkeley-db/*.h"); do
-                if ! grep -q "#ifndef __P$" "$f"; then
-                  printf "%s" "$PATCH" > "$f.tmp"
-                  cat "$f" >> "$f.tmp"
-                  mv "$f.tmp" "$f"
-                  echo "Patched: $f"
-                fi
-              done
-
-              # Step 3: build (skip prepare since already done)
-              make BOARD=HIWONDER_S3 build
-            '
-
-      - name: Collect firmware
-        if: always()
-        run: |
-          echo "=== Build log from docker ==="
-          tail -30 build_output.log 2>/dev/null || true
+          tail -20 build_output.log
           mkdir -p firmware_out
           BUILD_DIR="build/HIWONDER_S3/idf6.0"
-          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json micropython.elf; do
+          for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json; do
             src="$BUILD_DIR/$f"
-            if [ -f "$src" ]; then
-              cp "$src" firmware_out/
-              echo "OK: $f ($(stat -c%s "$src") bytes)"
-            else
-              echo "MISSING: $f"
-            fi
+            [ -f "$src" ] && cp "$src" firmware_out/ && echo "OK: $f" || echo "MISSING: $f"
           done
-          echo ""
-          echo "=== firmware_out ==="
           ls -lah firmware_out/
-
-      - name: Upload firmware
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: firmware-hiwonder-s3
