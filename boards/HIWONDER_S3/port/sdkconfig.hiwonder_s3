@@ -16,3 +16,8 @@ CONFIG_CAMERA_OV2640_DVP_JPEG_320X240_50FPS=y
 
 # Disable btree (berkeley-db GCC 15 issue)
 CONFIG_MICROPY_BTREE=n
+
+# Disable Bluetooth (avoid nimble dependency issues)
+CONFIG_BT_ENABLED=n
+CONFIG_BT_BLE_42_FEATURES_SUPPORTED=n
+CONFIG_BT_BLE_50_FEATURES_SUPPORTED=n
