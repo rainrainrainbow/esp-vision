@@ -1,0 +1,62 @@
+name: Build HIWONDER_AI_MODULE Firmware
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/hiwonder-aimodule, master]
+  pull_request:
+    branches: [master]
+
+env:
+  BOARD: HIWONDER_AI_MODULE
+  IDF_IMAGE: espressif/idf:release-v6.1
+
+jobs:
+  build:
+    name: Build ${{ env.BOARD }} Firmware
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.IDF_IMAGE }}
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Sync submodules
+        run: |
+          git submodule sync -- lib/micropython lib/ulab lib/zxing-cpp
+          git submodule update --init --depth 1 lib/micropython lib/ulab lib/zxing-cpp
+          git -C lib/micropython submodule sync -- lib/micropython-lib
+          git -C lib/micropython submodule update --init --depth 1 lib/micropython-lib
+
+      - name: Source ESP-IDF and build
+        run: |
+          . /opt/esp/idf/export.sh
+          idf.py --board $BOARD build
+
+      - name: Create merged binary
+        run: |
+          . /opt/esp/idf/export.sh
+          BOARD_DIR=$(ls -d build/$BOARD/idf* 2>/dev/null | head -1)
+          if [ -n "$BOARD_DIR" ] && [ -f "$BOARD_DIR/flash_args" ]; then
+            esptool.py --chip esp32s3 merge_bin \
+              --output build/$BOARD/firmware-combined.bin \
+              --flash_mode qio --flash_freq 80m --flash_size 8MB \
+              @"$BOARD_DIR/flash_args"
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hiwonder-aimodule-firmware
+          path: |
+            build/$BOARD/firmware-combined.bin
+            build/$BOARD/idf*/bootloader/bootloader.bin
+            build/$BOARD/idf*/partition_table/partition-table.bin
+            build/$BOARD/idf*/micropython.bin
+            build/$BOARD/idf*/flash_args
+          retention-days: 30
+          if-no-files-found: warn
