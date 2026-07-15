@@ -81,3 +81,9 @@
 // ============================================================
 
 #endif // _BOARD_CONFIG_H_
+
+// JPEG codec quality settings
+#define ESP_VISION_IMLIB_JPEG_CODEC_ENABLE          (0)
+#define ESP_VISION_JPEG_QUALITY_LOW                 (60)
+#define ESP_VISION_JPEG_QUALITY_HIGH                (60)
+#define ESP_VISION_JPEG_QUALITY_THRESHOLD           (320 * 240 * 2)
