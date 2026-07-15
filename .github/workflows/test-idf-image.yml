@@ -37,4 +37,16 @@ jobs:
             -v "$PWD:/project" \
             -w /project \
             espressif/idf:release-v6.0 \
-            bash -c ". /opt/esp/idf/export.sh && idf.py set-target esp32s3 && make BOARD=HIWONDER_S3 all"
+            bash -c ". /opt/esp/idf/export.sh && make BOARD=HIWONDER_S3 all"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firmware-hiwonder-s3
+          path: |
+            build/*.bin
+            build/*.elf
+            build/flasher_args.json
+          retention-days: 30
+          if-no-files-found: ignore
