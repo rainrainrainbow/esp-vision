@@ -10,16 +10,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      - run: docker run --rm -v "$PWD:/project" -w /project espressif/idf:release-v6.0 bash /project/build_hiwonder.sh > build_output.log 2>&1; echo EXIT=$?
+      - run: docker run --rm -v "$PWD:/project" -w /project espressif/idf:release-v6.0 bash /project/build_hiwonder.sh > build_output.log 2>&1; echo "DOCKER_EXIT=$?"
       - if: always()
         run: |
-          tail -20 build_output.log
+          tail -40 build_output.log
           mkdir -p firmware_out
           BUILD_DIR="build/HIWONDER_S3/idf6.0"
           for f in bootloader/bootloader.bin partition_table/partition-table.bin ota_data_initial.bin micropython.bin flash_args flasher_args.json; do
             src="$BUILD_DIR/$f"
-            [ -f "$src" ] && cp "$src" firmware_out/ && echo "OK: $f" || echo "MISSING: $f"
+            [ -f "$src" ] && cp "$src" firmware_out/ && echo "OK: $f ($(stat -c%s "$src") bytes)" || echo "MISSING: $f"
           done
+          cp build_output.log firmware_out/ 2>/dev/null
           ls -lah firmware_out/
       - uses: actions/upload-artifact@v4
         if: always()
