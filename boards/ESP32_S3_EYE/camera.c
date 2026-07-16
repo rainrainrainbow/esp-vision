@@ -72,7 +72,7 @@ typedef struct {
     pixformat_t output_pixfmt;
 } esp_vision_camera_context_t;
 
-static const char *TAG = "esp_vision_camera";
+// TAG unused - using printf
 static esp_vision_camera_context_t s_camera = {
     .width = ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH,
     .height = ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT,
@@ -290,7 +290,7 @@ esp_err_t esp_vision_camera_init(void)
              ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
              ESP_VISION_CAMERA_SENSOR_RESET_PIN);
     printf("Sensor ID: 0x%04" PRIx32 "  (GC2145 expected PID=0x2145)",
-             ESP_VISION_CAMERA_SENSOR_ID);
+             (uint32_t)ESP_VISION_CAMERA_SENSOR_ID);
     printf("Buffers: %d in %s",
              ESP_VISION_CAMERA_BUFFER_COUNT,
              ESP_VISION_CAMERA_BUFFER_COUNT > 0 ? "PSRAM" : "DRAM");
