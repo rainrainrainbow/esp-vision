@@ -45,7 +45,12 @@ jobs:
 
       - name: Build firmware in Docker
         run: |
-          docker run --rm             -v "${{ github.workspace }}:/project"             -w /project             -e BOARD=HIWONDER_AI_MODULE             espressif/idf:release-v6.1             bash -c '
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            -e BOARD=HIWONDER_AI_MODULE \
+            espressif/idf:release-v6.1 \
+            bash -c '
               set -e
               . $IDF_PATH/export.sh
               idf.py set-target esp32s3
@@ -71,19 +76,18 @@ jobs:
       - name: Merge firmware binary
         if: success()
         run: |
-          docker run --rm             -v "${{ github.workspace }}:/project"             -w /project             espressif/idf:release-v6.1             bash -c '
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            espressif/idf:release-v6.1 \
+            bash -c '
               set -e
               . $IDF_PATH/export.sh
               cd build
               if [ -f flasher_args.json ]; then
                 esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flasher_args.json
               else
-                echo "flasher_args.json not found, checking flash_args..."
-                if [ -f flash_args ]; then
-                  esptool.py --chip esp32s3 merge_bin -o firmware_merged.bin @flash_args
-                else
-                  echo "No flash args file found, skipping merge"
-                fi
+                echo "flasher_args.json not found, skipping merge"
               fi
             '
 
