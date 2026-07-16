@@ -1,6 +1,12 @@
 name: ESP32-S3 EYE Build
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - 'boards/ESP32_S3_EYE/**'
+      - 'platform/**'
+      - '.github/workflows/esp32s3-eye-build.yml'
   workflow_dispatch:
 
 jobs:
@@ -18,4 +24,57 @@ jobs:
         run: |
           python3 << 'EOF'
 import glob, os
-patch_text = 
+patch_text = '''#ifndef __P
+#define __P(args) args
+#endif
+#ifndef __BEGIN_DECLS
+#define __BEGIN_DECLS
+#endif
+#ifndef __END_DECLS
+#define __END_DECLS
+#endif
+'''
+base = 'lib/micropython/lib/berkeley-db-1.xx/include/berkeley-db'
+if os.path.isdir(base):
+    for f in glob.glob(base + '/*.h'):
+        with open(f, 'r') as fh:
+            content = fh.read()
+        if '#ifndef __P' not in content:
+            with open(f, 'w') as fh:
+                fh.write(patch_text + content)
+            print(f'Patched {f}')
+        else:
+            print(f'Skipped {f}')
+else:
+    print(f'Directory not found: {base}')
+EOF
+
+      - name: Build firmware in Docker
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/project" \
+            -w /project \
+            espressif/idf:release-v6.0 \
+            bash -c '
+              set -e
+              . $IDF_PATH/export.sh
+              idf.py set-target esp32s3
+              make BOARD=ESP32_S3_EYE all
+            '
+
+      - name: List build outputs
+        if: always()
+        run: ls -lah build/
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firmware-esp32-s3-eye
+          path: |
+            build/*.bin
+            build/*.elf
+            build/*.map
+            build/flasher_args.json
+          retention-days: 30
+          if-no-files-found: ignore
