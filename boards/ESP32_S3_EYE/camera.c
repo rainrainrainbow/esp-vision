@@ -261,6 +261,82 @@ esp_err_t esp_vision_camera_init(void)
         return ret;
     }
 
+    /* Enable DEBUG logging for esp32-camera internals (probe, SCCB, sensor detect) */
+    esp_log_level_set("esp32-camera", ESP_LOG_DEBUG);
+    esp_log_level_set("camera", ESP_LOG_DEBUG);
+    esp_log_level_set("sccb", ESP_LOG_DEBUG);
+    esp_log_level_set("gc2145", ESP_LOG_DEBUG);
+
+    /* ============ Pin configuration dump ============ */
+    ESP_LOGI(TAG, "======== Camera Init: Hardware Config ========");
+    ESP_LOGI(TAG, "MCU: ESP32-S3  Flash:16MB  PSRAM:8MB(OPI)");
+    ESP_LOGI(TAG, "XCLK : GPIO%d @ %" PRIu32 " Hz  (LEDC timer=%d ch=%d)",
+             ESP_VISION_CAMERA_XCLK_PIN,
+             (uint32_t)ESP_VISION_CAMERA_XCLK_FREQ,
+             ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
+             ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL);
+    ESP_LOGI(TAG, "SCCB : SDA=GPIO%d SCL=GPIO%d  (I2C port=%d, freq=%" PRIu32 " Hz)",
+             ESP_VISION_CAMERA_SCCB_I2C_SDA_PIN,
+             ESP_VISION_CAMERA_SCCB_I2C_SCL_PIN,
+             ESP_VISION_CAMERA_SCCB_I2C_PORT,
+             (uint32_t)ESP_VISION_CAMERA_SCCB_I2C_FREQ);
+    ESP_LOGI(TAG, "D0-3 : GPIO%d,%d,%d,%d",
+             ESP_VISION_CAMERA_DVP_D0_PIN, ESP_VISION_CAMERA_DVP_D1_PIN,
+             ESP_VISION_CAMERA_DVP_D2_PIN, ESP_VISION_CAMERA_DVP_D3_PIN);
+    ESP_LOGI(TAG, "D4-7 : GPIO%d,%d,%d,%d",
+             ESP_VISION_CAMERA_DVP_D4_PIN, ESP_VISION_CAMERA_DVP_D5_PIN,
+             ESP_VISION_CAMERA_DVP_D6_PIN, ESP_VISION_CAMERA_DVP_D7_PIN);
+    ESP_LOGI(TAG, "VSYNC: GPIO%d  HSYNC: GPIO%d  PCLK: GPIO%d",
+             ESP_VISION_CAMERA_DVP_VSYNC_PIN,
+             ESP_VISION_CAMERA_DVP_HSYNC_PIN,
+             ESP_VISION_CAMERA_DVP_PCLK_PIN);
+    ESP_LOGI(TAG, "PWDN : GPIO%d  RESET: GPIO%d  (-1 = not used)",
+             ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
+             ESP_VISION_CAMERA_SENSOR_RESET_PIN);
+    ESP_LOGI(TAG, "Sensor ID: 0x%04" PRIx32 "  (GC2145 expected PID=0x2145)",
+             ESP_VISION_CAMERA_SENSOR_ID);
+    ESP_LOGI(TAG, "Buffers: %d in %s",
+             ESP_VISION_CAMERA_BUFFER_COUNT,
+             ESP_VISION_CAMERA_BUFFER_COUNT > 0 ? "PSRAM" : "DRAM");
+    ESP_LOGI(TAG, "==============================================");
+
+#if CONFIG_IDF_TARGET_ESP32S3
+    /*
+     * GC2145 requires MCLK (XCLK) to be running before it responds on I2C.
+     * esp32-camera's CAMERA_ENABLE_OUT_CLOCK is an empty macro on ESP32-S3,
+     * so we pre-configure the LEDC peripheral here.
+     */
+    ESP_LOGI(TAG, "Pre-enabling XCLK on GPIO%d (20MHz, LEDC timer=%d ch=%d)...",
+             ESP_VISION_CAMERA_XCLK_PIN,
+             ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
+             ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL);
+
+    ledc_timer_config_t xclk_timer = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_2_BIT,
+        .timer_num = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
+        .freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
+        .clk_cfg = LEDC_AUTO_CLK,
+    };
+    ret = ledc_timer_config(&xclk_timer);
+    ESP_LOGI(TAG, "  LEDC timer config: %s (%d)", esp_err_to_name(ret), ret);
+
+    ledc_channel_config_t xclk_channel = {
+        .gpio_num = ESP_VISION_CAMERA_XCLK_PIN,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
+        .timer_sel = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
+        .duty = 2,
+        .hpoint = 0,
+    };
+    ret = ledc_channel_config(&xclk_channel);
+    ESP_LOGI(TAG, "  LEDC channel config: %s (%d)", esp_err_to_name(ret), ret);
+
+    /* Give GC2145 time to wake up with XCLK running */
+    vTaskDelay(pdMS_TO_TICKS(100));
+    ESP_LOGI(TAG, "XCLK pre-init done, waited 100ms for sensor startup");
+#endif
+
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
@@ -290,34 +366,14 @@ esp_err_t esp_vision_camera_init(void)
         .sccb_i2c_port = ESP_VISION_CAMERA_SCCB_I2C_PORT,
     };
 
-#if CONFIG_IDF_TARGET_ESP32S3
-    // GC2145 requires MCLK before I2C communication
-    {
-        ledc_timer_config_t xclk_timer = {
-            .speed_mode = LEDC_LOW_SPEED_MODE,
-            .duty_resolution = LEDC_TIMER_2_BIT,
-            .timer_num = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
-            .freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
-            .clk_cfg = LEDC_AUTO_CLK,
-        };
-        ledc_timer_config(&xclk_timer);
-
-        ledc_channel_config_t xclk_channel = {
-            .gpio_num = ESP_VISION_CAMERA_XCLK_PIN,
-            .speed_mode = LEDC_LOW_SPEED_MODE,
-            .channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
-            .timer_sel = LEDC_TIMER_1,
-            .duty = 2,
-            .hpoint = 0,
-        };
-        ledc_channel_config(&xclk_channel);
-    }
-#endif
-
+    ESP_LOGI(TAG, ">>> Calling esp_camera_init() ...");
     ret = esp_camera_init(&config);
+    ESP_LOGI(TAG, "<<< esp_camera_init returned: %d = %s", ret, esp_err_to_name(ret));
+
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed to initialize esp32-camera: %s", esp_err_to_name(ret));
-        esp_vision_debug_printf("[esp-vision] camera start failed: %s\r\n", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Camera init FAILED: %s (code=%d)", esp_err_to_name(ret), ret);
+        esp_vision_debug_printf("[esp-vision] camera init FAILED: %s (code=%d)\r\n",
+                                esp_err_to_name(ret), ret);
         return ret;
     }
 
@@ -331,6 +387,7 @@ esp_err_t esp_vision_camera_init(void)
         sensor->set_vflip(sensor, s_camera.vflip ? 1 : 0);
     }
 
+    ESP_LOGI(TAG, "Camera init SUCCESS");
     esp_vision_debug_printf("[esp-vision] camera started: sensor=0x%04" PRIx32
                             " raw=%" PRIu32 "x%" PRIu32
                             " active=%" PRIu32 "x%" PRIu32 "+%" PRIu32 "+%" PRIu32
