@@ -4,7 +4,6 @@ git config --global --add safe.directory "*"
 . /opt/esp/idf/export.sh
 export ESP_IDF_VERSION=6.0
 
-idf.py set-target esp32s3
 make BOARD=ESP32_S3_EYE prepare-micropython
 
 # Patch berkeley-db headers in build copy
