@@ -23,8 +23,8 @@
 #define ESP_VISION_JPEG_QUALITY_HIGH                (60)
 #define ESP_VISION_JPEG_QUALITY_THRESHOLD           (320 * 240 * 2)
 
-/* Camera - OV2640 DVP, SCCB on I2C0 (GPIO4/5), XCLK=8MHz LEDC0 */
-#define ESP_VISION_CAMERA_SENSOR_ID                 (0x2640)
+/* Camera - GC2145 DVP, SCCB on I2C0 (GPIO4/5), XCLK=8MHz LEDC0 */
+#define ESP_VISION_CAMERA_SENSOR_ID                 (0x2145)
 #define ESP_VISION_CAMERA_RAW_INPUT_WIDTH           (320)
 #define ESP_VISION_CAMERA_RAW_INPUT_HEIGHT          (240)
 #define ESP_VISION_CAMERA_ACTIVE_INPUT_WIDTH        (320)
@@ -76,6 +76,23 @@
 #define ESP_VISION_LCD_BACKLIGHT_TIMER              (0)
 #define ESP_VISION_LCD_BACKLIGHT_PWM_HZ             (5000)
 #define ESP_VISION_LCD_BACKLIGHT_OUTPUT_INVERT      (0)
+
+/* Touch - FT5x06 capacitive touch on I2C0 (shared with camera) */
+#define ESP_VISION_TOUCH_FT5X06_I2C_PORT            (0)
+#define ESP_VISION_TOUCH_FT5X06_I2C_SCL_PIN         (5)
+#define ESP_VISION_TOUCH_FT5X06_I2C_SDA_PIN         (4)
+#define ESP_VISION_TOUCH_FT5X06_INT_PIN             (-1)
+#define ESP_VISION_TOUCH_FT5X06_RST_PIN             (-1)
+
+/* Audio - ES8311 codec on I2C0 + I2S */
+#define ESP_VISION_AUDIO_ES8311_I2C_PORT            (0)
+#define ESP_VISION_AUDIO_ES8311_I2C_SCL_PIN         (5)
+#define ESP_VISION_AUDIO_ES8311_I2C_SDA_PIN         (4)
+#define ESP_VISION_AUDIO_ES8311_I2S_BCLK_PIN        (45)
+#define ESP_VISION_AUDIO_ES8311_I2S_LRCK_PIN        (38)
+#define ESP_VISION_AUDIO_ES8311_I2S_DIN_PIN         (46)
+#define ESP_VISION_AUDIO_ES8311_I2S_DOUT_PIN        (42)
+#define ESP_VISION_AUDIO_ES8311_PA_PIN              (-1)
 
 /* No SD card */
 #define ESP_VISION_SDCARD_MOUNT_PATH                "/sdcard"
