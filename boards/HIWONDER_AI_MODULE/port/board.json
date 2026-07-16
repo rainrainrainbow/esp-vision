@@ -6,7 +6,10 @@
     "features": [
         "WiFi",
         "DVP",
-        "OV2640"
+        "GC2145",
+        "ES8311",
+        "FT5x06",
+        "ST7789"
     ],
     "mcu": "esp32s3",
     "product": "HIWONDER-AI-MODULE",
