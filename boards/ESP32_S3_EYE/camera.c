@@ -336,7 +336,7 @@ esp_err_t esp_vision_camera_init(void)
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
-        .pin_xclk = ESP_VISION_CAMERA_XCLK_PIN,
+        .pin_xclk = -1,  /* LEDC drives XCLK on GPIO15; do not let ll_cam_set_pin override */
         .pin_sccb_sda = ESP_VISION_CAMERA_SCCB_I2C_SDA_PIN,
         .pin_sccb_scl = ESP_VISION_CAMERA_SCCB_I2C_SCL_PIN,
         .pin_d7 = ESP_VISION_CAMERA_DVP_D7_PIN,
