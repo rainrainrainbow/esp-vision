@@ -290,6 +290,30 @@ esp_err_t esp_vision_camera_init(void)
         .sccb_i2c_port = ESP_VISION_CAMERA_SCCB_I2C_PORT,
     };
 
+#if CONFIG_IDF_TARGET_ESP32S3
+    // GC2145 requires MCLK before I2C communication
+    {
+        ledc_timer_config_t xclk_timer = {
+            .speed_mode = LEDC_LOW_SPEED_MODE,
+            .duty_resolution = LEDC_TIMER_2_BIT,
+            .timer_num = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
+            .freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
+            .clk_cfg = LEDC_AUTO_CLK,
+        };
+        ledc_timer_config(&xclk_timer);
+
+        ledc_channel_config_t xclk_channel = {
+            .gpio_num = ESP_VISION_CAMERA_XCLK_PIN,
+            .speed_mode = LEDC_LOW_SPEED_MODE,
+            .channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
+            .timer_sel = LEDC_TIMER_1,
+            .duty = 2,
+            .hpoint = 0,
+        };
+        ledc_channel_config(&xclk_channel);
+    }
+#endif
+
     ret = esp_camera_init(&config);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "failed to initialize esp32-camera: %s", esp_err_to_name(ret));
