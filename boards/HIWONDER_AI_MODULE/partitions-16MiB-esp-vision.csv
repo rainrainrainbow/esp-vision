@@ -1,9 +1,0 @@
-# Name,   Type, SubType,  Offset,   Size,      Flags
-# Note: if you have increased the bootloader size, make sure to update the offsets to avoid overlap
-# 16MB Flash layout for ESP32-S3-WROOM-1-N16R8
-nvs,      data, nvs,      0x9000,   0x6000,
-otadata,  data, ota,      0xf000,   0x2000,
-phy_init, data, phy,      0x11000,  0x1000,
-factory,  app,  factory,  0x20000,  0x500000,
-vfs,      data, spiffs,   0x520000, 0x800000,
-cvs,      data, spiffs,   0xD20000, 0x2E0000,
