@@ -26,3 +26,6 @@ CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 
 # Camera - GC2145 auto-detected by esp_camera_init()
 CONFIG_GC2145_SUPPORT=y
+
+# GC2145 subsample mode - required for set_framesize() to work
+CONFIG_GC_SENSOR_SUBSAMPLE_MODE=y
