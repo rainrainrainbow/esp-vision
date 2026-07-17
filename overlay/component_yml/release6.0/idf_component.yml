@@ -23,11 +23,11 @@ dependencies:
   espressif/esp_video:
     version: "2.3.0"
     rules:
-      - if: "target in [esp32p4, esp32s31]"
+      - if: "target in [esp32p4, esp32s31, esp32s3]"
   espressif/esp32-camera:
     version: "2.1.7"
     rules:
-      - if: "target in [esp32s3]"
+      - if: "target in []"
   espressif/esp-dl:
     version: "3.3.6"
     rules:
