@@ -1,1 +1,189 @@
-LyoKICogU1BEWC1GaWxlQ29weXJpZ2h0VGV4dDogMjAyNiBFc3ByZXNzaWYgU3lzdGVtcyAoU2hhbmdoYWkpIENPIExURAogKgogKiBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogQXBhY2hlLTIuMAogKgogKiBFUzgzMTEgYXVkaW8gY29kZWMgZHJpdmVyIGZvciBISVdPTkRFUl9BSV9NT0RVTEUuCiAqIEkyQyBvbiBJMkMwIChzaGFyZWQgd2l0aCBjYW1lcmEgYW5kIHRvdWNoKSwgSTJTIGZvciBhdWRpbyBkYXRhLgogKi8KCiNpbmNsdWRlIDxzdGRib29sLmg+CiNpbmNsdWRlIDxzdGRpbnQuaD4KI2luY2x1ZGUgPHN0cmluZy5oPgojaW5jbHVkZSA8c3RkbGliLmg+CgojaW5jbHVkZSAiZHJpdmVyL2kyYy5oIgojaW5jbHVkZSAiZHJpdmVyL2kyc19zdGQuaCIKI2luY2x1ZGUgImVzcF9lcnIuaCIKI2luY2x1ZGUgImVzcF9sb2cuaCIKCiNpbmNsdWRlICJib2FyZGNvbmZpZy5oIgoKc3RhdGljIGNvbnN0IGNoYXIgKlRBRyA9ICJlc3BfdmlzaW9uX2F1ZGlvIjsKCi8qIEVTODMxMSBJMkMgYWRkcmVzcyAqLwojZGVmaW5lIEVTODMxMV9BRERSICAgICAgICAgICAgICAgICAweDE4CgovKiBFUzgzMTEgcmVnaXN0ZXJzICovCiNkZWZpbmUgRVM4MzExX1JFU0VUX1JFRyAgICAgICAgICAgICAweDAwCiNkZWZpbmUgRVM4MzExX0NMT0NLX01BTkFHRVJfUkVHICAgIDB4MDEKI2RlZmluZSBFUzgzMTFfQ0xPQ0tfRElWX1JFRyAgICAgICAgMHgwMgojZGVmaW5lIEVTODMxMV9BRENfREFDX1JFRyAgICAgICAgICAweDA0CiNkZWZpbmUgRVM4MzExX1NFTF9BRENfUkVHICAgICAgICAgIDB4MDgKI2RlZmluZSBFUzgzMTFfQURDX1ZPTF9SRUcgICAgICAgICAgMHgwQgojZGVmaW5lIEVTODMxMV9EQUNfVk9MX1JFRyAgICAgICAgICAweDBDCiNkZWZpbmUgRVM4MzExX1NFTF9EQUNfUkVHICAgICAgICAgIDB4MEQKI2RlZmluZSBFUzgzMTFfR1BJT19SRUcgICAgICAgICAgICAgMHgwRgojZGVmaW5lIEVTODMxMV9EQUNfQ1RSTF9SRUcgICAgICAgICAweDExCiNkZWZpbmUgRVM4MzExX0FEQ19DVFJMX1JFRyAgICAgICAgIDB4MTIKCi8qIEVTODMxMSByZWdpc3RlciB2YWx1ZXMgKi8KI2RlZmluZSBFUzgzMTFfUkVTRVQgICAgICAgICAgICAgICAgMHgxRgojZGVmaW5lIEVTODMxMV9DTE9DS19PTiAgICAgICAgICAgICAweDBGCiNkZWZpbmUgRVM4MzExX0NMT0NLX09GRiAgICAgICAgICAgIDB4MDAKI2RlZmluZSBFUzgzMTFfQURDX0RBQ19PTiAgICAgICAgICAgMHgxNQojZGVmaW5lIEVTODMxMV9BRENfREFDX09GRiAgICAgICAgICAweDAwCiNkZWZpbmUgRVM4MzExX01DTEtfRElWXzI1NiAgICAgICAgIDB4MDAKI2RlZmluZSBFUzgzMTFfQURDX0lOUFVUX01JQyAgICAgICAgMHg2MgojZGVmaW5lIEVTODMxMV9EQUNfT1VUUFVUX0xJTkUgICAgICAweDA0CiNkZWZpbmUgRVM4MzExX0dQSU9fREFDX1BETl9OICAgICAgIDB4MDIKCiNkZWZpbmUgQVVESU9fREVGQVVMVF9TQU1QTEVfUkFURSAgIDQ0MTAwCgpzdGF0aWMgYm9vbCBzX2F1ZGlvX2luaXRlZCA9IGZhbHNlOwpzdGF0aWMgaTJzX2NoYW5faGFuZGxlX3Qgcy90eF9oYW5kbGUgPSBOVUxMOwoKc3RhdGljIGVzcF9lcnJfdCBlczgzMTFfd3JpdGVfcmVnKHVpbnQ4X3QgcmVnLCB1aW50OF90IHZhbCkKewogICAgaTJjX2NtZF9oYW5kbGVfdCBjbWQgPSBpMmNfY21kX2xpbmtfY3JlYXRlKCk7CiAgICBpMmNfbWFzdGVyX3N0YXJ0KGNtZCk7CiAgICBpMmNfbWFzdGVyX3dyaXRlX2J5dGUoY21kLCAoRVM4MzExX0FERVIgPDwgMSkgfCBJMkNfTUFTVEVSX1dSSVRFLCB0cnVlKTsKICAgIGkyY19tYXN0ZXJfd3JpdGVfYnl0ZShjbWQsIHJlZywgdHJ1ZSk7CiAgICBpMmNfbWFzdGVyX3dyaXRlX2J5dGUoY21kLCB2YWwsIHRydWUpOwogICAgaTJjX21hc3Rlcl9zdG9wKGNtZCk7CiAgICBlc3BfZXJyX3QgcmV0ID0gaTJjX21hc3Rlcl9jbWRfYmVnaW4oSTJDX05VTV8wLCBjbWQsIHBkTVNfVE9fVElDS1MoMTAwKSk7CiAgICBpMmNfY21kX2xpbmtfZGVsZXRlKGNtZCk7CiAgICByZXR1cm4gcmV0Owp9Cgplc3BfZXJyX3QgZXNwX3Zpc2lvbl9hdWRpb19pbml0KHZvaWQpCnsKICAgIGlmIChzX2F1ZGlvX2luaXRlZCkgewogICAgICAgIHJldHVybiBFU1BfT0s7CiAgICB9CgogICAgLyogUmVzZXQgRVM4MzExICovCiAgICBlc3BfZXJyX3QgcmV0ID0gZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfUkVTRVRfUkVHLCBFUzgzMTFfUkVTRVQpOwogICAgaWYgKHJldCAhPSBFU1BfT0spIHsKICAgICAgICBFU1BfTE9HRShUQUcsICJGYWlsZWQgdG8gcmVzZXQgRVM4MzExOiAlcyIsIGVzcF9lcnJfdG9fbmFtZShyZXQpKTsKICAgICAgICByZXR1cm4gcmV0OwogICAgfQogICAgdlRhc2tEZWxheShwZE1TX1RPX1RJQ0tTKDUwKSk7CgogICAgLyogQ2xvY2sgbWFuYWdlbWVudCogLwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfQ0xPQ0tfTUFOQUdFUl9SRUcsIEVTODMxMV9DTE9DS19PTik7CiAgICBlczgzMTFfd3JpdGVfcmVnKEVTODMxMV9DTE9DS19ESVZfUkVHLCBFUzgzMTFfTUNMS19ESVZfMjU2KTsKICAgIGVzODMxMV93cml0ZV9yZWcoRVM4MzExX0FEQ19EQUNfUkVHLCBFUzgzMTFfQURDX0RBQ19PTik7CiAgICBlczgzMTFfd3JpdGVfcmVnKEVTODMxMV9TRUxfQURDX1JFRywgRVM4MzExX0FEQ19JTlBVVF9NSUMpOwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfQURDX1ZPTF9SRUcsIDB4MzApOwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfREFDX1ZPTF9SRUcsIDB4MzApOwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfU0VMX0RBQ19SRUcsIEVTODMxMV9EQUNfT1VUUFVUX0xJTkUpOwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfR1BJT19SRUcsIEVTODMxMV9HUElPX0RBQ19QRE5fTik7CiAgICBlczgzMTFfd3JpdGVfcmVnKEVTODMxMV9EQUNfQ1RSTF9SRUcsIDB4MDgpOwogICAgZXM4MzExX3dyaXRlX3JlZyhFUzgzMTFfQURDX0NUUkxfUkVHLCAweDA4KTsKCiAgICAvKiBJbml0aWFsaXplIElSUyBUWCBjaGFubmVsICovCiAgICBpMnNfY2hhbl9jb25maWdfdCBjaGFuX2NmZyA9IHsKICAgICAgICAuaWQgPSBJMlNfTlVNXzAsCiAgICAgICAgLnJvbGUgPSBJMlNfUk9MRV9NQVNURVIsCiAgICAgICAgLmRtYV9kZXNjX251bSA9IDgsCiAgICAgICAgLmRtYV9mcmFtZV9udW0gPSAyNTYsCiAgICAgICAgLmF1dG9fY2xlYXJfYWZ0ZXJfY2IgPSB0cnVlLAogICAgICAgIC5hdXRvX2NsZWFyID0gZmFsc2UsCiAgICB9OwogICAgcmV0ID0gaTJzX25ld19jaGFubmVsKCZjaGFuX2NmZywgJnNfdHhfaGFuZGxlLCBOVUxMKTsKICAgIGlmIChyZXQgIT0gRVNQX09LKSB7CiAgICAgICAgRVNQX0xPR0UoVEFHLCAiRmFpbGVkIHRvIGNyZWF0ZSBJMnMgVFggY2hhbm5lbDogJXMiLCBlc3BfZXJyX3RvX25hbWUocmV0KSk7CiAgICAgICAgcmV0dXJuIHJldDsKICAgIH0KCiAgICBpMnNfc3RkX2NvbmZpZ190IHN0ZF9jZmcgPSB7CiAgICAgICAgLmNsa19jZmcgPSB7CiAgICAgICAgICAgIC5zYW1wbGVfcmF0ZV9oeiA9IEFVRElPX0RFRkFVTFRfU0FNUExFX1JBVEUsCiAgICAgICAgICAgIC5jbGtfc3JjID0gSTJTX0NMS19TUkNfREVGQVVMVCwKICAgICAgICAgICAgLm1jbGtfbXVsdGlwbGUgPSBJMlNfTUNMS19NVUxUSVBMRV8yNTYsCiAgICAgICAgfSwKICAgICAgICAuc2xvdF9jZmcgPSB7CiAgICAgICAgICAgIC5zbG90X21vZGUgPSBJMlNfU0xPVF9NT0RFX1NURVJFTywKICAgICAgICAgICAgLnNsb3RfbWFzayA9IEkyU19TVERfU0xPVF9CT1RILAogICAgICAgICAgICAud3Nfd2lkdGggPSAzMiwKICAgICAgICAgICAgLmJpdF9zaGlmdCA9IHRydWUsCiAgICAgICAgICAgIC5sZWZ0X2FsaWduID0gdHJ1ZSwKICAgICAgICAgICAgLmJpZ19lbmRpYW4gPSBmYWxzZSwKICAgICAgICAgICAgLmJpdF9vcmRlcl9sc2IgPSBmYWxzZSwKICAgICAgICB9LAogICAgICAgIC5ncGlvX2NmZyA9IHsKICAgICAgICAgICAgLm1jbGsgPSBJMlNfR1BJT19VTlVTRUQsCiAgICAgICAgICAgIC5iY2xrID0gRVNQX1ZJU0lPTl9BVURJT19FUzgzMTFfSTJTX0JDTEtfUElOLAogICAgICAgICAgICAud3MgPSBFU1BfVklTSU9OX0FVRElPX0VTODMxMV9JMlNfTFJDS19QSU4sCiAgICAgICAgICAgIC5kb3V0ID0gRVNQX1ZJU0lPTl9BVURJT19FUzgzMTFfSTJTX0RPVVRfUElOLAogICAgICAgICAgICAuZGluID0gSTJTX0dQSU9fVU5VU0VELAogICAgICAgIH0sCiAgICB9OwogICAgcmV0ID0gaTJzX2NoYW5uZWxfaW5pdF9zdGRfbW9kZShzX3R4X2hhbmRsZSwgJnN0ZF9jZmcpOwogICAgaWYgKHJldCAhPSBFU1BfT0spIHsKICAgICAgICBFU1BfTE9HRShUQUcsICJGYWlsZWQgdG8gaW5pdCBJMnMgc3RkIG1vZGU6ICVzIiwgZXNwX2Vycl90b19uYW1lKHJldCkpOwogICAgICAgIGkyc19kZWxfY2hhbm5lbChzX3R4X2hhbmRsZSk7CiAgICAgICAgc190eF9oYW5kbGUgPSBOVUxMOwogICAgICAgIHJldHVybiByZXQ7CiAgICB9CgogICAgcmV0ID0gaTJzX2NoYW5uZWxfZW5hYmxlKHNfdHhfaGFuZGxlKTsKICAgIGlmIChyZXQgIT0gRVNQX09LKSB7CiAgICAgICAgRVNQX0xPR0UoVEFHLCAiRmFpbGVkIHRvIGVuYWJsZSBJMnMgY2hhbm5lbDogJXMiLCBlc3BfZXJyX3RvX25hbWUocmV0KSk7CiAgICAgICAgaTJzX2RlbF9jaGFubmVsKHNfdHhfaGFuZGxlKTsKICAgICAgICBzX3R4X2hhbmRsZSA9IE5VTEw7CiAgICAgICAgcmV0dXJuIHJldDsKICAgIH0KCiAgICBFU1BfTE9HSShUQUcsICJFUzgzMTEgKyBJMnMgaW5pdGlhbGl6ZWQgc3VjY2Vzc2Z1bGx5Iik7CiAgICBzX2F1ZGlvX2luaXRlZCA9IHRydWU7CiAgICByZXR1cm4gRVNQX09LOwp9Cgp2b2lkIGVzcF92aXNpb25fYXVkaW9fZGVpbml0KHZvaWQpCnsKICAgIGlmIChzX3R4X2hhbmRsZSkgewogICAgICAgIGkyc19jaGFubmVsX2Rpc2FibGUoc190eF9oYW5kbGUpOwogICAgICAgIGkyc19kZWxfY2hhbm5lbChzX3R4X2hhbmRsZSk7CiAgICAgICAgc190eF9oYW5kbGUgPSBOVUxMOwogICAgfQogICAgc19hdWRpb19pbml0ZWQgPSBmYWxzZTsKfQoKYm9vbCBlc3BfdmlzaW9uX2F1ZGlvX2lzX3JlYWR5KHZvaWQpCnsKICAgIHJldHVybiBzX2F1ZGlvX2luaXRlZDsKfQoKaW50IGVzcF92aXNpb25fYXVkaW9fcGxheV9wY20oY29uc3QgdWludDhfdCAqZGF0YSwgc2l6ZV90IGxlbiwgdWludDMyX3Qgc2FtcGxlX3JhdGUpCnsKICAgIGlmICghc19hdWRpb19pbml0ZWQgfHwgIXNfdHhfaGFuZGxlIHx8ICFkYXRhIHx8IGxlbiA9PSAwKSByZXR1cm4gLTE7CiAgICAKICAgIC8qIFVwZGF0ZSBzYW1wbGUgcmF0ZSBpZiBuZWVkZWQgKi8KICAgIGlmIChzYW1wbGVfcmF0ZSAhPSAwKSB7CiAgICAgICAgaTJzX2NoYW5uZWxfZGlzYWJsZShzX3R4X2hhbmRsZSk7CiAgICAgICAgaTJzX3N0ZF9jbGtfY29uZmlnX3QgY2xrX2NmZyA9IHsKICAgICAgICAgICAgLnNhbXBsZV9yYXRlX2h6ID0gc2FtcGxlX3JhdGUsCiAgICAgICAgICAgIC5jbGtfc3JjID0gSTJTX0NMS19TUkNfREVGQVVMVCwKICAgICAgICAgICAgLm1jbGtfbXVsdGlwbGUgPSBJMlNfTUNMS19NVUxUSVBMRV8yNTYsCiAgICAgICAgfTsKICAgICAgICBpMnNfY2hhbm5lbF9yZWNvbmZpZ19zdGRfY2xvY2soc190eF9oYW5kbGUsICZjbGtfY2ZnKTsKICAgICAgICBpMnNfY2hhbm5lbF9lbmFibGUoc190eF9oYW5kbGUpOwogICAgfQogICAgCiAgICBzaXplX3QgYnl0ZXNfd3JpdHRlbiA9IDA7CiAgICBlc3BfZXJyX3QgcmV0ID0gaTJzX2NoYW5uZWxfd3JpdGUoc190eF9oYW5kbGUsIGRhdGEsIGxlbiwgJmJ5dGVzX3dyaXR0ZW4sIHBvcnRNQVhfREVMQVkpOwogICAgaWYgKHJldCAhPSBFU1BfT0spIHJldHVybiAtMTsKICAgIHJldHVybiAoaW50KWJ5dGVzX3dyaXR0ZW47Cn0K
+/*
+ * SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * ES8311 audio codec driver for HIWONDER_AI_MODULE.
+ * I2C on I2C0 (shared with camera and touch), I2S for audio data.
+ */
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "driver/i2c.h"
+#include "driver/i2s_std.h"
+#include "esp_err.h"
+#include "esp_log.h"
+
+#include "boardconfig.h"
+
+static const char *TAG = "esp_vision_audio";
+
+/* ES8311 I2C address */
+#define ES8311_ADDR                    0x18
+
+/* ES8311 registers */
+#define ES8311_RESET_REG               0x00
+#define ES8311_CLOCK_MANAGER_REG       0x01
+#define ES8311_CLOCK_DIV_REG           0x02
+#define ES8311_ADC_DAC_REG             0x04
+#define ES8311_SEL_ADC_REG             0x08
+#define ES8311_ADC_VOL_REG             0x0B
+#define ES8311_DAC_VOL_REG             0x0C
+#define ES8311_SEL_DAC_REG             0x0D
+#define ES8311_GPIO_REG                0x0F
+#define ES8311_DAC_CTRL_REG            0x11
+#define ES8311_ADC_CTRL_REG            0x12
+
+/* ES8311 register values */
+#define ES8311_RESET                   0x1F
+#define ES8311_CLOCK_ON                0x0F
+#define ES8311_CLOCK_OFF               0x00
+#define ES8311_ADC_DAC_ON              0x15
+#define ES8311_ADC_DAC_OFF             0x00
+#define ES8311_MCLK_DIV_256            0x00
+#define ES8311_ADC_INPUT_MIC           0x62
+#define ES8311_DAC_OUTPUT_LINE         0x04
+#define ES8311_GPIO_DAC_PDN_N          0x02
+
+#define AUDIO_DEFAULT_SAMPLE_RATE      44100
+
+static bool s_audio_initialized = false;
+static i2s_chan_handle_t s_tx_handle = NULL;
+
+static esp_err_t es8311_write_reg(uint8_t reg, uint8_t val)
+{
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ES8311_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, reg, true);
+    i2c_master_write_byte(cmd, val, true);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(100));
+    i2c_cmd_link_delete(cmd);
+    return ret;
+}
+
+esp_err_t esp_vision_audio_init(void)
+{
+    if (s_audio_initialized) {
+        return ESP_OK;
+    }
+
+    /* Reset ES8311 */
+    esp_err_t ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to reset ES8311: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    /* Clock management */
+    es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_ON);
+    es8311_write_reg(ES8311_CLOCK_DIV_REG, ES8311_MCLK_DIV_256);
+    es8311_write_reg(ES8311_ADC_DAC_REG, ES8311_ADC_DAC_ON);
+    es8311_write_reg(ES8311_SEL_ADC_REG, ES8311_ADC_INPUT_MIC);
+    es8311_write_reg(ES8311_ADC_VOL_REG, 0x30);
+    es8311_write_reg(ES8311_DAC_VOL_REG, 0x30);
+    es8311_write_reg(ES8311_SEL_DAC_REG, ES8311_DAC_OUTPUT_LINE);
+    es8311_write_reg(ES8311_GPIO_REG, ES8311_GPIO_DAC_PDN_N);
+    es8311_write_reg(ES8311_DAC_CTRL_REG, 0x08);
+    es8311_write_reg(ES8311_ADC_CTRL_REG, 0x08);
+
+    /* Initialize I2S TX channel */
+    i2s_chan_config_t chan_cfg = {
+        .id = I2S_NUM_0,
+        .role = I2S_ROLE_MASTER,
+        .dma_desc_num = 8,
+        .dma_frame_num = 256,
+        .auto_clear_after_cb = true,
+        .auto_clear = false,
+    };
+    ret = i2s_new_channel(&chan_cfg, &s_tx_handle, NULL);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create I2S TX channel: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    i2s_std_config_t std_cfg = {
+        .clk_cfg = {
+            .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
+            .clk_src = I2S_CLK_SRC_DEFAULT,
+            .mclk_multiple = I2S_MCLK_MULTIPLE_256,
+        },
+        .slot_cfg = {
+            .slot_mode = I2S_SLOT_MODE_STEREO,
+            .slot_mask = I2S_STD_SLOT_BOTH,
+            .ws_width = 32,
+            .bit_shift = true,
+            .left_align = true,
+            .big_endian = false,
+            .bit_order_lsb = false,
+        },
+        .gpio_cfg = {
+            .mclk = I2S_GPIO_UNUSED,
+            .bclk = ESP_VISION_AUDIO_ES8311_I2S_BCLK_PIN,
+            .ws = ESP_VISION_AUDIO_ES8311_I2S_LRCK_PIN,
+            .dout = ESP_VISION_AUDIO_ES8311_I2S_DOUT_PIN,
+            .din = I2S_GPIO_UNUSED,
+        },
+    };
+    ret = i2s_channel_init_std_mode(s_tx_handle, &std_cfg);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init I2S std mode: %s", esp_err_to_name(ret));
+        i2s_del_channel(s_tx_handle);
+        s_tx_handle = NULL;
+        return ret;
+    }
+
+    ret = i2s_channel_enable(s_tx_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to enable I2S channel: %s", esp_err_to_name(ret));
+        i2s_del_channel(s_tx_handle);
+        s_tx_handle = NULL;
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "ES8311 + I2S initialized successfully");
+    s_audio_initialized = true;
+    return ESP_OK;
+}
+
+void esp_vision_audio_deinit(void)
+{
+    if (s_tx_handle) {
+        i2s_channel_disable(s_tx_handle);
+        i2s_del_channel(s_tx_handle);
+        s_tx_handle = NULL;
+    }
+    s_audio_initialized = false;
+}
+
+bool esp_vision_audio_is_ready(void)
+{
+    return s_audio_initialized;
+}
+
+int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_rate)
+{
+    if (!s_audio_initialized || !s_tx_handle || !data || len == 0) return -1;
+
+    /* Update sample rate if needed */
+    if (sample_rate != 0) {
+        i2s_channel_disable(s_tx_handle);
+        i2s_std_clk_config_t clk_cfg = {
+            .sample_rate_hz = sample_rate,
+            .clk_src = I2S_CLK_SRC_DEFAULT,
+            .mclk_multiple = I2S_MCLK_MULTIPLE_256,
+        };
+        i2s_channel_reconfig_std_clock(s_tx_handle, &clk_cfg);
+        i2s_channel_enable(s_tx_handle);
+    }
+
+    size_t bytes_written = 0;
+    esp_err_t ret = i2s_channel_write(s_tx_handle, data, len, &bytes_written, portMAX_DELAY);
+    if (ret != ESP_OK) return -1;
+    return (int)bytes_written;
+}
