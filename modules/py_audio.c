@@ -5,7 +5,7 @@
  *
  * MicroPython audio module for HIWONDER_AI_MODULE
  * - ES8311 I2S audio output via board audio driver
- * - MP3 decoding via minimp3
+ * - MP3 decoding via minimp3 (core API, no minimp3_ex.h needed)
  * - PCM playback
  */
 
@@ -25,31 +25,68 @@ void esp_vision_audio_deinit(void);
 bool esp_vision_audio_is_ready(void);
 int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_rate);
 
-/* minimp3 header */
+/* minimp3 core decoder */
 #include "minimp3.h"
-#include "minimp3_ex.h"
 
 static const char *TAG = "py_audio";
 
 /*------------------------------------------------------------------*/
-/* mp3_to_pcm: decode MP3 to raw PCM using minimp3                  */
+/* mp3_to_pcm: decode MP3 to raw PCM using minimp3 core API         */
 /* Returns allocated PCM buffer (caller must free) and fills size   */
 /*------------------------------------------------------------------*/
 static uint8_t *mp3_to_pcm(const uint8_t *mp3_data, size_t mp3_len,
                            size_t *out_len, int *sample_rate)
 {
     mp3dec_t mp3d;
-    mp3dec_file_info_t info;
     mp3dec_init(&mp3d);
 
-    int ret = mp3dec_load_buf(&mp3d, mp3_data, mp3_len, &info, NULL, NULL);
-    if (ret != 0) {
+    /* First pass: find sample rate and estimate total samples */
+    int16_t dummy[MINIMP3_MAX_SAMPLES_PER_FRAME];
+    mp3dec_frame_info_t info;
+    size_t offset = 0;
+    int detected_hz = 0;
+    size_t total_samples = 0;
+
+    while (offset < mp3_len) {
+        int samples = mp3dec_decode_frame(&mp3d, mp3_data + offset,
+                                          (int)(mp3_len - offset),
+                                          dummy, &info);
+        if (samples > 0) {
+            if (detected_hz == 0) {
+                detected_hz = info.hz;
+            }
+            total_samples += (size_t)samples;
+        }
+        if (info.frame_bytes == 0) break;
+        offset += info.frame_bytes;
+    }
+
+    if (detected_hz == 0 || total_samples == 0) {
         return NULL;
     }
 
-    *out_len = info.samples * sizeof(int16_t);
-    *sample_rate = info.hz;
-    return (uint8_t *)info.buffer;
+    /* Second pass: actually decode */
+    mp3dec_init(&mp3d);
+    size_t pcm_size = total_samples * sizeof(int16_t);
+    int16_t *pcm_buf = (int16_t *)malloc(pcm_size);
+    if (!pcm_buf) return NULL;
+
+    offset = 0;
+    size_t written = 0;
+    while (offset < mp3_len && written < total_samples) {
+        int samples = mp3dec_decode_frame(&mp3d, mp3_data + offset,
+                                          (int)(mp3_len - offset),
+                                          pcm_buf + written, &info);
+        if (samples > 0) {
+            written += (size_t)samples;
+        }
+        if (info.frame_bytes == 0) break;
+        offset += info.frame_bytes;
+    }
+
+    *out_len = written * sizeof(int16_t);
+    *sample_rate = detected_hz;
+    return (uint8_t *)pcm_buf;
 }
 
 /*------------------------------------------------------------------*/
