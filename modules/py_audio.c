@@ -96,7 +96,7 @@ static mp_obj_t py_audio_init(void)
 {
     esp_err_t ret = esp_vision_audio_init();
     if (ret != ESP_OK) {
-        mp_raise_msg(&mp_type_RuntimeError, "audio init failed");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("audio init failed"));
     }
     return mp_const_none;
 }
@@ -131,14 +131,14 @@ static mp_obj_t py_audio_play_pcm(mp_obj_t data_obj, mp_obj_t rate_obj)
 
     mp_int_t sample_rate = mp_obj_get_int(rate_obj);
     if (sample_rate <= 0) {
-        mp_raise_ValueError("sample_rate must be > 0");
+        mp_raise_ValueError(MP_ERROR_TEXT("sample_rate must be > 0"));
     }
 
     int ret = esp_vision_audio_play_pcm((const uint8_t *)bufinfo.buf,
                                          bufinfo.len,
                                          (uint32_t)sample_rate);
     if (ret < 0) {
-        mp_raise_msg(&mp_type_RuntimeError, "play_pcm failed");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("play_pcm failed"));
     }
     return mp_obj_new_int(ret);
 }
@@ -157,14 +157,14 @@ static mp_obj_t py_audio_play_mp3(mp_obj_t data_obj)
     uint8_t *pcm = mp3_to_pcm((const uint8_t *)bufinfo.buf, bufinfo.len,
                                &pcm_len, &sample_rate);
     if (!pcm) {
-        mp_raise_msg(&mp_type_RuntimeError, "MP3 decode failed");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("MP3 decode failed"));
     }
 
     int written = esp_vision_audio_play_pcm(pcm, pcm_len, (uint32_t)sample_rate);
     free(pcm);
 
     if (written < 0) {
-        mp_raise_msg(&mp_type_RuntimeError, "play_mp3 failed");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("play_mp3 failed"));
     }
     return mp_obj_new_int(written);
 }
