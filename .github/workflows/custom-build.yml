@@ -1,1 +1,30 @@
-name: Build ESP32-S3-CUSTOM\n\non:\n  push:\n    branches: [ feature/esp32-s3-custom-board ]\n  workflow_dispatch:\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          submodules: recursive\n\n      - name: Build firmware\n        run: |\n          docker run --rm -v "${{ github.workspace }}:/project" -w /project -e BOARD=ESP32_S3_CUSTOM espressif/idf:release-v6.1 bash -c "set -e && git config --global --add safe.directory * && . \$IDF_PATH/export.sh && make BOARD=ESP32_S3_CUSTOM all"\n\n      - uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: esp32-s3-custom-firmware\n          path: build/**/*.bin\n          retention-days: 30\n
+name: Build ESP32-S3-CUSTOM
+
+on:
+  push:
+    branches: [ feature/esp32-s3-custom-board ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build firmware
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/project" -w /project -e BOARD=ESP32_S3_CUSTOM espressif/idf:release-v6.1 bash -c '
+            set -e
+            git config --global --add safe.directory "*"
+            . $IDF_PATH/export.sh
+            make BOARD=ESP32_S3_CUSTOM all
+          '
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: esp32-s3-custom-firmware
+          path: build/**/*.bin
+          retention-days: 30
