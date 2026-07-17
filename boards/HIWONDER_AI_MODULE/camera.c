@@ -299,16 +299,35 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
         size_t expected = esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
-        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= expected) {
-            // GC2145 outputs RGB565 high byte first, ESP32-S3 expects low byte first
-            // Swap bytes to fix the order
+        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= 320 * 240 * 2) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
-            for (size_t j = 0; j < expected; j += 2) {
-                dst[j] = src[j+1];
-                dst[j+1] = src[j];
+            if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
+                // Byte swap first (GC2145 high byte first -> little-endian), then RGB565 -> Y
+                for (size_t j = 0; j < 320 * 240 * 2; j += 2) {
+                    uint8_t hi = src[j+1];  // high byte from sensor
+                    uint8_t lo = src[j];    // low byte from sensor
+                    uint16_t pixel = (uint16_t)(hi << 8) | lo;  // big-endian -> 16-bit
+                    // Extract RGB565 components (big-endian format)
+                    uint8_t r5 = (hi >> 3) & 0x1F;
+                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
+                    uint8_t b5 = lo & 0x1F;
+                    // Scale to 8-bit
+                    uint8_t r8 = (r5 << 3) | (r5 >> 2);
+                    uint8_t g8 = (g6 << 2) | (g6 >> 4);
+                    uint8_t b8 = (b5 << 3) | (b5 >> 2);
+                    // Y = 0.299R + 0.587G + 0.114B  (integer approx)
+                    dst[j/2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                }
+                ret = ESP_OK;
+            } else {
+                // RGB565: byte swap (GC2145 high byte first -> little-endian)
+                for (size_t j = 0; j < 320 * 240 * 2; j += 2) {
+                    dst[j] = src[j+1];
+                    dst[j+1] = src[j];
+                }
+                ret = ESP_OK;
             }
-            ret = ESP_OK;
         }
         esp_camera_fb_return(fb);
         if (ret != ESP_ERR_INVALID_RESPONSE) return ret;
