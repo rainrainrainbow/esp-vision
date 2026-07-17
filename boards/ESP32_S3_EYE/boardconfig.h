@@ -1,6 +1,6 @@
 /*
  * ESP32-S3-EYE Board Configuration
- * ESP-VISION framework, GC2145 DVP camera
+ * ESP-VISION framework, GC2145 DVP camera, ST7789 SPI LCD
  */
 
 #ifndef ESP_VISION_BOARD_CONFIG_H
@@ -18,7 +18,10 @@
 #define ESP_VISION_ALLOC_ALIGNMENT                  (ESP_VISION_CACHE_LINE_SIZE)
 #define ESP_VISION_DMA_ALIGNMENT                    (ESP_VISION_CACHE_LINE_SIZE)
 
-/* Camera configuration — GC2145 */
+#define ESP_VISION_JPEG_QUALITY_LOW                 (60)
+#define ESP_VISION_JPEG_QUALITY_HIGH                (60)
+
+/* Camera configuration — GC2145 DVP 8-bit */
 #define ESP_VISION_CAMERA_SENSOR_ID                 (0x2145)
 #define ESP_VISION_CAMERA_RAW_INPUT_WIDTH           (640)
 #define ESP_VISION_CAMERA_RAW_INPUT_HEIGHT          (480)
@@ -53,11 +56,26 @@
 #define ESP_VISION_CAMERA_DVP_D6_PIN                (12)
 #define ESP_VISION_CAMERA_DVP_D7_PIN                (11)
 
-/* LCD Display */
+/* LCD Display — ST7789 240x240 SPI */
 #define ESP_VISION_LCD_WIDTH                        (240)
 #define ESP_VISION_LCD_HEIGHT                       (240)
 #define ESP_VISION_LCD_BPP                          (16)
 #define ESP_VISION_LCD_PIXEL_CLOCK_HZ               (40 * 1000 * 1000)
+#define ESP_VISION_LCD_SPI_HOST                     (SPI2_HOST)
+#define ESP_VISION_LCD_PIN_CLK                      (41)
+#define ESP_VISION_LCD_PIN_MOSI                     (40)
+#define ESP_VISION_LCD_PIN_DC                       (42)
+#define ESP_VISION_LCD_PIN_CS                       (39)
+#define ESP_VISION_LCD_PIN_RST                      (-1)
+#define ESP_VISION_LCD_CMD_BITS                     (8)
+#define ESP_VISION_LCD_PARAM_BITS                   (8)
+#define ESP_VISION_LCD_SPI_MODE                     (0)
+#define ESP_VISION_LCD_TRANS_QUEUE_DEPTH            (10)
+#define ESP_VISION_LCD_PIN_BL                       (48)
+#define ESP_VISION_LCD_BACKLIGHT_TIMER              (2)
+#define ESP_VISION_LCD_BACKLIGHT_CH                 (1)
+#define ESP_VISION_LCD_BACKLIGHT_PWM_HZ             (5000)
+#define ESP_VISION_LCD_BACKLIGHT_OUTPUT_INVERT      (0)
 
 /* SD Card */
 #define ESP_VISION_SDCARD_MOUNT_PATH                "/sdcard"
