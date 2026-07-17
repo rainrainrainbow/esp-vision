@@ -1,91 +1,67 @@
-#ifndef __BOARDCONFIG_H__
-#define __BOARDCONFIG_H__
+/*
+ * ESP32-S3-EYE Board Configuration
+ * ESP-VISION framework, GC2145 DVP camera
+ */
 
-// Board: ESP32-S3-EYE
+#ifndef ESP_VISION_BOARD_CONFIG_H
+#define ESP_VISION_BOARD_CONFIG_H
 
-#define BOARD_HAS_PSRAM
-#define BOARD_HAS_PDM
-#ifndef BOARD_MAX_FRAMEBUFFER_RES
-#  define BOARD_MAX_FRAMEBUFFER_RES VGA    // 640x480
-#endif
-#ifndef BOARD_HAS_SPIFLASH
-#  define BOARD_HAS_SPIFLASH
-#endif
-#ifndef CONFIG_BOARD_SDCARD_PIN_CS_DEFAULT
-#  define CONFIG_BOARD_SDCARD_PIN_CS_DEFAULT -1
-#endif
+#define ESP_VISION_BOARD_ARCH                  "ESP32S3"
+#define ESP_VISION_BOARD_TYPE                  "ESP32_S3_EYE"
+#define ESP_VISION_PORT_ESP32                       (1)
 
-// Camera sensor
-#define BOARD_SENSOR_ID             0x2145  // GC2145
-#define BOARD_SENSOR_PID            GC2145_PID
-#define BOARD_SENSOR_WIDTH          640
-#define BOARD_SENSOR_HEIGHT         480
-#define BOARD_SENSOR_FPS            30
-#define BOARD_SENSOR_FORMAT         0
-#define BOARD_SENSOR_USE_AF         0
-#define BOARD_CAMERA_XCLK_FREQ      20000000
-#define BOARD_CAMERA_HREF           0
-#define BOARD_CAMERA_VSYNC          0
-#define BOARD_CAMERA_PCLK           0
-#define BOARD_CAMERA_D0             15
-#define BOARD_CAMERA_D1             17
-#define BOARD_CAMERA_D2             16
-#define BOARD_CAMERA_D3             18
-#define BOARD_CAMERA_D4             14
-#define BOARD_CAMERA_D5             13
-#define BOARD_CAMERA_D6             12
-#define BOARD_CAMERA_D7             11
-#define BOARD_CAMERA_XCLK           10
-#define BOARD_CAMERA_RESET          48
-#define BOARD_CAMERA_PWDN           -1
-#define BOARD_CAMERA_SIOD           4
-#define BOARD_CAMERA_SIOC           5
+#define ESP_VISION_IMLIB_PROFILER_ENABLE            (0)
+#define ESP_VISION_IMLIB_GPU_ENABLE                 (0)
+#define ESP_VISION_IMLIB_JPEG_CODEC_ENABLE          (0)
 
-// SCCB tweak
-#define BOARD_SENSOR_SCCB_INTERNAL_PULLUP 0
+#define ESP_VISION_CACHE_LINE_SIZE                  (32)
+#define ESP_VISION_ALLOC_ALIGNMENT                  (ESP_VISION_CACHE_LINE_SIZE)
+#define ESP_VISION_DMA_ALIGNMENT                    (ESP_VISION_CACHE_LINE_SIZE)
 
-// XCLK stable delay
-#define BOARD_SENSOR_XCLK_STABLE_AFTER_POWER_UP_MS 100
+/* Camera configuration — GC2145 */
+#define ESP_VISION_CAMERA_SENSOR_ID                 (0x2145)
+#define ESP_VISION_CAMERA_RAW_INPUT_WIDTH           (640)
+#define ESP_VISION_CAMERA_RAW_INPUT_HEIGHT          (480)
+#define ESP_VISION_CAMERA_ACTIVE_INPUT_WIDTH        (640)
+#define ESP_VISION_CAMERA_ACTIVE_INPUT_HEIGHT       (480)
+#define ESP_VISION_CAMERA_OUTPUT_QQVGA_WIDTH        (160)
+#define ESP_VISION_CAMERA_OUTPUT_QQVGA_HEIGHT       (120)
+#define ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH         (320)
+#define ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT        (240)
+#define ESP_VISION_CAMERA_BUFFER_COUNT              (3)
+#define ESP_VISION_CAMERA_SCCB_I2C_PORT             (1)
+#define ESP_VISION_CAMERA_SCCB_I2C_SCL_PIN          (5)
+#define ESP_VISION_CAMERA_SCCB_I2C_SDA_PIN          (4)
+#define ESP_VISION_CAMERA_SENSOR_RESET_PIN          (48)
+#define ESP_VISION_CAMERA_SENSOR_PWDN_PIN           (-1)
+#define ESP_VISION_CAMERA_SCCB_I2C_FREQ             (100000)
+#define ESP_VISION_CAMERA_SCCB_INTERNAL_PULLUP      (0)
+#define ESP_VISION_CAMERA_XCLK_PIN                  (10)
+#define ESP_VISION_CAMERA_XCLK_FREQ                 (20000000)
+#define ESP_VISION_CAMERA_XCLK_STABLE_MS            (100)
+#define ESP_VISION_CAMERA_XCLK_LEDC_TIMER           (1)
+#define ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL         (0)
+#define ESP_VISION_CAMERA_DVP_PCLK_PIN              (8)
+#define ESP_VISION_CAMERA_DVP_VSYNC_PIN             (6)
+#define ESP_VISION_CAMERA_DVP_HSYNC_PIN             (7)
+#define ESP_VISION_CAMERA_DVP_D0_PIN                (15)
+#define ESP_VISION_CAMERA_DVP_D1_PIN                (17)
+#define ESP_VISION_CAMERA_DVP_D2_PIN                (16)
+#define ESP_VISION_CAMERA_DVP_D3_PIN                (18)
+#define ESP_VISION_CAMERA_DVP_D4_PIN                (14)
+#define ESP_VISION_CAMERA_DVP_D5_PIN                (13)
+#define ESP_VISION_CAMERA_DVP_D6_PIN                (12)
+#define ESP_VISION_CAMERA_DVP_D7_PIN                (11)
 
-// Video device settings
-#define BOARD_VIDEO_DEV_DVP_ENABLE               1
+/* LCD Display */
+#define ESP_VISION_LCD_WIDTH                        (240)
+#define ESP_VISION_LCD_HEIGHT                       (240)
+#define ESP_VISION_LCD_BPP                          (16)
+#define ESP_VISION_LCD_PIXEL_CLOCK_HZ               (40 * 1000 * 1000)
 
-// LCD
-#define BOARD_LCD_BK_LIGHT_GPIO          48
-#define BOARD_LCD_SPI_HOST               SPI2_HOST
-#define BOARD_LCD_SPI_MOSI               40
-#define BOARD_LCD_SPI_SCLK               41
-#define BOARD_LCD_SPI_CS                 39
-#define BOARD_LCD_SPI_DC                 42
-#define BOARD_LCD_SPI_RST                -1
+/* SD Card */
+#define ESP_VISION_SDCARD_MOUNT_PATH                "/sdcard"
+#define ESP_VISION_SDCARD_SLOT                      (0)
+#define ESP_VISION_SDCARD_BUS_WIDTH                 (1)
 
-// LCD display params
-#define BOARD_LCD_H_RES                  240
-#define BOARD_LCD_V_RES                  240
-#define BOARD_LCD_CMD_BITS               8
-#define BOARD_LCD_PARAM_BITS             8
-
-// LCD (ST7789)
-#define BOARD_LCD_PIXEL_CLOCK_HZ         (40 * 1000 * 1000)
-#define BOARD_LCD_BK_LIGHT_ON_LEVEL      1
-#define BOARD_LCD_BK_LIGHT_OFF_LEVEL     !BOARD_LCD_BK_LIGHT_ON_LEVEL
-#define BOARD_LCD_INVERT_COLOR           0
-#define BOARD_LCD_SWAP_XY                0
-#define BOARD_LCD_MIRROR_X               1
-#define BOARD_LCD_MIRROR_Y               0
-
-// Audio
-#define BOARD_PDM_MIC_SEL_GPIO    -1
-#define BOARD_PDM_I2S_CLK_GPIO    2
-#define BOARD_PDM_I2S_DIN_GPIO    1
-
-// SD card (SPI mode)
-#define BOARD_SDCARD_SPI_HOST     SPI3_HOST
-#define BOARD_SDCARD_SPI_SCK      7
-#define BOARD_SDCARD_SPI_MOSI     8
-#define BOARD_SDCARD_SPI_MISO     9
-#define BOARD_SDCARD_SPI_CS       21
-#define BOARD_SDCARD_PIN_CD       -1
-#define BOARD_SDCARD_PIN_WP       -1
-
-#endif // __BOARDCONFIG_H__
+#endif /* ESP_VISION_BOARD_CONFIG_H */
