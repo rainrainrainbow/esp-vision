@@ -194,12 +194,12 @@ esp_err_t esp_vision_camera_init(void)
         .xclk_freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
         .ledc_timer = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
         .ledc_channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
-        .pixel_format = ESP32_CAMERA_PIXFORMAT_JPEG,
+        .pixel_format = ESP32_CAMERA_PIXFORMAT_RGB565,
         .frame_size = frame_size,
-        .jpeg_quality = ESP_VISION_CAMERA_JPEG_QUALITY,
+        .jpeg_quality = 0,  // Not used for RGB565
         .fb_count = ESP_VISION_CAMERA_BUFFER_COUNT,
         .fb_location = CAMERA_FB_IN_PSRAM,
-        .grab_mode = CAMERA_GRAB_LATEST,
+        .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
         .sccb_i2c_port = ESP_VISION_CAMERA_SCCB_I2C_PORT,
     };
 
@@ -296,15 +296,13 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
     for (int attempt = 0; attempt < 3; attempt++) {
         camera_fb_t *fb = esp_camera_fb_get();
         if (!fb) return ESP_FAIL;
-        image_t src, dst = { .w = (int32_t)s_camera.width, .h = (int32_t)s_camera.height,
-                             .pixfmt = s_camera.output_pixfmt, .size = 0, .pixels = pixels };
-        esp_err_t ret;
-        if ((fb->format != ESP32_CAMERA_PIXFORMAT_JPEG) || !esp_vision_camera_get_jpeg_payload(fb, &src))
-            ret = ESP_ERR_INVALID_RESPONSE;
-        else if (((uint32_t)src.w != s_camera.width) || ((uint32_t)src.h != s_camera.height))
-            ret = ESP_ERR_INVALID_RESPONSE;
-        else
-            ret = esp_vision_jpeg_decode(src.pixels, src.size, &dst);
+        esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
+        size_t fb_size = fb->len;
+        size_t expected = esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
+        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= expected) {
+            memcpy(pixels, fb->buf, expected);
+            ret = ESP_OK;
+        }
         esp_camera_fb_return(fb);
         if (ret != ESP_ERR_INVALID_RESPONSE) return ret;
     }
