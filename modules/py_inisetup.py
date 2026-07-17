@@ -10,12 +10,14 @@ import machine
 
 def mount_vfs():
     try:
-        bdev = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="vfs")
-        if bdev is None:
-            bdev = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="ffat")
-        if bdev is None:
+        parts = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="vfs")
+        if not parts:
+            parts = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="ffat")
+        if not parts:
             print("[esp-vision] No VFS partition found")
             return False
+
+        bdev = parts[0]
 
         # Try to mount existing filesystem
         try:
