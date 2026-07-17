@@ -12,17 +12,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 1
 
       - name: Build firmware
         run: |
-          docker run --rm -v "${{ github.workspace }}:/project" -w /project -e BOARD=ESP32_S3_CUSTOM espressif/idf:release-v6.1 bash -c '
-            set -e
-            git config --global --add safe.directory "*"
-            . $IDF_PATH/export.sh
-            make BOARD=ESP32_S3_CUSTOM all
-          '
+          docker run --rm -v "${{ github.workspace }}:/project" -w /project \
+            -e BOARD=ESP32_S3_CUSTOM \
+            -e HOME=/root \
+            espressif/idf:release-v6.1 \
+            bash -c '
+              set -e
+              git config --global --add safe.directory "*"
+              . /opt/esp/idf/export.sh
+              export ESP_IDF_VERSION=6.1
+              
+              # Ensure submodule refs exist for Makefile
+              git submodule sync --recursive || true
+              git submodule update --init --depth 1 || true
+              
+              cd lib/micropython && git submodule sync --recursive && git submodule update --init --depth 1 && cd /project
+              
+              make BOARD=ESP32_S3_CUSTOM all 2>&1
+            '
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: esp32-s3-custom-firmware
