@@ -136,7 +136,7 @@ esp_err_t esp_vision_board_display_init_panel(uint32_t width, uint32_t height,
     ret = esp_lcd_panel_reset(*panel_handle);
     if (ret == ESP_OK) ret = esp_lcd_panel_init(*panel_handle);
     if (ret == ESP_OK) ret = esp_lcd_panel_invert_color(*panel_handle, true);
-    if (ret == ESP_OK) ret = esp_lcd_panel_swap_xy(*panel_handle, false);
+    if (ret == ESP_OK) ret = esp_lcd_panel_swap_xy(*panel_handle, true);
     if (ret == ESP_OK) ret = esp_lcd_panel_mirror(*panel_handle, false, false);
     if (ret == ESP_OK) ret = esp_lcd_panel_disp_on_off(*panel_handle, true);
     if (ret != ESP_OK) {
