@@ -99,7 +99,6 @@ esp_err_t esp_vision_audio_init(void)
         .dma_desc_num = 8,
         .dma_frame_num = 256,
         .auto_clear_after_cb = true,
-        .auto_clear = false,
     };
     ret = i2s_new_channel(&chan_cfg, &s_tx_handle, NULL);
     if (ret != ESP_OK) {
