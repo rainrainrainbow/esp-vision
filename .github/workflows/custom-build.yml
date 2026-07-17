@@ -1,8 +1,10 @@
 name: Build ESP32-S3-CUSTOM
+
 on:
   push:
     branches: [ feature/esp32-s3-custom-board ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
