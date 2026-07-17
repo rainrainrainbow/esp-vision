@@ -29,6 +29,7 @@
 #define PIXFORMAT_RGB555    ESP32_CAMERA_PIXFORMAT_RGB555
 #define PIXFORMAT_RAW8      ESP32_CAMERA_PIXFORMAT_RAW8
 #include "esp_camera.h"
+#include "soc/lcd_cam_struct.h"
 #undef pixformat_t
 #undef PIXFORMAT_RGB565
 #undef PIXFORMAT_YUV422
@@ -208,6 +209,12 @@ esp_err_t esp_vision_camera_init(void)
         ESP_LOGE(TAG, "failed to initialize esp32-camera: %s", esp_err_to_name(ret));
         return ret;
     }
+
+    // Fix byte order: GC2145 outputs RGB565 with high byte first
+    // But ESP32-S3 LCD_CAM defaults to cam_byte_order=0 (low byte first)
+    // This causes every pixel's R/G/B components to be swapped => stripes
+    LCD_CAM.cam_ctrl.cam_byte_order = 1;
+    LCD_CAM.cam_ctrl.cam_update = 1;
 
     s_camera.vflip = true;
     s_camera.hmirror = true;
