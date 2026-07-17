@@ -2,34 +2,41 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# ESP-VISION board init script - runs once at boot after _boot.py
-# Handles VFS (flash FAT partition) mounting
+# ESP-VISION board init - mounts internal flash FAT partition as /sdcard
 
+import esp32
+import os
 import machine
-import uos
-
-# Try to mount the internal flash FAT partition
-# The partition is created by boardctrl_startup() in main.c
-# but needs to be formatted and mounted here
 
 def mount_vfs():
     try:
-        # Try to mount existing FAT partition
-        fat = machine.FATFS()
-        uos.mount(fat, "/sdcard")
-        print("[esp-vision] VFS mounted at /sdcard")
-        return True
-    except Exception as e:
-        print("[esp-vision] VFS mount failed:", e)
-        try:
-            # Try to format and mount
-            fat = machine.FATFS()
-            fat.mkfs()
-            uos.mount(fat, "/sdcard")
-            print("[esp-vision] VFS formatted and mounted at /sdcard")
-            return True
-        except Exception as e2:
-            print("[esp-vision] VFS format also failed:", e2)
+        bdev = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="vfs")
+        if bdev is None:
+            bdev = esp32.Partition.find(esp32.Partition.TYPE_DATA, label="ffat")
+        if bdev is None:
+            print("[esp-vision] No VFS partition found")
             return False
+
+        # Try to mount existing filesystem
+        try:
+            vfs = os.VfsFat(bdev)
+            os.mount(vfs, "/sdcard")
+            print("[esp-vision] VFS mounted at /sdcard")
+            return True
+        except:
+            # Need to format first
+            print("[esp-vision] Formatting VFS partition...")
+            try:
+                os.VfsFat.mkfs(bdev)
+                vfs = os.VfsFat(bdev)
+                os.mount(vfs, "/sdcard")
+                print("[esp-vision] VFS formatted and mounted")
+                return True
+            except Exception as e:
+                print("[esp-vision] mkfs failed:", e)
+                return False
+    except Exception as e:
+        print("[esp-vision] VFS mount error:", e)
+        return False
 
 mount_vfs()
