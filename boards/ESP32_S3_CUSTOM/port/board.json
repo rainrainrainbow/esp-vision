@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "DVP",
+        "GC2145",
+        "ES8311",
+        "FT5x06",
+        "SPI LCD"
+    ],
+    "mcu": "esp32s3",
+    "product": "ESP32-S3-Custom",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Custom"
+}
