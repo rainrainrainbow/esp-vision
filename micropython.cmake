@@ -30,6 +30,7 @@ set(ESP_VISION_MODULE_SOURCES
     ${ESP_VISION_ROOT}/modules/py_imageio.c
     ${ESP_VISION_ROOT}/modules/py_helper.c
     ${ESP_VISION_ROOT}/modules/py_sensor.c
+    ${ESP_VISION_ROOT}/modules/py_audio.c
 )
 
 if((IDF_TARGET STREQUAL "esp32p4") OR (IDF_TARGET STREQUAL "esp32s3") OR (IDF_TARGET STREQUAL "esp32s31"))
@@ -54,7 +55,7 @@ if(EXISTS "${ESP_VISION_BOARD_DIR}/camera.c")
     set(ESP_VISION_CAMERA_SOURCE "${ESP_VISION_BOARD_DIR}/camera.c")
 endif()
 
-foreach(source sdcard.c display.c)
+foreach(source audio.c sdcard.c display.c)
     if(EXISTS "${ESP_VISION_BOARD_DIR}/${source}")
         list(APPEND ESP_VISION_BOARD_SOURCES "${ESP_VISION_BOARD_DIR}/${source}")
     endif()
