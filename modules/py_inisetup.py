@@ -8,8 +8,6 @@ import esp32
 import os
 import machine
 
-MOUNT_POINT = "/sdcard"
-
 def format_and_mount(label, mount_point):
     """Find, format (if needed) and mount a FAT partition by label."""
     try:
@@ -44,6 +42,8 @@ def format_and_mount(label, mount_point):
 
 def mount_vfs():
     # Mount vfs as /sdcard (main user storage)
-    format_and_mount("vfs", MOUNT_POINT)
+    format_and_mount("vfs", "/sdcard")
+    # Also format cvs if it exists to prevent USB format dialog
+    format_and_mount("cvs", "/cvs")
 
 mount_vfs()
