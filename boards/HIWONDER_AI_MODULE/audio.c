@@ -53,7 +53,6 @@ static const char *TAG = "esp_vision_audio";
 #define AUDIO_DEFAULT_SAMPLE_RATE      44100
 
 static bool s_audio_initialized = false;
-static bool s_i2c_driver_installed = false;
 static i2s_chan_handle_t s_tx_handle = NULL;
 
 static esp_err_t es8311_write_reg(uint8_t reg, uint8_t val)
@@ -75,31 +74,9 @@ esp_err_t esp_vision_audio_init(void)
         return ESP_OK;
     }
 
-    /* Install I2C driver if not already installed (I2C0 shared with camera) */
-    if (!s_i2c_driver_installed) {
-        i2c_config_t i2c_cfg = {
-            .mode = I2C_MODE_MASTER,
-            .sda_io_num = ESP_VISION_AUDIO_ES8311_I2C_SDA_PIN,
-            .scl_io_num = ESP_VISION_AUDIO_ES8311_I2C_SCL_PIN,
-            .sda_pullup_en = GPIO_PULLUP_ENABLE,
-            .scl_pullup_en = GPIO_PULLUP_ENABLE,
-            .master.clk_speed = 400000,
-        };
-        esp_err_t ret = i2c_param_config(I2C_NUM_0, &i2c_cfg);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to config I2C: %s", esp_err_to_name(ret));
-            return ret;
-        }
-        ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to install I2C driver: %s", esp_err_to_name(ret));
-            return ret;
-        }
-        s_i2c_driver_installed = true;
-        ESP_LOGI(TAG, "I2C driver installed for ES8311");
-    }
+    /* I2C0 is shared with camera and already initialized by esp_camera_init() */
+    /* Just use it directly for ES8311 communication */
 
-    /* Reset ES8311 */
     esp_err_t ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to reset ES8311: %s", esp_err_to_name(ret));
