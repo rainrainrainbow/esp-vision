@@ -253,32 +253,6 @@ void boardctrl_startup(void)
         nvs_flash_erase();
         nvs_flash_init();
     }
-
-    // esp_flash_t is an opaque type on IDF 6.0, so query the size into a local.
-    uint32_t flash_size = 0;
-    esp_flash_get_physical_size(NULL, &flash_size);
-
-    if (esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs") == NULL &&
-        esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "ffat") == NULL) {
-        size_t offset = 0;
-        esp_partition_iterator_t iter = esp_partition_find(ESP_PARTITION_TYPE_ANY, ESP_PARTITION_SUBTYPE_ANY, NULL);
-        while (iter != NULL) {
-            const esp_partition_t *part = esp_partition_get(iter);
-            offset = MAX(offset, part->address + part->size);
-            iter = esp_partition_next(iter);
-        }
-
-        if (offset > 0 && flash_size > offset) {
-            size_t size = flash_size - offset;
-            esp_partition_register_external(esp_flash_default_chip,
-                                            offset,
-                                            size,
-                                            "vfs",
-                                            ESP_PARTITION_TYPE_DATA,
-                                            ESP_PARTITION_SUBTYPE_DATA_FAT,
-                                            NULL);
-        }
-    }
 }
 
 void MICROPY_ESP_IDF_ENTRY(void)
