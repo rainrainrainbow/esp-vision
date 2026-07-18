@@ -254,7 +254,7 @@ void boardctrl_startup(void)
         nvs_flash_init();
     }
 
-    // Register a FAT partition at the end of flash if no VFS partition exists
+    // esp_flash_t is an opaque type on IDF 6.0, so query the size into a local.
     uint32_t flash_size = 0;
     esp_flash_get_physical_size(NULL, &flash_size);
     if (esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "vfs") == NULL &&
@@ -277,8 +277,7 @@ void boardctrl_startup(void)
                                             NULL);
         }
     }
-}
-void MICROPY_ESP_IDF_ENTRY(void)
+}void MICROPY_ESP_IDF_ENTRY(void)
 {
     MICROPY_BOARD_STARTUP();
 
