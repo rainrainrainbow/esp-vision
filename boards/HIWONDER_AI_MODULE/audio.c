@@ -72,40 +72,48 @@ esp_err_t esp_vision_audio_init(void)
         return ESP_OK;
     }
 
-    /* I2C0 may already be initialized by esp_camera_init() via SCCB.
-     * Try to install driver - if already installed, that's fine.
-     * Then try to read/write ES8311. If that fails, the hardware is not present. */
+    /* Configure I2C0 parameters first, then install driver.
+     * I2C0 may already be used by camera via SCCB. */
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = ESP_VISION_AUDIO_ES8311_I2C_SDA_PIN,
-        .scl_io_num = ESP_VISION_AUDIO_ES8311_I2C_SCL_PIN,
+        .sda_io_num = 4,  /* GPIO4 */
+        .scl_io_num = 5,  /* GPIO5 */
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 400000,
+        .master.clk_speed = 100000,  /* 100kHz for ES8311 */
     };
-    /* Try to install driver first (may fail if already installed) */
+
+    /* i2c_param_config BEFORE driver_install (ESP-IDF convention) */
+    i2c_param_config(I2C_NUM_0, &conf);
+
     esp_err_t ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-    if (ret == ESP_OK) {
-        /* We installed it, now configure */
-        i2c_param_config(I2C_NUM_0, &conf);
-        s_i2c_installed = true;
-        ESP_LOGI(TAG, "I2C driver installed for audio");
-    } else if (ret == ESP_ERR_INVALID_STATE) {
-        /* Already installed by camera, just configure pins */
-        ESP_LOGI(TAG, "I2C driver already installed (by camera)");
-        i2c_param_config(I2C_NUM_0, &conf);
-    } else {
-        ESP_LOGE(TAG, "I2C driver install failed: %s", esp_err_to_name(ret));
+    if (ret == ESP_ERR_INVALID_STATE) {
+        ESP_LOGI(TAG, "I2C0 already installed (by camera)");
+    } else if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C0 install failed: %s", esp_err_to_name(ret));
         return ret;
+    } else {
+        s_i2c_installed = true;
+        ESP_LOGI(TAG, "I2C0 installed");
     }
 
-    ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
+    /* Reset ES8311 with retry */
+    for (int i = 0; i < 3; i++) {
+        ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "ES8311 reset OK");
+            break;
+        }
+        ESP_LOGW(TAG, "ES8311 reset attempt %d failed: %s", i+1, esp_err_to_name(ret));
+        vTaskDelay(pdMS_TO_TICKS(20));
+    }
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to reset ES8311: %s", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "ES8311 not responding on I2C0");
         return ret;
     }
     vTaskDelay(pdMS_TO_TICKS(50));
 
+    /* Configure ES8311 registers */
     es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_ON);
     es8311_write_reg(ES8311_CLOCK_DIV_REG, ES8311_MCLK_DIV_256);
     es8311_write_reg(ES8311_ADC_DAC_REG, ES8311_ADC_DAC_ON);
@@ -127,50 +135,35 @@ esp_err_t esp_vision_audio_init(void)
     };
     ret = i2s_new_channel(&chan_cfg, &s_tx_handle, NULL);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to create I2S TX channel: %s", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "I2S new channel: %s", esp_err_to_name(ret));
         return ret;
     }
 
     i2s_std_config_t std_cfg = {
-        .clk_cfg = {
-            .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
-            .clk_src = I2S_CLK_SRC_DEFAULT,
-            .mclk_multiple = I2S_MCLK_MULTIPLE_256,
-        },
-        .slot_cfg = {
-            .slot_mode = I2S_SLOT_MODE_STEREO,
-            .slot_mask = I2S_STD_SLOT_BOTH,
-            .ws_width = 32,
-            .bit_shift = true,
-            .left_align = true,
-            .big_endian = false,
-            .bit_order_lsb = false,
-        },
-        .gpio_cfg = {
-            .mclk = I2S_GPIO_UNUSED,
-            .bclk = ESP_VISION_AUDIO_ES8311_I2S_BCLK_PIN,
-            .ws = ESP_VISION_AUDIO_ES8311_I2S_LRCK_PIN,
-            .dout = ESP_VISION_AUDIO_ES8311_I2S_DOUT_PIN,
-            .din = I2S_GPIO_UNUSED,
-        },
+        .clk_cfg = { .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
+            .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_256 },
+        .slot_cfg = { .slot_mode = I2S_SLOT_MODE_STEREO,
+            .slot_mask = I2S_STD_SLOT_BOTH, .ws_width = 32,
+            .bit_shift = true, .left_align = true,
+            .big_endian = false, .bit_order_lsb = false },
+        .gpio_cfg = { .mclk = I2S_GPIO_UNUSED,
+            .bclk = 45, .ws = 38, .dout = 42, .din = I2S_GPIO_UNUSED },
     };
     ret = i2s_channel_init_std_mode(s_tx_handle, &std_cfg);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to init I2S std mode: %s", esp_err_to_name(ret));
-        i2s_del_channel(s_tx_handle);
-        s_tx_handle = NULL;
+        ESP_LOGE(TAG, "I2S init std: %s", esp_err_to_name(ret));
+        i2s_del_channel(s_tx_handle); s_tx_handle = NULL;
         return ret;
     }
 
     ret = i2s_channel_enable(s_tx_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to enable I2S channel: %s", esp_err_to_name(ret));
-        i2s_del_channel(s_tx_handle);
-        s_tx_handle = NULL;
+        ESP_LOGE(TAG, "I2S enable: %s", esp_err_to_name(ret));
+        i2s_del_channel(s_tx_handle); s_tx_handle = NULL;
         return ret;
     }
 
-    ESP_LOGI(TAG, "ES8311 + I2S initialized successfully");
+    ESP_LOGI(TAG, "ES8311 + I2S initialized");
     s_audio_initialized = true;
     return ESP_OK;
 }
@@ -189,15 +182,11 @@ void esp_vision_audio_deinit(void)
     s_audio_initialized = false;
 }
 
-bool esp_vision_audio_is_ready(void)
-{
-    return s_audio_initialized;
-}
+bool esp_vision_audio_is_ready(void) { return s_audio_initialized; }
 
 int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_rate)
 {
     if (!s_audio_initialized || !s_tx_handle || !data || len == 0) return -1;
-
     if (sample_rate != 0) {
         i2s_channel_disable(s_tx_handle);
         i2s_std_clk_config_t clk_cfg = {
@@ -208,7 +197,6 @@ int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_r
         i2s_channel_reconfig_std_clock(s_tx_handle, &clk_cfg);
         i2s_channel_enable(s_tx_handle);
     }
-
     size_t bytes_written = 0;
     esp_err_t ret = i2s_channel_write(s_tx_handle, data, len, &bytes_written, portMAX_DELAY);
     if (ret != ESP_OK) return -1;
