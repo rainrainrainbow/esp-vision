@@ -53,6 +53,7 @@ static const char *TAG = "esp_vision_audio";
 #define AUDIO_DEFAULT_SAMPLE_RATE      44100
 
 static bool s_audio_initialized = false;
+static bool s_i2c_installed = false;
 static i2s_chan_handle_t s_tx_handle = NULL;
 
 static esp_err_t es8311_write_reg(uint8_t reg, uint8_t val)
@@ -74,10 +75,34 @@ esp_err_t esp_vision_audio_init(void)
         return ESP_OK;
     }
 
-    /* I2C0 is shared with camera and already initialized by esp_camera_init() */
-    /* Just use it directly for ES8311 communication */
+    /* Install I2C driver if not already installed by camera.
+     * Camera may use SCCB (I2C-compatible) protocol which doesn't
+     * install the standard ESP-IDF I2C driver. */
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = ESP_VISION_AUDIO_ES8311_I2C_SDA_PIN,
+        .scl_io_num = ESP_VISION_AUDIO_ES8311_I2C_SCL_PIN,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 400000,
+    };
+    esp_err_t ret = i2c_param_config(I2C_NUM_0, &conf);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to config I2C: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+    if (ret == ESP_ERR_INVALID_STATE) {
+        /* Already installed by camera, that's fine */
+        ESP_LOGI(TAG, "I2C driver already installed (by camera)");
+    } else if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to install I2C driver: %s", esp_err_to_name(ret));
+        return ret;
+    } else {
+        s_i2c_installed = true;
+    }
 
-    esp_err_t ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
+    ret = es8311_write_reg(ES8311_RESET_REG, ES8311_RESET);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to reset ES8311: %s", esp_err_to_name(ret));
         return ret;
@@ -160,6 +185,10 @@ void esp_vision_audio_deinit(void)
         i2s_channel_disable(s_tx_handle);
         i2s_del_channel(s_tx_handle);
         s_tx_handle = NULL;
+    }
+    if (s_i2c_installed) {
+        i2c_driver_delete(I2C_NUM_0);
+        s_i2c_installed = false;
     }
     s_audio_initialized = false;
 }
