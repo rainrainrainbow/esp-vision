@@ -123,6 +123,7 @@ static esp_err_t esp_vision_camera_to_esp32_framesize(uint32_t width,
     if (framesize == NULL) return ESP_ERR_INVALID_ARG;
     if ((width == 160) && (height == 120)) { *framesize = FRAMESIZE_QQVGA; return ESP_OK; }
     if ((width == 320) && (height == 240)) { *framesize = FRAMESIZE_QVGA; return ESP_OK; }
+    if ((width == 640) && (height == 480)) { *framesize = FRAMESIZE_VGA; return ESP_OK; }
     return ESP_ERR_NOT_SUPPORTED;
 }
 
@@ -159,6 +160,7 @@ esp_err_t esp_vision_camera_get_framesize_dimensions(esp_vision_camera_framesize
     if (!width || !height) return ESP_ERR_INVALID_ARG;
     switch (framesize) {
     case ESP_VISION_CAMERA_FRAMESIZE_QQVGA: *width = 160; *height = 120; return ESP_OK;
+    case ESP_VISION_CAMERA_FRAMESIZE_VGA:  *width = 640; *height = 480; return ESP_OK;
     case ESP_VISION_CAMERA_FRAMESIZE_QVGA:  *width = 320; *height = 240; return ESP_OK;
     default: return ESP_ERR_NOT_SUPPORTED;
     }
