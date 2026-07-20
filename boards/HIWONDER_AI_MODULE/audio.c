@@ -5,6 +5,9 @@
  *
  * ES8311 audio codec driver for HIWONDER_AI_MODULE.
  * I2C on I2C0 (shared with camera and touch), I2S for audio data.
+ *
+ * IMPORTANT: ES8311 uses BCLK as its clock source (register 0x01 bit 6 = 1)
+ * because the board has no dedicated MCLK pin wired to ES8311.
  */
 
 #include <stdbool.h>
@@ -38,7 +41,8 @@ static const char *TAG = "esp_vision_audio";
 #define ES8311_ADC_CTRL_REG            0x12
 
 #define ES8311_RESET                   0x1F
-#define ES8311_CLOCK_ON                0x0F
+/* Use BCLK as clock source (bit 6=1) instead of MCLK, all power on */
+#define ES8311_CLOCK_BCLK_ON           0x4F
 #define ES8311_CLOCK_OFF               0x00
 #define ES8311_ADC_DAC_ON              0x15
 #define ES8311_ADC_DAC_OFF             0x00
@@ -72,29 +76,32 @@ esp_err_t esp_vision_audio_init(void)
         return ESP_OK;
     }
 
-    /* Configure I2C0 parameters first, then install driver.
-     * I2C0 may already be used by camera via SCCB. */
+    /*
+     * I2C0 may already be installed by camera (via SCCB).
+     * Try driver_install FIRST; only call param_config if we actually install it.
+     * This avoids calling param_config on an already-configured I2C bus.
+     */
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = 4,  /* GPIO4 */
-        .scl_io_num = 5,  /* GPIO5 */
+        .sda_io_num = 4,
+        .scl_io_num = 5,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000,  /* 100kHz for ES8311 */
+        .master.clk_speed = 100000,
     };
-
-    /* i2c_param_config BEFORE driver_install (ESP-IDF convention) */
-    i2c_param_config(I2C_NUM_0, &conf);
 
     esp_err_t ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
     if (ret == ESP_ERR_INVALID_STATE) {
-        ESP_LOGI(TAG, "I2C0 already installed (by camera)");
+        /* Driver already installed by camera - just reuse it */
+        ESP_LOGI(TAG, "I2C0 already installed (by camera), reusing");
     } else if (ret != ESP_OK) {
         ESP_LOGE(TAG, "I2C0 install failed: %s", esp_err_to_name(ret));
         return ret;
     } else {
+        /* We installed the driver, now configure it */
+        i2c_param_config(I2C_NUM_0, &conf);
         s_i2c_installed = true;
-        ESP_LOGI(TAG, "I2C0 installed");
+        ESP_LOGI(TAG, "I2C0 installed and configured");
     }
 
     /* Reset ES8311 with retry */
@@ -113,8 +120,13 @@ esp_err_t esp_vision_audio_init(void)
     }
     vTaskDelay(pdMS_TO_TICKS(50));
 
-    /* Configure ES8311 registers */
-    es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_ON);
+    /*
+     * Configure ES8311 registers.
+     * CRITICAL: Register 0x01 uses BCLK as clock source (0x4F not 0x0F)
+     * because the board has no MCLK pin wired to ES8311.
+     * Bit 6 = 1: select BCLK as clock source instead of MCLK.
+     */
+    es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_BCLK_ON);
     es8311_write_reg(ES8311_CLOCK_DIV_REG, ES8311_MCLK_DIV_256);
     es8311_write_reg(ES8311_ADC_DAC_REG, ES8311_ADC_DAC_ON);
     es8311_write_reg(ES8311_SEL_ADC_REG, ES8311_ADC_INPUT_MIC);
@@ -139,6 +151,7 @@ esp_err_t esp_vision_audio_init(void)
         return ret;
     }
 
+    /* No MCLK pin - ES8311 uses BCLK as clock source */
     i2s_std_config_t std_cfg = {
         .clk_cfg = { .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
             .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_256 },
@@ -163,7 +176,7 @@ esp_err_t esp_vision_audio_init(void)
         return ret;
     }
 
-    ESP_LOGI(TAG, "ES8311 + I2S initialized");
+    ESP_LOGI(TAG, "ES8311 + I2S initialized (BCLK clock source)");
     s_audio_initialized = true;
     return ESP_OK;
 }
