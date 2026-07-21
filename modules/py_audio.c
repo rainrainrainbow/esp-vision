@@ -86,7 +86,7 @@ static mp_obj_t py_audio_init(void)
 {
     esp_err_t ret = esp_vision_audio_init();
     if (ret != ESP_OK) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, "audio init failed: %s", esp_err_to_name(ret));
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("audio init failed: %s"), esp_err_to_name(ret));
     }
     return mp_const_none;
 }
@@ -119,7 +119,7 @@ static mp_obj_t py_audio_play_pcm(mp_obj_t data_obj, mp_obj_t rate_obj)
                                          bufinfo.len,
                                          (uint32_t)sample_rate);
     if (ret < 0) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, "play_pcm failed: ret=%d", ret);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("play_pcm failed: ret=%d"), ret);
     }
     return mp_obj_new_int(ret);
 }
@@ -142,7 +142,7 @@ static mp_obj_t py_audio_play_mp3(mp_obj_t data_obj)
     free(pcm);
 
     if (written < 0) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, "play_mp3 failed: ret=%d", written);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("play_mp3 failed: ret=%d"), written);
     }
     return mp_obj_new_int(written);
 }
