@@ -2,6 +2,10 @@
  * SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
+ * GC2145 outputs RGB565 (big-endian, high byte first) or YCbCr.
+ * No hardware JPEG support - use RGB565 mode and byte-swap.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -12,11 +16,6 @@
 #include "boardconfig.h"
 #include "debug.h"
 #include "jpeg.h"
-/*
- * esp32-camera uses OpenMV-style PIXFORMAT_* names that conflict with imlib.
- * Keep those names local to this include and expose them with an ESP32_CAMERA_
- * prefix inside this board backend.
- */
 #define pixformat_t         esp32_camera_pixformat_t
 #define PIXFORMAT_RGB565    ESP32_CAMERA_PIXFORMAT_RGB565
 #define PIXFORMAT_YUV422    ESP32_CAMERA_PIXFORMAT_YUV422
@@ -47,7 +46,7 @@
 #include "imlib.h"
 #endif
 #define ESP_VISION_CAMERA_CAPTURE_RETRY_COUNT 3
-#define ESP_VISION_CAMERA_JPEG_QUALITY        12
+#define ESP_VISION_CAMERA_JPEG_QUALITY 12
 typedef struct {
     bool initialized;
     bool hmirror;
@@ -128,10 +127,11 @@ static void esp_vision_camera_log_jpeg_frame(const char *reason, const camera_fb
 ", reason);
         return;
     }
-    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u
+    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u fmt=%u
 ",
                             reason, (unsigned int)fb->len,
-                            (unsigned int)fb->width, (unsigned int)fb->height);
+                            (unsigned int)fb->width, (unsigned int)fb->height,
+                            (unsigned int)fb->format);
 }
 static bool esp_vision_camera_get_jpeg_payload(const camera_fb_t *fb, image_t *src)
 {
@@ -175,6 +175,7 @@ esp_err_t esp_vision_camera_init(void)
     framesize_t frame_size = FRAMESIZE_QVGA;
     esp_err_t ret = esp_vision_camera_to_esp32_framesize(s_camera.width, s_camera.height, &frame_size);
     if (ret != ESP_OK) return ret;
+    /* GC2145 does NOT support JPEG output. Use RGB565 mode. */
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
@@ -195,12 +196,12 @@ esp_err_t esp_vision_camera_init(void)
         .xclk_freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
         .ledc_timer = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
         .ledc_channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
-        .pixel_format = ESP32_CAMERA_PIXFORMAT_JPEG,
+        .pixel_format = ESP32_CAMERA_PIXFORMAT_RGB565,
         .frame_size = frame_size,
-        .jpeg_quality = ESP_VISION_CAMERA_JPEG_QUALITY,
+        .jpeg_quality = 0,
         .fb_count = ESP_VISION_CAMERA_BUFFER_COUNT,
         .fb_location = CAMERA_FB_IN_PSRAM,
-        .grab_mode = CAMERA_GRAB_LATEST,
+        .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
         .sccb_i2c_port = ESP_VISION_CAMERA_SCCB_I2C_PORT,
     };
     ret = esp_camera_init(&config);
@@ -284,19 +285,38 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
     for (int attempt = 0; attempt < ESP_VISION_CAMERA_CAPTURE_RETRY_COUNT; attempt++) {
         camera_fb_t *fb = esp_camera_fb_get();
         if (!fb) return ESP_FAIL;
-        esp_err_t ret = ESP_OK;
-        image_t src;
-        image_t dst = { .w = (int32_t)s_camera.width, .h = (int32_t)s_camera.height,
-                        .pixfmt = s_camera.output_pixfmt, .size = 0, .pixels = pixels };
-        if ((fb->format != ESP32_CAMERA_PIXFORMAT_JPEG) ||
-            !esp_vision_camera_get_jpeg_payload(fb, &src)) {
-            esp_vision_camera_log_jpeg_frame("invalid", fb);
-            ret = ESP_ERR_INVALID_RESPONSE;
-        } else if (((uint32_t)src.w != s_camera.width) || ((uint32_t)src.h != s_camera.height)) {
-            esp_vision_camera_log_jpeg_frame("unexpected size", fb);
-            ret = ESP_ERR_INVALID_RESPONSE;
-        } else {
-            ret = esp_vision_jpeg_decode(src.pixels, src.size, &dst);
+        esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
+        size_t fb_size = fb->len;
+        /* GC2145 outputs RGB565 in big-endian (high byte first).
+         * fb->format should be ESP32_CAMERA_PIXFORMAT_RGB565.
+         * We accept any non-JPEG frame with enough data. */
+        if (fb->format != ESP32_CAMERA_PIXFORMAT_JPEG && fb_size >= expected_size) {
+            uint8_t *src = fb->buf;
+            uint8_t *dst = pixels;
+            size_t total_pixels = (size_t)s_camera.width * s_camera.height;
+            size_t input_bytes = total_pixels * 2;
+            if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
+                /* RGB565 big-endian -> Grayscale */
+                for (size_t j = 0; j < input_bytes; j += 2) {
+                    uint8_t hi = src[j];
+                    uint8_t lo = src[j + 1];
+                    uint8_t r5 = (hi >> 3) & 0x1F;
+                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
+                    uint8_t b5 = lo & 0x1F;
+                    uint8_t r8 = (r5 << 3) | (r5 >> 2);
+                    uint8_t g8 = (g6 << 2) | (g6 >> 4);
+                    uint8_t b8 = (b5 << 3) | (b5 >> 2);
+                    dst[j / 2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                }
+                ret = ESP_OK;
+            } else {
+                /* RGB565: byte swap (big-endian -> little-endian for imlib) */
+                for (size_t j = 0; j < input_bytes; j += 2) {
+                    dst[j] = src[j + 1];
+                    dst[j + 1] = src[j];
+                }
+                ret = ESP_OK;
+            }
         }
         esp_camera_fb_return(fb);
         if (ret != ESP_ERR_INVALID_RESPONSE) return ret;
