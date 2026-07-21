@@ -296,25 +296,18 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
             size_t total_pixels = (size_t)s_camera.width * s_camera.height;
             size_t input_bytes = total_pixels * 2;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                /* RGB565 big-endian -> Grayscale */
-                for (size_t j = 0; j < input_bytes; j += 2) {
-                    uint8_t hi = src[j];
-                    uint8_t lo = src[j + 1];
-                    uint8_t r5 = (hi >> 3) & 0x1F;
-                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
-                    uint8_t b5 = lo & 0x1F;
-                    uint8_t r8 = (r5 << 3) | (r5 >> 2);
-                    uint8_t g8 = (g6 << 2) | (g6 >> 4);
-                    uint8_t b8 = (b5 << 3) | (b5 >> 2);
-                    dst[j / 2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
-                }
+                /* RGB565 -> Grayscale using imlib's built-in conversion */
+                image_t img_src = { .w = (int32_t)fb->width, .h = (int32_t)fb->height,
+                                    .pixfmt = PIXFORMAT_RGB565, .size = fb->len,
+                                    .pixels = src, ._raw = NULL };
+                image_t img_dst = { .w = (int32_t)s_camera.width, .h = (int32_t)s_camera.height,
+                                    .pixfmt = PIXFORMAT_GRAYSCALE, .size = 0,
+                                    .pixels = dst, ._raw = NULL };
+                imlib_convert_image(&img_dst, &img_src);
                 ret = ESP_OK;
             } else {
-                /* RGB565: byte swap (big-endian -> little-endian for imlib) */
-                for (size_t j = 0; j < input_bytes; j += 2) {
-                    dst[j] = src[j + 1];
-                    dst[j + 1] = src[j];
-                }
+                /* RGB565: no byte swap - esp32-camera driver handles endianness */
+                memcpy(dst, src, input_bytes);
                 ret = ESP_OK;
             }
         }
