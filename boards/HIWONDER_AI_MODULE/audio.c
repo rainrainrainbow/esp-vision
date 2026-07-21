@@ -159,8 +159,8 @@ esp_err_t esp_vision_audio_init(void)
             .slot_mask = I2S_STD_SLOT_BOTH, .ws_width = 32,
             .bit_shift = true, .left_align = true,
             .big_endian = false, .bit_order_lsb = false },
-        .gpio_cfg = { .mclk = I2S_GPIO_UNUSED,
-            .bclk = 45, .ws = 38, .dout = 42, .din = I2S_GPIO_UNUSED },
+        .gpio_cfg = { .mclk = 45,
+            .bclk = 39, .ws = 41, .dout = 42, .din = 40 },
     };
     ret = i2s_channel_init_std_mode(s_tx_handle, &std_cfg);
     if (ret != ESP_OK) {
