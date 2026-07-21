@@ -6,8 +6,7 @@
  * ES8311 audio codec driver for HIWONDER_AI_MODULE.
  * I2C on I2C0 (shared with camera and touch), I2S for audio data.
  *
- * IMPORTANT: ES8311 uses BCLK as its clock source (register 0x01 bit 6 = 1)
- * because the board has no dedicated MCLK pin wired to ES8311.
+ * IMPORTANT: ES8311 uses MCLK (GPIO45) as its clock source.
  */
 
 #include <stdbool.h>
@@ -42,7 +41,7 @@ static const char *TAG = "esp_vision_audio";
 
 #define ES8311_RESET                   0x1F
 /* Use BCLK as clock source (bit 6=1) instead of MCLK, all power on */
-#define ES8311_CLOCK_BCLK_ON           0x4F
+#define ES8311_CLOCK_MCLK_ON           0x0F
 #define ES8311_CLOCK_OFF               0x00
 #define ES8311_ADC_DAC_ON              0x15
 #define ES8311_ADC_DAC_OFF             0x00
@@ -122,11 +121,10 @@ esp_err_t esp_vision_audio_init(void)
 
     /*
      * Configure ES8311 registers.
-     * CRITICAL: Register 0x01 uses BCLK as clock source (0x4F not 0x0F)
-     * because the board has no MCLK pin wired to ES8311.
-     * Bit 6 = 1: select BCLK as clock source instead of MCLK.
+     * CRITICAL: Register 0x01 uses MCLK (GPIO45) as clock source (0x0F).
+     * Bit 6 = 0: select MCLK as clock source.
      */
-    es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_BCLK_ON);
+    es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_MCLK_ON);
     es8311_write_reg(ES8311_CLOCK_DIV_REG, ES8311_MCLK_DIV_256);
     es8311_write_reg(ES8311_ADC_DAC_REG, ES8311_ADC_DAC_ON);
     es8311_write_reg(ES8311_SEL_ADC_REG, ES8311_ADC_INPUT_MIC);
@@ -159,7 +157,7 @@ esp_err_t esp_vision_audio_init(void)
             .slot_mask = I2S_STD_SLOT_BOTH, .ws_width = 32,
             .bit_shift = true, .left_align = true,
             .big_endian = false, .bit_order_lsb = false },
-        .gpio_cfg = { .mclk = I2S_GPIO_UNUSED,
+        .gpio_cfg = { .mclk = 45,
             .bclk = 39, .ws = 41, .dout = 42, .din = 40 },
     };
     ret = i2s_channel_init_std_mode(s_tx_handle, &std_cfg);
@@ -176,7 +174,7 @@ esp_err_t esp_vision_audio_init(void)
         return ret;
     }
 
-    ESP_LOGI(TAG, "ES8311 + I2S initialized (BCLK clock source)");
+    ESP_LOGI(TAG, "ES8311 + I2S initialized (MCLK clock source)");
     s_audio_initialized = true;
     return ESP_OK;
 }
