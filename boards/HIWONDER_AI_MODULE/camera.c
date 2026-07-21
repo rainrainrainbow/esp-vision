@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
- * GC2145 outputs RGB565 (big-endian, high byte first) or YCbCr.
- * No hardware JPEG support - use RGB565 mode and byte-swap.
+ * GC2145 has no JPEG output - use RGB565 mode and byte-swap.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -46,7 +45,6 @@
 #include "imlib.h"
 #endif
 #define ESP_VISION_CAMERA_CAPTURE_RETRY_COUNT 3
-#define ESP_VISION_CAMERA_JPEG_QUALITY 12
 typedef struct {
     bool initialized;
     bool hmirror;
@@ -123,12 +121,10 @@ static esp_err_t esp_vision_camera_to_esp32_framesize(uint32_t width,
 static void esp_vision_camera_log_jpeg_frame(const char *reason, const camera_fb_t *fb)
 {
     if ((fb == NULL) || (fb->buf == NULL) || (fb->len == 0)) {
-        esp_vision_debug_printf("[esp-vision] camera jpeg %s: no frame
-", reason);
+        esp_vision_debug_printf("[esp-vision] camera jpeg %s: no frame\r\n", reason);
         return;
     }
-    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u fmt=%u
-",
+    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u fmt=%u\r\n",
                             reason, (unsigned int)fb->len,
                             (unsigned int)fb->width, (unsigned int)fb->height,
                             (unsigned int)fb->format);
@@ -287,26 +283,26 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
         if (!fb) return ESP_FAIL;
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        /* GC2145 outputs RGB565 in big-endian (high byte first).
-         * fb->format should be ESP32_CAMERA_PIXFORMAT_RGB565.
-         * We accept any non-JPEG frame with enough data. */
+        /* GC2145 outputs RGB565. Accept any non-JPEG frame with enough data. */
         if (fb->format != ESP32_CAMERA_PIXFORMAT_JPEG && fb_size >= expected_size) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
             size_t total_pixels = (size_t)s_camera.width * s_camera.height;
             size_t input_bytes = total_pixels * 2;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                /* RGB565 -> Grayscale using imlib's built-in conversion */
-                image_t img_src = { .w = (int32_t)fb->width, .h = (int32_t)fb->height,
-                                    .pixfmt = PIXFORMAT_RGB565, .size = fb->len,
-                                    .pixels = src, ._raw = NULL };
-                image_t img_dst = { .w = (int32_t)s_camera.width, .h = (int32_t)s_camera.height,
-                                    .pixfmt = PIXFORMAT_GRAYSCALE, .size = 0,
-                                    .pixels = dst, ._raw = NULL };
-                imlib_convert_image(&img_dst, &img_src);
+                for (size_t j = 0; j < input_bytes; j += 2) {
+                    uint8_t hi = src[j];
+                    uint8_t lo = src[j + 1];
+                    uint8_t r5 = (hi >> 3) & 0x1F;
+                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
+                    uint8_t b5 = lo & 0x1F;
+                    uint8_t r8 = (r5 << 3) | (r5 >> 2);
+                    uint8_t g8 = (g6 << 2) | (g6 >> 4);
+                    uint8_t b8 = (b5 << 3) | (b5 >> 2);
+                    dst[j / 2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                }
                 ret = ESP_OK;
             } else {
-                /* RGB565: no byte swap - esp32-camera driver handles endianness */
                 memcpy(dst, src, input_bytes);
                 ret = ESP_OK;
             }
