@@ -1,1 +1,166 @@
-LyoKICogU1BEWC1GaWxlQ29weXJpZ2h0VGV4dDogMjAyNiBFc3ByZXNzaWYgU3lzdGVtcyAoU2hhbmdoYWkpIENPIExURAogKgogKiBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogQXBhY2hlLTIuMAogKgogKiBNaWNyb1B5dGhvbiBhdWRpbyBtb2R1bGUgZm9yIEhJV09OREVSX0FJX01PRFVMRQogKiAtIEVTODMxMSBJMlMgYXVkaW8gb3V0cHV0IHZpYSBib2FyZCBhdWRpbyBkcml2ZXIKICogLSBNUDMgZGVjb2RpbmcgdmlhIG1pbmltcDMgKGNvcmUgQVBJLCBubyBtaW5pbXAzX2V4LmggbmVlZGVkKQogKiAtIFBDTSBwbGF5YmFjawogKi8KCiNpbmNsdWRlIDxzdGRpby5oPgojaW5jbHVkZSA8c3RyaW5nLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KCiNpbmNsdWRlICJweS9vYmouaCIKI2luY2x1ZGUgInB5L3J1bnRpbWUuaCIKI2luY2x1ZGUgInB5L2J1aWx0aW4uaCIKCiNpbmNsdWRlICJib2FyZGNvbmZpZy5oIgoKLyogQm9hcmQtbGV2ZWwgYXVkaW8gZnVuY3Rpb25zIChmcm9tIGJvYXJkcy9ISVdPTkRFUl9BSV9NT0RVTEUvYXVkaW8uYykgKi8KZXNwX2Vycl90IGVzcF92aXNpb25fYXVkaW9faW5pdCh2b2lkKTsKdm9pZCBlc3BfdmlzaW9uX2F1ZGlvX2RlaW5pdCh2b2lkKTsKYm9vbCBlc3BfdmlzaW9uX2F1ZGlvX2lzX3JlYWR5KHZvaWQpOwppbnQgZXNwX3Zpc2lvbl9hdWRpb19wbGF5X3BjbShjb25zdCB1aW50OF90ICpkYXRhLCBzaXplX3QgbGVuLCB1aW50MzJfdCBzYW1wbGVfcmF0ZSk7CgovKiBtaW5pbXAzIGNvcmUgZGVjb2RlciAqLwojaW5jbHVkZSAibWluaW1wMy5oIgoKc3RhdGljIGNvbnN0IGNoYXIgKlRBRyA9ICJweV9hdWRpbyI7CgovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSovCi8qIG1wM190b19wY206IGRlY29kZSBNUDMgdG8gcmF3IFBDTSB1c2luZyBtaW5pbXAzIGNvcmUgQVBJICAgICAgICAgKi8KLyogUmV0dXJucyBhbGxvY2F0ZWQgUENNIGJ1ZmZlciAoY2FsbGVyIG11c3QgZnJlZSkgYW5kIGZpbGxzIHNpemUgICAqLwovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qLwpzdGF0aWMgdWludDhfdCAqbXAzX3RvX3BjbShjb25zdCB1aW50OF90ICptcDNfZGF0YSwgc2l6ZV90IG1wM19sZW4sCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNpemVfdCAqb3V0X2xlbiwgaW50ICpzYW1wbGVfcmF0ZSkKewogICAgbXAzZGVjX3QgbXAzZDsKICAgIG1wM2RlY19pbml0KCZtcDNkKTsKCiAgICAvKiBGaXJzdCBwYXNzOiBmaW5kIHNhbXBsZSByYXRlIGFuZCBlc3RpbWF0ZSB0b3RhbCBzYW1wbGVzICovCiAgICBpbnQxNl90IGR1bW15W01JTklNUDNfTUFYX1NBTVBMRVNfUEVSX0ZSQU1FXTsKICAgIG1wM2RlY19mcmFtZV9pbmZvX3QgaW5mbzsKICAgIHNpemVfdCBvZmZzZXQgPSAwOwogICAgaW50IGRldGVjdGVkX2h6ID0gMDsKICAgIHNpemVfdCB0b3RhbF9zYW1wbGVzID0gMDsKCiAgICB3aGlsZSAob2Zmc2V0IDwgbXAzX2xlbikgewogICAgICAgIGludCBzYW1wbGVzID0gbXAzZGVjX2RlY29kZV9mcmFtZSgmbXAzZCwgbXAzX2RhdGEgKyBvZmZzZXQsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAoaW50KShtcDNfbGVuIC0gb2Zmc2V0KSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGR1bW15LCAmaW5mbyk7CiAgICAgICAgaWYgKHNhbXBsZXMgPiAwKSB7CiAgICAgICAgICAgIGlmIChkZXRlY3RlZF9oeiA9PSAwKSB7CiAgICAgICAgICAgICAgICBkZXRlY3RlZF9oeiA9IGluZm8uaHo7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgdG90YWxfc2FtcGxlcyArPSAoc2l6ZV90KXNhbXBsZXM7CiAgICAgICAgfQogICAgICAgIGlmIChpbmZvLmZyYW1lX2J5dGVzID09IDApIGJyZWFrOwogICAgICAgIG9mZnNldCArPSBpbmZvLmZyYW1lX2J5dGVzOwogICAgfQoKICAgIGlmIChkZXRlY3RlZF9oeiA9PSAwIHx8IHRvdGFsX3NhbXBsZXMgPT0gMCkgewogICAgICAgIHJldHVybiBOVUxMOwogICAgfQoKICAgIC8qIFNlY29uZCBwYXNzOiBhY3R1YWxseSBkZWNvZGUgKi8KICAgIG1wM2RlY19pbml0KCZtcDNkKTsKICAgIHNpemVfdCBwY21fc2l6ZSA9IHRvdGFsX3NhbXBsZXMgKiBzaXplb2YoaW50MTZfdCk7CiAgICBpbnQxNl90ICpwY21fYnVmID0gKGludDE2X3QgKiltYWxsb2MocGNtX3NpemUpOwogICAgaWYgKCFwY21fYnVmKSByZXR1cm4gTlVMTDsKCiAgICBvZmZzZXQgPSAwOwogICAgc2l6ZV90IHdyaXR0ZW4gPSAwOwogICAgd2hpbGUgKG9mZnNldCA8IG1wM19sZW4gJiYgd3JpdHRlbiA8IHRvdGFsX3NhbXBsZXMpIHsKICAgICAgICBpbnQgc2FtcGxlcyA9IG1wM2RlY19kZWNvZGVfZnJhbWUoJm1wM2QsIG1wM19kYXRhICsgb2Zmc2V0LAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIChpbnQpKG1wM19sZW4gLSBvZmZzZXQpLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBjbV9idWYgKyB3cml0dGVuLCAmaW5mbyk7CiAgICAgICAgaWYgKHNhbXBsZXMgPiAwKSB7CiAgICAgICAgICAgIHdyaXR0ZW4gKz0gKHNpemVfdClzYW1wbGVzOwogICAgICAgIH0KICAgICAgICBpZiAoaW5mby5mcmFtZV9ieXRlcyA9PSAwKSBicmVhazsKICAgICAgICBvZmZzZXQgKz0gaW5mby5mcmFtZV9ieXRlczsKICAgIH0KCiAgICAqb3V0X2xlbiA9IHdyaXR0ZW4gKiBzaXplb2YoaW50MTZfdCk7CiAgICAqc2FtcGxlX3JhdGUgPSBkZXRlY3RlZF9oejsKICAgIHJldHVybiAodWludDhfdCAqKXBjbV9idWY7Cn0KCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KLyogTWljcm9QeXRob246IGF1ZGlvLmluaXQoKSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICovCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8Kc3RhdGljIG1wX29ial90IHB5X2F1ZGlvX2luaXQodm9pZCkKewogICAgZXNwX2Vycl90IHJldCA9IGVzcF92aXNpb25fYXVkaW9faW5pdCgpOwogICAgaWYgKHJldCAhPSBFU1BfT0spIHsKICAgICAgICBtcF9yYWlzZV9tc2dfdmFyZygmbXBfdHlwZV9SdW50aW1lRXJyb3IsICJhdWRpbyBpbml0IGZhaWxlZDogJXMiLCBlc3BfZXJyX3RvX25hbWUocmV0KSk7CiAgICB9CiAgICByZXR1cm4gbXBfY29uc3Rfbm9uZTsKfQpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0ZVTl9PQkpfMChweV9hdWRpb19pbml0X29iaiwgcHlfYXVkaW9faW5pdCk7CgovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qLwovKiBNaWNyb1B5dGhvbjogYXVkaW8uZGVpbml0KCkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAqLwovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qLwpzdGF0aWMgbXBfb2JqX3QgcHlfYXVkaW9fZGVpbml0KHZvaWQpCnsKICAgIGVzcF92aXNpb25fYXVkaW9fZGVpbml0KCk7CiAgICByZXR1cm4gbXBfY29uc3Rfbm9uZTsKfQpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0ZVTl9PQkpfMChweV9hdWRpb19kZWluaXRfb2JqLCBweV9hdWRpb19kZWluaXQpOwoKLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KLyogTWljcm9QeXRob246IGF1ZGlvLmlzX3JlYWR5KCkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8Kc3RhdGljIG1wX29ial90IHB5X2F1ZGlvX2lzX3JlYWR5KHZvaWQpCnsKICAgIHJldHVybiBtcF9vYmpfbmV3X2Jvb2woZXNwX3Zpc2lvbl9hdWRpb19pc19yZWFkeSgpKTsKfQpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0ZVTl9PQkpfMChweV9hdWRpb19pc19yZWFkeV9vYmosIHB5X2F1ZGlvX2lzX3JlYWR5KTsKCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KLyogTWljcm9QeXRob246IGF1ZGlvLnBsYXlfcGNtKGRhdGEsIHNhbXBsZV9yYXRlKSAgICAgICAgICAgICAgICAgICAgICAqLwovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0qLwpzdGF0aWMgbXBfb2JqX3QgcHlfYXVkaW9fcGxheV9wY20obXBfb2JqX3QgZGF0YV9vYmosIG1wX29ial90IHJhdGVfb2JqKQp7CiAgICBtcF9idWZmZXJfaW5mb190IGJ1ZmluZm87CiAgICBtcF9nZXRfYnVmZmVyX3JhaXNlKGRhdGFfb2JqLCAmYnVmaW5mbywgTVBfQlVGRkVSX1JFQUQpOwoKICAgIG1wX2ludF90IHNhbXBsZV9yYXRlID0gbXBfb2JqX2dldF9pbnQocmF0ZV9vYmopOwogICAgaWYgKHNhbXBsZV9yYXRlIDw9IDApIHsKICAgICAgICBtcF9yYWlzZV9WYWx1ZUVycm9yKE1QX0VSUk9SX1RFWFQoInNhbXBsZV9yYXRlIG11c3QgYmUgPiAwIikpOwogICAgfQoKICAgIGludCByZXQgPSBlc3BfdmlzaW9uX2F1ZGlvX3BsYXlfcGNtKChjb25zdCB1aW50OF90ICopYnVmaW5mby5idWYsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJ1ZmluZm8ubGVuLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAodWludDMyX3Qpc2FtcGxlX3JhdGUpOwogICAgaWYgKHJldCA8IDApIHsKICAgICAgICBtcF9yYWlzZV9tc2dfdmFyZygmbXBfdHlwZV9SdW50aW1lRXJyb3IsICJwbGF5X3BjbSBmYWlsZWQ6IHJldD0lZCIsIHJldCk7CiAgICB9CiAgICByZXR1cm4gbXBfb2JqX25ld19pbnQocmV0KTsKfQpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0ZVTl9PQkpfMihweV9hdWRpb19wbGF5X3BjbV9vYmosIHB5X2F1ZGlvX3BsYXlfcGNtKTsKCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KLyogTWljcm9QeXRob246IGF1ZGlvLnBsYXlfbXAzKG1wM19kYXRhKSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICovCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8Kc3RhdGljIG1wX29ial90IHB5X2F1ZGlvX3BsYXlfbXAzKG1wX29ial90IGRhdGFfb2JqKQp7CiAgICBtcF9idWZmZXJfaW5mb190IGJ1ZmluZm87CiAgICBtcF9nZXRfYnVmZmVyX3JhaXNlKGRhdGFfb2JqLCAmYnVmaW5mbywgTVBfQlVGRkVSX1JFQUQpOwoKICAgIHNpemVfdCBwY21fbGVuID0gMDsKICAgIGludCBzYW1wbGVfcmF0ZSA9IDA7CiAgICB1aW50OF90ICpwY20gPSBtcDNfdG9fcGNtKChjb25zdCB1aW50OF90ICopYnVmaW5mby5idWYsIGJ1ZmluZm8ubGVuLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJnBjbV9sZW4sICZzYW1wbGVfcmF0ZSk7CiAgICBpZiAoIXBjbSkgewogICAgICAgIG1wX3JhaXNlX21zZyhhtXBfdHlwZV9SdW50aW1lRXJyb3IsIE1QX0VSUk9SX1RFWFQoIk1QMyBkZWNvZGUgZmFpbGVkIikpOwogICAgfQoKICAgIGludCB3cml0dGVuID0gZXNwX3Zpc2lvbl9hdWRpb19wbGF5X3BjbShwY20sIHBjbV9sZW4sICh1aW50MzJfdClzYW1wbGVfcmF0ZSk7CiAgICBmcmVlKHBjbSk7CgogICAgaWYgKHdyaXR0ZW4gPCAwKSB7CiAgICAgICAgbXBfcmFpc2VfbXNnX3ZhcmcoJm1wX3R5cGVfUnVudGltZUVycm9yLCAicGxheV9tcDMgZmFpbGVkOiByZXQ9JWQiLCB3cml0dGVuKTsKICAgIH0KICAgIHJldHVybiBtcF9vYmpfbmV3X2ludCh3cml0dGVuKTsKfQpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0ZVTl9PQkpfMShweV9hdWRpb19wbGF5X21wM19vYmosIHB5X2F1ZGlvX3BsYXlfbXAzKTsKCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8KLyogTW9kdWxlIGRlZmluaXRpb24gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KLyotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKi8Kc3RhdGljIGNvbnN0IG1wX3JvbV9tYXBfZWxlbV90IGF1ZGlvX21vZHVsZV9nbG9iYWxzX3RhYmxlW10gPSB7CiAgICB7IE1QX1JPTV9RU1RSKE1QX1FTVFJfX19uYW1lX18pLCAgICBNUF9ST01fUVNUUihNUF9RU1RSX2F1ZGlvKSB9LAogICAgeyBNUF9ST01fUVNUUihNUF9RU1RSX2luaXQpLCAgICAgICAgTVBfUk9NX1BUUigmcHlfYXVkaW9faW5pdF9vYmopIH0sCiAgICB7IE1QX1JPTV9RU1RSKE1QX1FTVFJfZGVpbml0KSwgICAgICBNUF9ST01fUFRSKCZweV9hdWRpb19kZWluaXRfb2JqKSB9LAogICAgeyBNUF9ST01fUVNUUihNUF9RU1RSX2lzX3JlYWR5KSwgICAgTVBfUk9NX1BUUigmcHlfYXVkaW9faXNfcmVhZHlfb2JqKSB9LAogICAgeyBNUF9ST01fUVNUUihNUF9RU1RSX3BsYXlfcGNtKSwgICAgTVBfUk9NX1BUUigmcHlfYXVkaW9fcGxheV9wY21fb2JqKSB9LAogICAgeyBNUF9ST01fUVNUUihNUF9RU1RSX3BsYXlfbXAzKSwgICAgTVBfUk9NX1BUUigmcHlfYXVkaW9fcGxheV9tcDNfb2JqKSB9LAp9OwpzdGF0aWMgTVBfREVGSU5FX0NPTlNUX0RJQ1QoYXVkaW9fbW9kdWxlX2dsb2JhbHMsIGF1ZGlvX21vZHVsZV9nbG9iYWxzX3RhYmxlKTsKCmNvbnN0IG1wX29ial9tb2R1bGVfdCBhdWRpb191c2VyX2Ntb2R1bGUgPSB7CiAgICAuYmFzZSA9IHsgJm1wX3R5cGVfbW9kdWxlIH0sCiAgICAuZ2xvYmFscyA9IChtcF9vYmpfZGljdF90ICopJmF1ZGlvX21vZHVsZV9nbG9iYWxzLAp9OwoKTVBfUkVHSVNURVJfTU9EVUxFKE1QX1FTVFJfYXVkaW8sIGF1ZGlvX3VzZXJfY21vZHVsZSk7Cg==
+/*
+ * SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * MicroPython audio module for HIWONDER_AI_MODULE
+ * - ES8311 I2S audio output via board audio driver
+ * - MP3 decoding via minimp3 (core API, no minimp3_ex.h needed)
+ * - PCM playback
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+
+#include "boardconfig.h"
+
+/* Board-level audio functions */
+esp_err_t esp_vision_audio_init(void);
+void esp_vision_audio_deinit(void);
+bool esp_vision_audio_is_ready(void);
+int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_rate);
+
+#include "minimp3.h"
+
+static const char *TAG = "py_audio";
+
+static uint8_t *mp3_to_pcm(const uint8_t *mp3_data, size_t mp3_len,
+                           size_t *out_len, int *sample_rate)
+{
+    mp3dec_t mp3d;
+    mp3dec_init(&mp3d);
+
+    int16_t dummy[MINIMP3_MAX_SAMPLES_PER_FRAME];
+    mp3dec_frame_info_t info;
+    size_t offset = 0;
+    int detected_hz = 0;
+    size_t total_samples = 0;
+
+    while (offset < mp3_len) {
+        int samples = mp3dec_decode_frame(&mp3d, mp3_data + offset,
+                                          (int)(mp3_len - offset),
+                                          dummy, &info);
+        if (samples > 0) {
+            if (detected_hz == 0) {
+                detected_hz = info.hz;
+            }
+            total_samples += (size_t)samples;
+        }
+        if (info.frame_bytes == 0) break;
+        offset += info.frame_bytes;
+    }
+
+    if (detected_hz == 0 || total_samples == 0) {
+        return NULL;
+    }
+
+    mp3dec_init(&mp3d);
+    size_t pcm_size = total_samples * sizeof(int16_t);
+    int16_t *pcm_buf = (int16_t *)malloc(pcm_size);
+    if (!pcm_buf) return NULL;
+
+    offset = 0;
+    size_t written = 0;
+    while (offset < mp3_len && written < total_samples) {
+        int samples = mp3dec_decode_frame(&mp3d, mp3_data + offset,
+                                          (int)(mp3_len - offset),
+                                          pcm_buf + written, &info);
+        if (samples > 0) {
+            written += (size_t)samples;
+        }
+        if (info.frame_bytes == 0) break;
+        offset += info.frame_bytes;
+    }
+
+    *out_len = written * sizeof(int16_t);
+    *sample_rate = detected_hz;
+    return (uint8_t *)pcm_buf;
+}
+
+static mp_obj_t py_audio_init(void)
+{
+    esp_err_t ret = esp_vision_audio_init();
+    if (ret != ESP_OK) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, "audio init failed: %s", esp_err_to_name(ret));
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(py_audio_init_obj, py_audio_init);
+
+static mp_obj_t py_audio_deinit(void)
+{
+    esp_vision_audio_deinit();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(py_audio_deinit_obj, py_audio_deinit);
+
+static mp_obj_t py_audio_is_ready(void)
+{
+    return mp_obj_new_bool(esp_vision_audio_is_ready());
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(py_audio_is_ready_obj, py_audio_is_ready);
+
+static mp_obj_t py_audio_play_pcm(mp_obj_t data_obj, mp_obj_t rate_obj)
+{
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
+
+    mp_int_t sample_rate = mp_obj_get_int(rate_obj);
+    if (sample_rate <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("sample_rate must be > 0"));
+    }
+
+    int ret = esp_vision_audio_play_pcm((const uint8_t *)bufinfo.buf,
+                                         bufinfo.len,
+                                         (uint32_t)sample_rate);
+    if (ret < 0) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, "play_pcm failed: ret=%d", ret);
+    }
+    return mp_obj_new_int(ret);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(py_audio_play_pcm_obj, py_audio_play_pcm);
+
+static mp_obj_t py_audio_play_mp3(mp_obj_t data_obj)
+{
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
+
+    size_t pcm_len = 0;
+    int sample_rate = 0;
+    uint8_t *pcm = mp3_to_pcm((const uint8_t *)bufinfo.buf, bufinfo.len,
+                               &pcm_len, &sample_rate);
+    if (!pcm) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("MP3 decode failed"));
+    }
+
+    int written = esp_vision_audio_play_pcm(pcm, pcm_len, (uint32_t)sample_rate);
+    free(pcm);
+
+    if (written < 0) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, "play_mp3 failed: ret=%d", written);
+    }
+    return mp_obj_new_int(written);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(py_audio_play_mp3_obj, py_audio_play_mp3);
+
+static const mp_rom_map_elem_t audio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_audio) },
+    { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&py_audio_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&py_audio_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_ready),    MP_ROM_PTR(&py_audio_is_ready_obj) },
+    { MP_ROM_QSTR(MP_QSTR_play_pcm),    MP_ROM_PTR(&py_audio_play_pcm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_play_mp3),    MP_ROM_PTR(&py_audio_play_mp3_obj) },
+};
+static MP_DEFINE_CONST_DICT(audio_module_globals, audio_module_globals_table);
+
+const mp_obj_module_t audio_user_cmodule = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&audio_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_audio, audio_user_cmodule);
