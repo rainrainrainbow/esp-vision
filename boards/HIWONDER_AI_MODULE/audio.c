@@ -40,7 +40,7 @@ static const char *TAG = "esp_vision_audio";
 #define ES8311_ADC_CTRL_REG            0x12
 
 #define ES8311_RESET                   0x1F
-/* Use BCLK as clock source (bit 6=1) instead of MCLK, all power on */
+/* Use MCLK as clock source (bit 6=0), all power on */
 #define ES8311_CLOCK_MCLK_ON           0x0F
 #define ES8311_CLOCK_OFF               0x00
 #define ES8311_ADC_DAC_ON              0x15
@@ -149,7 +149,7 @@ esp_err_t esp_vision_audio_init(void)
         return ret;
     }
 
-    /* ES8311 uses BCLK as clock source, no MCLK output from I2S */
+    /* ES8311 uses MCLK (GPIO45) as clock source */
     i2s_std_config_t std_cfg = {
         .clk_cfg = { .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
             .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_256 },
