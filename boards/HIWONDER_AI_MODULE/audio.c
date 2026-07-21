@@ -154,7 +154,7 @@ esp_err_t esp_vision_audio_init(void)
     /* ES8311 uses BCLK as clock source, no MCLK output from I2S */
     i2s_std_config_t std_cfg = {
         .clk_cfg = { .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
-            .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_0 },
+            .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_256 },
         .slot_cfg = { .slot_mode = I2S_SLOT_MODE_STEREO,
             .slot_mask = I2S_STD_SLOT_BOTH, .ws_width = 32,
             .bit_shift = true, .left_align = true,
@@ -205,7 +205,7 @@ int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_r
         i2s_std_clk_config_t clk_cfg = {
             .sample_rate_hz = sample_rate,
             .clk_src = I2S_CLK_SRC_DEFAULT,
-            .mclk_multiple = I2S_MCLK_MULTIPLE_0,
+            .mclk_multiple = I2S_MCLK_MULTIPLE_256,
         };
         i2s_channel_reconfig_std_clock(s_tx_handle, &clk_cfg);
         i2s_channel_enable(s_tx_handle);
