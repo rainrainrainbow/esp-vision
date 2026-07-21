@@ -1,4 +1,7 @@
 #!/bin/bash
+# Build script for HIWONDER_AI_MODULE
+# Fix: camera capture loop bounds, audio I2S MCLK config
+
 set -e
 git config --global --add safe.directory "*"
 . /opt/esp/idf/export.sh
