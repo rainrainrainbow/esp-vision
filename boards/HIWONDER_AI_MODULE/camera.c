@@ -306,7 +306,9 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
             uint8_t *dst = pixels;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 // Byte swap first (GC2145 high byte first -> little-endian), then RGB565 -> Y
-                for (size_t j = 0; j < expected; j += 2) {
+                // expected=w*h*1, input RGB565 is w*h*2 bytes
+                size_t input_bytes = (size_t)s_camera.width * 2 * s_camera.height;
+                for (size_t j = 0; j < input_bytes; j += 2) {
                     uint8_t hi = src[j];    // high byte from sensor (big-endian: first byte)
                     uint8_t lo = src[j+1];  // low byte from sensor (big-endian: second byte)
                     // Extract RGB565 components (big-endian format)
@@ -323,7 +325,8 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                 ret = ESP_OK;
             } else {
                 // RGB565: byte swap (GC2145 high byte first -> little-endian)
-                for (size_t j = 0; j < expected; j += 2) {
+                size_t input_bytes = (size_t)s_camera.width * 2 * s_camera.height;
+                for (size_t j = 0; j < input_bytes; j += 2) {
                     dst[j] = src[j+1];
                     dst[j+1] = src[j];
                 }
