@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
- * GC2145 has no JPEG output - use RGB565 mode and byte-swap.
+ * GC2145 has no JPEG output - use RGB565 mode, no byte swap.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -13,8 +13,6 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "boardconfig.h"
-#include "debug.h"
-#include "jpeg.h"
 #define pixformat_t         esp32_camera_pixformat_t
 #define PIXFORMAT_RGB565    ESP32_CAMERA_PIXFORMAT_RGB565
 #define PIXFORMAT_YUV422    ESP32_CAMERA_PIXFORMAT_YUV422
@@ -117,34 +115,6 @@ static esp_err_t esp_vision_camera_to_esp32_framesize(uint32_t width,
         *framesize = FRAMESIZE_QVGA; return ESP_OK;
     }
     return ESP_ERR_NOT_SUPPORTED;
-}
-static void esp_vision_camera_log_jpeg_frame(const char *reason, const camera_fb_t *fb)
-{
-    if ((fb == NULL) || (fb->buf == NULL) || (fb->len == 0)) {
-        esp_vision_debug_printf("[esp-vision] camera jpeg %s: no frame\r\n", reason);
-        return;
-    }
-    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u fmt=%u\r\n",
-                            reason, (unsigned int)fb->len,
-                            (unsigned int)fb->width, (unsigned int)fb->height,
-                            (unsigned int)fb->format);
-}
-static bool esp_vision_camera_get_jpeg_payload(const camera_fb_t *fb, image_t *src)
-{
-    if ((fb == NULL) || (src == NULL) || (fb->buf == NULL) || (fb->len < 4))
-        return false;
-    size_t start = fb->len, end = fb->len;
-    for (size_t i = 0; (i + 1) < fb->len; i++) {
-        if ((fb->buf[i] == 0xff) && (fb->buf[i + 1] == 0xd8)) { start = i; break; }
-    }
-    if (start == fb->len) { esp_vision_camera_log_jpeg_frame("missing soi", fb); return false; }
-    for (size_t i = start + 2; (i + 1) < fb->len; i++) {
-        if ((fb->buf[i] == 0xff) && (fb->buf[i + 1] == 0xd9)) { end = i + 2; break; }
-    }
-    *src = (image_t){ .w = (int32_t)fb->width, .h = (int32_t)fb->height,
-                      .pixfmt = PIXFORMAT_JPEG, .size = end - start,
-                      .pixels = fb->buf + start };
-    return true;
 }
 esp_err_t esp_vision_camera_get_framesize_dimensions(esp_vision_camera_framesize_t framesize,
                                                      uint32_t *width, uint32_t *height)
