@@ -3,20 +3,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #include "camera.h"
-
 #include <inttypes.h>
 #include <string.h>
-
 #include "driver/ledc.h"
 #include "esp_err.h"
 #include "esp_log.h"
-
 #include "boardconfig.h"
 #include "debug.h"
 #include "jpeg.h"
-
+/*
+ * esp32-camera uses OpenMV-style PIXFORMAT_* names that conflict with imlib.
+ * Keep those names local to this include and expose them with an ESP32_CAMERA_
+ * prefix inside this board backend.
+ */
 #define pixformat_t         esp32_camera_pixformat_t
 #define PIXFORMAT_RGB565    ESP32_CAMERA_PIXFORMAT_RGB565
 #define PIXFORMAT_YUV422    ESP32_CAMERA_PIXFORMAT_YUV422
@@ -40,18 +40,14 @@
 #undef PIXFORMAT_RGB444
 #undef PIXFORMAT_RGB555
 #undef PIXFORMAT_RAW8
-
 #ifndef CMSIS_MCU_H
 #define CMSIS_MCU_H "cmsis_compiler.h"
 #endif
-
 #ifndef NO_QSTR
 #include "imlib.h"
 #endif
-
 #define ESP_VISION_CAMERA_CAPTURE_RETRY_COUNT 3
 #define ESP_VISION_CAMERA_JPEG_QUALITY        12
-
 typedef struct {
     bool initialized;
     bool hmirror;
@@ -66,14 +62,12 @@ typedef struct {
     uint32_t height;
     pixformat_t output_pixfmt;
 } esp_vision_camera_context_t;
-
 static const char *TAG = "esp_vision_camera";
 static esp_vision_camera_context_t s_camera = {
     .width = ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH,
     .height = ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT,
     .output_pixfmt = PIXFORMAT_RGB565,
 };
-
 static void esp_vision_camera_set_dimensions(uint32_t width, uint32_t height)
 {
     s_camera.raw_input_width = width;
@@ -85,20 +79,18 @@ static void esp_vision_camera_set_dimensions(uint32_t width, uint32_t height)
     s_camera.width = width;
     s_camera.height = height;
 }
-
 static void esp_vision_camera_set_defaults(void)
 {
-    esp_vision_camera_set_dimensions(320, 240);
+    esp_vision_camera_set_dimensions(ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH,
+                                     ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT);
     s_camera.output_pixfmt = PIXFORMAT_RGB565;
 }
-
 void esp_vision_camera_init0(void)
 {
     esp_vision_camera_deinit();
     memset(&s_camera, 0, sizeof(s_camera));
     esp_vision_camera_set_defaults();
 }
-
 static size_t esp_vision_camera_bpp(uint32_t pixfmt)
 {
     switch (pixfmt) {
@@ -110,34 +102,37 @@ static size_t esp_vision_camera_bpp(uint32_t pixfmt)
         return 0;
     }
 }
-
 static size_t esp_vision_camera_output_size(uint32_t width, uint32_t height, uint32_t pixfmt)
 {
     return (size_t)width * (size_t)height * esp_vision_camera_bpp(pixfmt);
 }
-
 static esp_err_t esp_vision_camera_to_esp32_framesize(uint32_t width,
                                                       uint32_t height,
                                                       framesize_t *framesize)
 {
     if (framesize == NULL) return ESP_ERR_INVALID_ARG;
-    if ((width == 160) && (height == 120)) { *framesize = FRAMESIZE_QQVGA; return ESP_OK; }
-    if ((width == 320) && (height == 240)) { *framesize = FRAMESIZE_QVGA; return ESP_OK; }
-    if ((width == 640) && (height == 480)) { *framesize = FRAMESIZE_VGA; return ESP_OK; }
+    if ((width == ESP_VISION_CAMERA_OUTPUT_QQVGA_WIDTH) &&
+        (height == ESP_VISION_CAMERA_OUTPUT_QQVGA_HEIGHT)) {
+        *framesize = FRAMESIZE_QQVGA; return ESP_OK;
+    }
+    if ((width == ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH) &&
+        (height == ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT)) {
+        *framesize = FRAMESIZE_QVGA; return ESP_OK;
+    }
     return ESP_ERR_NOT_SUPPORTED;
 }
-
 static void esp_vision_camera_log_jpeg_frame(const char *reason, const camera_fb_t *fb)
 {
     if ((fb == NULL) || (fb->buf == NULL) || (fb->len == 0)) {
-        esp_vision_debug_printf("[esp-vision] camera jpeg %s: no frame\r\n", reason);
+        esp_vision_debug_printf("[esp-vision] camera jpeg %s: no frame
+", reason);
         return;
     }
-    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u\r\n",
+    esp_vision_debug_printf("[esp-vision] camera jpeg %s: bytes=%u frame=%ux%u
+",
                             reason, (unsigned int)fb->len,
                             (unsigned int)fb->width, (unsigned int)fb->height);
 }
-
 static bool esp_vision_camera_get_jpeg_payload(const camera_fb_t *fb, image_t *src)
 {
     if ((fb == NULL) || (src == NULL) || (fb->buf == NULL) || (fb->len < 4))
@@ -150,32 +145,36 @@ static bool esp_vision_camera_get_jpeg_payload(const camera_fb_t *fb, image_t *s
     for (size_t i = start + 2; (i + 1) < fb->len; i++) {
         if ((fb->buf[i] == 0xff) && (fb->buf[i + 1] == 0xd9)) { end = i + 2; break; }
     }
-    *src = (image_t){ .w = fb->width, .h = fb->height, .pixfmt = PIXFORMAT_JPEG, .size = end - start, .pixels = fb->buf + start };
+    *src = (image_t){ .w = (int32_t)fb->width, .h = (int32_t)fb->height,
+                      .pixfmt = PIXFORMAT_JPEG, .size = end - start,
+                      .pixels = fb->buf + start };
     return true;
 }
-
 esp_err_t esp_vision_camera_get_framesize_dimensions(esp_vision_camera_framesize_t framesize,
                                                      uint32_t *width, uint32_t *height)
 {
     if (!width || !height) return ESP_ERR_INVALID_ARG;
     switch (framesize) {
-    case ESP_VISION_CAMERA_FRAMESIZE_QQVGA: *width = 160; *height = 120; return ESP_OK;
-    case ESP_VISION_CAMERA_FRAMESIZE_VGA:  *width = 640; *height = 480; return ESP_OK;
-    case ESP_VISION_CAMERA_FRAMESIZE_QVGA:  *width = 320; *height = 240; return ESP_OK;
-    default: return ESP_ERR_NOT_SUPPORTED;
+    case ESP_VISION_CAMERA_FRAMESIZE_QQVGA:
+        *width = ESP_VISION_CAMERA_OUTPUT_QQVGA_WIDTH;
+        *height = ESP_VISION_CAMERA_OUTPUT_QQVGA_HEIGHT;
+        return ESP_OK;
+    case ESP_VISION_CAMERA_FRAMESIZE_QVGA:
+        *width = ESP_VISION_CAMERA_OUTPUT_QVGA_WIDTH;
+        *height = ESP_VISION_CAMERA_OUTPUT_QVGA_HEIGHT;
+        return ESP_OK;
+    default:
+        return ESP_ERR_NOT_SUPPORTED;
     }
 }
-
 esp_err_t esp_vision_camera_init(void)
 {
     if (s_camera.initialized) return ESP_OK;
     if ((s_camera.width == 0) || (s_camera.height == 0) || (s_camera.output_pixfmt == PIXFORMAT_INVALID))
         esp_vision_camera_set_defaults();
-
     framesize_t frame_size = FRAMESIZE_QVGA;
     esp_err_t ret = esp_vision_camera_to_esp32_framesize(s_camera.width, s_camera.height, &frame_size);
     if (ret != ESP_OK) return ret;
-
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
@@ -196,33 +195,29 @@ esp_err_t esp_vision_camera_init(void)
         .xclk_freq_hz = ESP_VISION_CAMERA_XCLK_FREQ,
         .ledc_timer = (ledc_timer_t)ESP_VISION_CAMERA_XCLK_LEDC_TIMER,
         .ledc_channel = (ledc_channel_t)ESP_VISION_CAMERA_XCLK_LEDC_CHANNEL,
-        .pixel_format = ESP32_CAMERA_PIXFORMAT_RGB565,
+        .pixel_format = ESP32_CAMERA_PIXFORMAT_JPEG,
         .frame_size = frame_size,
-        .jpeg_quality = 0,  // Not used for RGB565
+        .jpeg_quality = ESP_VISION_CAMERA_JPEG_QUALITY,
         .fb_count = ESP_VISION_CAMERA_BUFFER_COUNT,
         .fb_location = CAMERA_FB_IN_PSRAM,
-        .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
+        .grab_mode = CAMERA_GRAB_LATEST,
         .sccb_i2c_port = ESP_VISION_CAMERA_SCCB_I2C_PORT,
     };
-
     ret = esp_camera_init(&config);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "failed to initialize esp32-camera: %s", esp_err_to_name(ret));
         return ret;
     }
-
     s_camera.vflip = true;
     s_camera.hmirror = true;
     s_camera.initialized = true;
-
     sensor_t *sensor = esp_camera_sensor_get();
     if (sensor != NULL) {
-        sensor->set_hmirror(sensor, 1);
-        sensor->set_vflip(sensor, 1);
+        sensor->set_hmirror(sensor, s_camera.hmirror ? 1 : 0);
+        sensor->set_vflip(sensor, s_camera.vflip ? 1 : 0);
     }
     return ESP_OK;
 }
-
 void esp_vision_camera_deinit(void)
 {
     if (s_camera.initialized) {
@@ -230,12 +225,10 @@ void esp_vision_camera_deinit(void)
         s_camera.initialized = false;
     }
 }
-
 bool esp_vision_camera_is_ready(void)
 {
     return s_camera.initialized && s_camera.width != 0 && s_camera.height != 0;
 }
-
 esp_err_t esp_vision_camera_set_pixformat(uint32_t pixfmt)
 {
     if ((pixfmt != PIXFORMAT_RGB565) && (pixfmt != PIXFORMAT_GRAYSCALE))
@@ -243,9 +236,7 @@ esp_err_t esp_vision_camera_set_pixformat(uint32_t pixfmt)
     s_camera.output_pixfmt = (pixformat_t)pixfmt;
     return ESP_OK;
 }
-
 uint32_t esp_vision_camera_get_pixformat(void) { return s_camera.output_pixfmt; }
-
 esp_err_t esp_vision_camera_set_framesize(esp_vision_camera_framesize_t framesize)
 {
     uint32_t width = 0, height = 0;
@@ -256,30 +247,27 @@ esp_err_t esp_vision_camera_set_framesize(esp_vision_camera_framesize_t framesiz
         ret = esp_vision_camera_to_esp32_framesize(width, height, &esp32_framesize);
         if (ret != ESP_OK) return ret;
         sensor_t *sensor = esp_camera_sensor_get();
-        if (!sensor || !sensor->set_framesize) return ESP_FAIL;
+        if ((sensor == NULL) || (sensor->set_framesize == NULL)) return ESP_FAIL;
         if (sensor->set_framesize(sensor, esp32_framesize) != 0) return ESP_FAIL;
     }
     esp_vision_camera_set_dimensions(width, height);
     return ESP_OK;
 }
-
 uint32_t esp_vision_camera_get_width(void) { return s_camera.width; }
 uint32_t esp_vision_camera_get_height(void) { return s_camera.height; }
-
 esp_err_t esp_vision_camera_set_hmirror(bool enable)
 {
     s_camera.hmirror = enable;
     sensor_t *sensor = esp_camera_sensor_get();
-    if (sensor) sensor->set_hmirror(sensor, enable ? 1 : 0);
+    if (sensor != NULL) sensor->set_hmirror(sensor, enable ? 1 : 0);
     return ESP_OK;
 }
 bool esp_vision_camera_get_hmirror(void) { return s_camera.hmirror; }
-
 esp_err_t esp_vision_camera_set_vflip(bool enable)
 {
     s_camera.vflip = enable;
     sensor_t *sensor = esp_camera_sensor_get();
-    if (sensor) sensor->set_vflip(sensor, enable ? 1 : 0);
+    if (sensor != NULL) sensor->set_vflip(sensor, enable ? 1 : 0);
     return ESP_OK;
 }
 bool esp_vision_camera_get_vflip(void) { return s_camera.vflip; }
@@ -288,57 +276,33 @@ size_t esp_vision_camera_frame_size(void)
 {
     return esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
 }
-
 esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 {
     if (!pixels || !esp_vision_camera_is_ready()) return ESP_ERR_INVALID_STATE;
     size_t expected_size = esp_vision_camera_frame_size();
     if ((expected_size == 0) || (pixels_size < expected_size)) return ESP_ERR_INVALID_SIZE;
-
-    for (int attempt = 0; attempt < 3; attempt++) {
+    for (int attempt = 0; attempt < ESP_VISION_CAMERA_CAPTURE_RETRY_COUNT; attempt++) {
         camera_fb_t *fb = esp_camera_fb_get();
         if (!fb) return ESP_FAIL;
-        esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
-        size_t fb_size = fb->len;
-        size_t expected = esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
-        if (fb_size >= expected) {
-            uint8_t *src = fb->buf;
-            uint8_t *dst = pixels;
-            if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                // Byte swap first (GC2145 high byte first -> little-endian), then RGB565 -> Y
-                // expected=w*h*1, input RGB565 is w*h*2 bytes
-                size_t input_bytes = (size_t)s_camera.width * 2 * s_camera.height;
-                for (size_t j = 0; j < input_bytes; j += 2) {
-                    uint8_t hi = src[j];    // high byte from sensor (big-endian: first byte)
-                    uint8_t lo = src[j+1];  // low byte from sensor (big-endian: second byte)
-                    // Extract RGB565 components (big-endian format)
-                    uint8_t r5 = (hi >> 3) & 0x1F;
-                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
-                    uint8_t b5 = lo & 0x1F;
-                    // Scale to 8-bit
-                    uint8_t r8 = (r5 << 3) | (r5 >> 2);
-                    uint8_t g8 = (g6 << 2) | (g6 >> 4);
-                    uint8_t b8 = (b5 << 3) | (b5 >> 2);
-                    // Y = 0.299R + 0.587G + 0.114B  (integer approx)
-                    dst[j/2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
-                }
-                ret = ESP_OK;
-            } else {
-                // RGB565: byte swap (GC2145 high byte first -> little-endian)
-                size_t input_bytes = (size_t)s_camera.width * 2 * s_camera.height;
-                for (size_t j = 0; j < input_bytes; j += 2) {
-                    dst[j] = src[j+1];
-                    dst[j+1] = src[j];
-                }
-                ret = ESP_OK;
-            }
+        esp_err_t ret = ESP_OK;
+        image_t src;
+        image_t dst = { .w = (int32_t)s_camera.width, .h = (int32_t)s_camera.height,
+                        .pixfmt = s_camera.output_pixfmt, .size = 0, .pixels = pixels };
+        if ((fb->format != ESP32_CAMERA_PIXFORMAT_JPEG) ||
+            !esp_vision_camera_get_jpeg_payload(fb, &src)) {
+            esp_vision_camera_log_jpeg_frame("invalid", fb);
+            ret = ESP_ERR_INVALID_RESPONSE;
+        } else if (((uint32_t)src.w != s_camera.width) || ((uint32_t)src.h != s_camera.height)) {
+            esp_vision_camera_log_jpeg_frame("unexpected size", fb);
+            ret = ESP_ERR_INVALID_RESPONSE;
+        } else {
+            ret = esp_vision_jpeg_decode(src.pixels, src.size, &dst);
         }
         esp_camera_fb_return(fb);
         if (ret != ESP_ERR_INVALID_RESPONSE) return ret;
     }
     return ESP_ERR_INVALID_RESPONSE;
 }
-
 esp_err_t esp_vision_camera_snapshot(image_t *img, uint8_t *pixels, size_t pixels_size)
 {
     if (!img) return ESP_ERR_INVALID_ARG;
@@ -349,7 +313,6 @@ esp_err_t esp_vision_camera_snapshot(image_t *img, uint8_t *pixels, size_t pixel
     img->_raw = NULL; img->pixels = pixels;
     return ESP_OK;
 }
-
 esp_err_t esp_vision_camera_get_status(esp_vision_camera_status_t *status)
 {
     if (!status) return ESP_ERR_INVALID_ARG;
@@ -368,4 +331,3 @@ esp_err_t esp_vision_camera_get_status(esp_vision_camera_status_t *status)
     status->vflip = s_camera.vflip;
     return ESP_OK;
 }
-
