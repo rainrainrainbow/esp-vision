@@ -262,7 +262,6 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
             size_t total_pixels = (size_t)s_camera.width * s_camera.height;
-            size_t input_bytes = total_pixels * 2;
             uint16_t *src16 = (uint16_t *)src;
             uint16_t *dst16 = (uint16_t *)dst;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
