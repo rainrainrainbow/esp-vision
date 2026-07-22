@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
- * GC2145 has no JPEG output - use RGB565 mode, no byte swap.
+ * GC2145 has no JPEG output - use RGB565 mode with byte-swap.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -243,6 +243,10 @@ size_t esp_vision_camera_frame_size(void)
 {
     return esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
 }
+static uint16_t esp_vision_camera_swap16(uint16_t v)
+{
+    return (uint16_t)((v >> 8) | (v << 8));
+}
 esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 {
     if (!pixels || !esp_vision_camera_is_ready()) return ESP_ERR_INVALID_STATE;
@@ -253,27 +257,30 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
         if (!fb) return ESP_FAIL;
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        /* GC2145 outputs RGB565. Accept any non-JPEG frame with enough data. */
+        /* GC2145 outputs little-endian RGB565 (DVP default). Swap to big-endian for display. */
         if (fb->format != ESP32_CAMERA_PIXFORMAT_JPEG && fb_size >= expected_size) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
             size_t total_pixels = (size_t)s_camera.width * s_camera.height;
             size_t input_bytes = total_pixels * 2;
+            uint16_t *src16 = (uint16_t *)src;
+            uint16_t *dst16 = (uint16_t *)dst;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                for (size_t j = 0; j < input_bytes; j += 2) {
-                    uint8_t hi = src[j];
-                    uint8_t lo = src[j + 1];
-                    uint8_t r5 = (hi >> 3) & 0x1F;
-                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
-                    uint8_t b5 = lo & 0x1F;
+                for (size_t j = 0; j < total_pixels; j++) {
+                    uint16_t rgb565 = esp_vision_camera_swap16(src16[j]);
+                    uint8_t r5 = (rgb565 >> 11) & 0x1F;
+                    uint8_t g6 = (rgb565 >> 5) & 0x3F;
+                    uint8_t b5 = rgb565 & 0x1F;
                     uint8_t r8 = (r5 << 3) | (r5 >> 2);
                     uint8_t g8 = (g6 << 2) | (g6 >> 4);
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
-                    dst[j / 2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                    dst[j] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
                 }
                 ret = ESP_OK;
             } else {
-                memcpy(dst, src, input_bytes);
+                for (size_t j = 0; j < total_pixels; j++) {
+                    dst16[j] = esp_vision_camera_swap16(src16[j]);
+                }
                 ret = ESP_OK;
             }
         }
