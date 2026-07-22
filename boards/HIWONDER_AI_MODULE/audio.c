@@ -143,7 +143,7 @@ esp_err_t esp_vision_audio_init(void)
 
     /* Initialize I2S TX channel */
     i2s_chan_config_t chan_cfg = {
-        .id = I2S_NUM_0,
+        .id = I2S_NUM_1,
         .role = I2S_ROLE_MASTER,
         .dma_desc_num = 8,
         .dma_frame_num = 256,
