@@ -243,10 +243,6 @@ size_t esp_vision_camera_frame_size(void)
 {
     return esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
 }
-static uint16_t esp_vision_camera_swap16(uint16_t v)
-{
-    return (uint16_t)((v >> 8) | (v << 8));
-}
 esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 {
     if (!pixels || !esp_vision_camera_is_ready()) return ESP_ERR_INVALID_STATE;
