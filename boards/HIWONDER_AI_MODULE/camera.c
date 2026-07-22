@@ -257,16 +257,16 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
         if (!fb) return ESP_FAIL;
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        /* GC2145 outputs little-endian RGB565 (DVP default). Swap to big-endian for display. */
+        /* GC2145 outputs RGB565. Driver handles byte order, use raw data. */
         if (fb->format != ESP32_CAMERA_PIXFORMAT_JPEG && fb_size >= expected_size) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
             size_t total_pixels = (size_t)s_camera.width * s_camera.height;
-            uint16_t *src16 = (uint16_t *)src;
-            uint16_t *dst16 = (uint16_t *)dst;
+            size_t input_bytes = total_pixels * 2;
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
+                uint16_t *src16 = (uint16_t *)src;
                 for (size_t j = 0; j < total_pixels; j++) {
-                    uint16_t rgb565 = esp_vision_camera_swap16(src16[j]);
+                    uint16_t rgb565 = src16[j];
                     uint8_t r5 = (rgb565 >> 11) & 0x1F;
                     uint8_t g6 = (rgb565 >> 5) & 0x3F;
                     uint8_t b5 = rgb565 & 0x1F;
@@ -277,9 +277,7 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                 }
                 ret = ESP_OK;
             } else {
-                for (size_t j = 0; j < total_pixels; j++) {
-                    dst16[j] = esp_vision_camera_swap16(src16[j]);
-                }
+                memcpy(dst, src, input_bytes);
                 ret = ESP_OK;
             }
         }
