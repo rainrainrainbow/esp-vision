@@ -7,13 +7,12 @@
  * I2C on I2C0 (shared with camera and touch), I2S for audio data.
  *
  * IMPORTANT: ES8311 uses MCLK (GPIO45) as its clock source.
+ * Uses I2S_NUM_0 (camera uses LCD_CAM, NOT I2S, so no conflict).
  */
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/i2c.h"
@@ -21,7 +20,6 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
-
 #include "boardconfig.h"
 
 static const char *TAG = "esp_vision_audio";
@@ -52,6 +50,7 @@ static const char *TAG = "esp_vision_audio";
 #define ES8311_GPIO_DAC_PDN_N          0x02
 
 #define AUDIO_DEFAULT_SAMPLE_RATE      44100
+#define AUDIO_BIT_WIDTH                16
 
 static bool s_audio_initialized = false;
 static bool s_i2c_installed = false;
@@ -75,11 +74,9 @@ esp_err_t esp_vision_audio_init(void)
     if (s_audio_initialized) {
         return ESP_OK;
     }
-
     /*
      * I2C0 may already be installed by camera (via SCCB).
      * Try driver_install FIRST; only call param_config if we actually install it.
-     * This avoids calling param_config on an already-configured I2C bus.
      */
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
@@ -89,16 +86,13 @@ esp_err_t esp_vision_audio_init(void)
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         .master.clk_speed = 100000,
     };
-
     esp_err_t ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
     if (ret == ESP_ERR_INVALID_STATE) {
-        /* Driver already installed by camera - just reuse it */
         ESP_LOGI(TAG, "I2C0 already installed (by camera), reusing");
     } else if (ret != ESP_OK) {
         ESP_LOGE(TAG, "I2C0 install failed: %s", esp_err_to_name(ret));
         return ret;
     } else {
-        /* We installed the driver, now configure it */
         i2c_param_config(I2C_NUM_0, &conf);
         s_i2c_installed = true;
         ESP_LOGI(TAG, "I2C0 installed and configured");
@@ -127,8 +121,7 @@ esp_err_t esp_vision_audio_init(void)
 
     /*
      * Configure ES8311 registers.
-     * CRITICAL: Register 0x01 uses MCLK (GPIO45) as clock source (0x0F).
-     * Bit 6 = 0: select MCLK as clock source.
+     * Register 0x01: use MCLK (GPIO45) as clock source (0x0F).
      */
     es8311_write_reg(ES8311_CLOCK_MANAGER_REG, ES8311_CLOCK_MCLK_ON);
     es8311_write_reg(ES8311_CLOCK_DIV_REG, ES8311_MCLK_DIV_256);
@@ -141,46 +134,55 @@ esp_err_t esp_vision_audio_init(void)
     es8311_write_reg(ES8311_DAC_CTRL_REG, 0x08);
     es8311_write_reg(ES8311_ADC_CTRL_REG, 0x08);
 
-    /* Initialize I2S TX channel */
-    i2s_chan_config_t chan_cfg = {
-        .id = I2S_NUM_1,
-        .role = I2S_ROLE_MASTER,
-        .dma_desc_num = 8,
-        .dma_frame_num = 256,
-        .auto_clear_after_cb = true,
-    };
+    /* Initialize I2S TX channel using I2S_NUM_0 */
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
+    chan_cfg.auto_clear = true;
     ret = i2s_new_channel(&chan_cfg, &s_tx_handle, NULL);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "I2S new channel: %s", esp_err_to_name(ret));
         return ret;
     }
 
-    /* ES8311 uses MCLK (GPIO45) as clock source */
+    /*
+     * Use standard Philips I2S slot config with proper defaults.
+     * Previous code used raw struct init which left data_bit_width=0
+     * and slot_bit_width=0, causing ESP_ERR_INVALID_ARG.
+     *
+     * ES8311 uses MCLK (GPIO45) as clock source.
+     */
     i2s_std_config_t std_cfg = {
-        .clk_cfg = { .sample_rate_hz = AUDIO_DEFAULT_SAMPLE_RATE,
-            .clk_src = I2S_CLK_SRC_DEFAULT, .mclk_multiple = I2S_MCLK_MULTIPLE_256 },
-        .slot_cfg = { .slot_mode = I2S_SLOT_MODE_STEREO,
-            .slot_mask = I2S_STD_SLOT_BOTH, .ws_width = 32,
-            .bit_shift = true, .left_align = true,
-            .big_endian = false, .bit_order_lsb = false },
-        .gpio_cfg = { .mclk = 45,
-            .bclk = 39, .ws = 41, .dout = 42, .din = 40 },
+        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(AUDIO_DEFAULT_SAMPLE_RATE),
+        .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(
+            I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
+        .gpio_cfg = {
+            .mclk = 45,
+            .bclk = 39,
+            .ws = 41,
+            .dout = 42,
+            .din = 40,
+            .invert_flags = {
+                .mclk_inv = false,
+                .bclk_inv = false,
+                .ws_inv = false,
+            },
+        },
     };
+    /* MCLK = sample_rate * 256 */
+    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
+
     ret = i2s_channel_init_std_mode(s_tx_handle, &std_cfg);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "I2S init std: %s", esp_err_to_name(ret));
         i2s_del_channel(s_tx_handle); s_tx_handle = NULL;
         return ret;
     }
-
     ret = i2s_channel_enable(s_tx_handle);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "I2S enable: %s", esp_err_to_name(ret));
         i2s_del_channel(s_tx_handle); s_tx_handle = NULL;
         return ret;
     }
-
-    ESP_LOGI(TAG, "ES8311 + I2S initialized (MCLK clock source)");
+    ESP_LOGI(TAG, "ES8311 + I2S initialized (MCLK clock source, I2S_NUM_0)");
     s_audio_initialized = true;
     return ESP_OK;
 }
@@ -206,11 +208,8 @@ int esp_vision_audio_play_pcm(const uint8_t *data, size_t len, uint32_t sample_r
     if (!s_audio_initialized || !s_tx_handle || !data || len == 0) return -1;
     if (sample_rate != 0) {
         i2s_channel_disable(s_tx_handle);
-        i2s_std_clk_config_t clk_cfg = {
-            .sample_rate_hz = sample_rate,
-            .clk_src = I2S_CLK_SRC_DEFAULT,
-            .mclk_multiple = I2S_MCLK_MULTIPLE_256,
-        };
+        i2s_std_clk_config_t clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(sample_rate);
+        clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
         i2s_channel_reconfig_std_clock(s_tx_handle, &clk_cfg);
         i2s_channel_enable(s_tx_handle);
     }
