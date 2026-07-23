@@ -5,11 +5,9 @@
  *
  * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
  * GC2145 has no JPEG output - use RGB565 mode.
- *
- * IMPORTANT: GC2145 outputs RGB565 in big-endian (high byte first).
- * ESP32-S3 LCD_CAM has swap_data=0 (no byte swap).
- * So DMA buffer bytes are: [hi0, lo0, hi1, lo1, ...]
- * We must swap bytes for correct RGB565 on little-endian ESP32.
+ * 
+ * IMPORTANT: esp32-camera LCD_CAM driver already handles byte order.
+ * No manual byte swapping needed.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -305,10 +303,9 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 /*
-                 * GC2145 outputs RGB565 big-endian: high byte first.
-                 * ESP32-S3 LCD_CAM swap_data=0, so DMA buffer is:
-                 *   buf[2*j]   = high byte [R4 R3 R2 R1 R0 G5 G4 G3]
-                 *   buf[2*j+1] = low byte  [G2 G1 G0 B4 B3 B2 B1 B0]
+                 * Convert RGB565 to Grayscale.
+                 * esp32-camera LCD_CAM driver already handles byte order.
+                 * RGB565 format: [R4 R3 R2 R1 R0 G5 G4 G3] [G2 G1 G0 B4 B3 B2 B1 B0]
                  */
                 for (size_t j = 0; j < total_pixels; j++) {
                     uint8_t hi = src[2 * j];
@@ -324,14 +321,10 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                 ret = ESP_OK;
             } else {
                 /*
-                 * RGB565 output: swap bytes from big-endian (GC2145)
-                 * to little-endian (ESP32 native uint16_t).
-                 * Without swap, R and B channels are mixed up.
+                 * RGB565 output: direct copy.
+                 * esp32-camera LCD_CAM driver already handles byte order.
                  */
-                for (size_t j = 0; j < total_pixels; j++) {
-                    dst[2 * j] = src[2 * j + 1];     /* low byte */
-                    dst[2 * j + 1] = src[2 * j];     /* high byte */
-                }
+                memcpy(dst, src, input_bytes);
                 ret = ESP_OK;
             }
         }
