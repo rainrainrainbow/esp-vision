@@ -297,16 +297,16 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 /*
-                 * Convert big-endian RGB565 from GC2145 to grayscale.
+                 * Convert big-endian RGB565 from GC2145 to true grayscale (1 byte/pixel).
                  *
                  * GC2145 outputs big-endian RGB565:
                  *   src[2i]   = hi = [R4 R3 R2 R1 R0 G5 G4 G3]
                  *   src[2i+1] = lo = [G2 G1 G0 B4 B3 B2 B1 B0]
                  *
-                 * Output as little-endian RGB565 with R=G=B=gray for display.c compatibility.
-                 * display.c expects uint16_t* and will byte-swap to big-endian for LCD.
+                 * Output as 1 byte/pixel grayscale for imlib and JPEG encoder compatibility.
+                 * - imlib_find_qrcodes() uses IMAGE_GET_GRAYSCALE_PIXEL which reads 1 byte
+                 * - esp_vision_jpeg_encode() expects 1 byte/pixel for PIXFORMAT_GRAYSCALE
                  */
-                uint16_t *dst16 = (uint16_t *)pixels;
                 for (size_t i = 0; i < total_pixels; i++) {
                     uint8_t hi = src[i * 2];
                     uint8_t lo = src[i * 2 + 1];
@@ -322,14 +322,7 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
 
                     // Luminance: Y = 0.299R + 0.587G + 0.114B
-                    uint8_t gray = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
-
-                    // Encode as little-endian RGB565 with R=G=B=gray
-                    // RGB565: [R4..R0 G5..G3][G2..G0 B4..B0]
-                    uint8_t out_hi = (gray & 0xF8) | ((gray >> 5) & 0x07);
-                    uint8_t out_lo = ((gray << 3) & 0xE0) | ((gray >> 3) & 0x1F);
-                    // Store as little-endian
-                    dst16[i] = (uint16_t)(out_lo << 8) | out_hi;
+                    dst[i] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
                 }
                 ret = ESP_OK;
             } else {
