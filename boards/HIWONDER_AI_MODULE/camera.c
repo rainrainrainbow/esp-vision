@@ -287,18 +287,21 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        size_t expected = esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
+        // RGB565 frame size from sensor (always 2 bytes per pixel)
+        size_t rgb565_frame_size = (size_t)s_camera.width * s_camera.height * 2;
 
-        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= expected) {
+        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= rgb565_frame_size) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 // Convert RGB565 (big-endian from sensor) to Grayscale
                 // Sensor outputs big-endian: first byte is high byte, second is low byte
-                for (size_t j = 0; j < expected; j += 2) {
-                    uint8_t hi = src[j];    // high byte from sensor
-                    uint8_t lo = src[j+1];  // low byte from sensor
+                // Process ALL pixels (width * height), not just half
+                size_t total_pixels = (size_t)s_camera.width * s_camera.height;
+                for (size_t i = 0; i < total_pixels; i++) {
+                    uint8_t hi = src[i * 2];      // high byte from sensor
+                    uint8_t lo = src[i * 2 + 1];  // low byte from sensor
                     // Extract RGB565 components (big-endian format)
                     uint8_t r5 = (hi >> 3) & 0x1F;
                     uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
@@ -308,12 +311,12 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                     uint8_t g8 = (g6 << 2) | (g6 >> 4);
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
                     // Y = 0.299R + 0.587G + 0.114B
-                    dst[j/2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                    dst[i] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
                 }
                 ret = ESP_OK;
             } else {
                 // RGB565: byte swap (sensor big-endian -> little-endian for display)
-                for (size_t j = 0; j < expected; j += 2) {
+                for (size_t j = 0; j < rgb565_frame_size; j += 2) {
                     dst[j] = src[j+1];
                     dst[j+1] = src[j];
                 }
