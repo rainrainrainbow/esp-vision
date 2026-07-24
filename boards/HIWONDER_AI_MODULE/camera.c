@@ -2,13 +2,6 @@
  * SPDX-FileCopyrightText: 2026 Espressif Systems (Shanghai) CO LTD
  *
  * SPDX-License-Identifier: Apache-2.0
- *
- * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
- * GC2145 has no JPEG output - use RGB565 mode.
- *
- * IMPORTANT: GC2145 outputs BGR565 (Blue-first) per MIPI-CSI2 spec.
- * The display.c draw_bitmap function handles byte order conversion for LCD.
- * We keep the raw BGR565 data and let display.c do the conversion.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -165,7 +158,6 @@ esp_err_t esp_vision_camera_init(void)
     esp_err_t ret = esp_vision_camera_to_esp32_framesize(s_camera.width, s_camera.height, &frame_size);
     if (ret != ESP_OK) return ret;
 
-    /* GC2145 does NOT support JPEG output. Use RGB565 mode. */
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
@@ -207,8 +199,8 @@ esp_err_t esp_vision_camera_init(void)
 
     sensor_t *sensor = esp_camera_sensor_get();
     if (sensor != NULL) {
-        sensor->set_hmirror(sensor, s_camera.hmirror ? 1 : 0);
-        sensor->set_vflip(sensor, s_camera.vflip ? 1 : 0);
+        sensor->set_hmirror(sensor, 1);
+        sensor->set_vflip(sensor, 1);
     }
     return ESP_OK;
 }
@@ -246,7 +238,7 @@ esp_err_t esp_vision_camera_set_framesize(esp_vision_camera_framesize_t framesiz
         ret = esp_vision_camera_to_esp32_framesize(width, height, &esp32_framesize);
         if (ret != ESP_OK) return ret;
         sensor_t *sensor = esp_camera_sensor_get();
-        if ((sensor == NULL) || (sensor->set_framesize == NULL)) return ESP_FAIL;
+        if (!sensor || !sensor->set_framesize) return ESP_FAIL;
         if (sensor->set_framesize(sensor, esp32_framesize) != 0) return ESP_FAIL;
     }
     esp_vision_camera_set_dimensions(width, height);
@@ -260,7 +252,7 @@ esp_err_t esp_vision_camera_set_hmirror(bool enable)
 {
     s_camera.hmirror = enable;
     sensor_t *sensor = esp_camera_sensor_get();
-    if (sensor != NULL) sensor->set_hmirror(sensor, enable ? 1 : 0);
+    if (sensor) sensor->set_hmirror(sensor, enable ? 1 : 0);
     return ESP_OK;
 }
 
@@ -270,7 +262,7 @@ esp_err_t esp_vision_camera_set_vflip(bool enable)
 {
     s_camera.vflip = enable;
     sensor_t *sensor = esp_camera_sensor_get();
-    if (sensor != NULL) sensor->set_vflip(sensor, enable ? 1 : 0);
+    if (sensor) sensor->set_vflip(sensor, enable ? 1 : 0);
     return ESP_OK;
 }
 
@@ -295,47 +287,36 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        size_t total_pixels = (size_t)s_camera.width * s_camera.height;
-        size_t input_bytes = total_pixels * 2;  /* RGB565 = 2 bytes/pixel */
+        size_t expected = esp_vision_camera_output_size(s_camera.width, s_camera.height, s_camera.output_pixfmt);
 
-        if (fb->format != ESP32_CAMERA_PIXFORMAT_JPEG && fb_size >= input_bytes) {
+        if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= expected) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                /*
-                 * Convert BGR565 (GC2145 output) to Grayscale.
-                 *
-                 * BGR565 byte layout (little-endian in memory):
-                 *   Byte 0 (low):  [G2 G1 G0 R4 R3 R2 R1 R0]
-                 *   Byte 1 (high): [B4 B3 B2 B1 B0 G5 G4 G3]
-                 *
-                 * Extract R, G, B from correct positions:
-                 */
-                for (size_t j = 0; j < total_pixels; j++) {
-                    uint8_t lo = src[2 * j];      /* Low byte contains R */
-                    uint8_t hi = src[2 * j + 1];  /* High byte contains B */
-
-                    uint8_t r5 = lo & 0x1F;                    /* Red from low byte */
-                    uint8_t g6 = ((lo >> 5) & 0x07) | ((hi & 0x07) << 3);  /* Green spans both */
-                    uint8_t b5 = (hi >> 3) & 0x1F;            /* Blue from high byte */
-
-                    /* Expand to 8-bit */
+                // Convert RGB565 (big-endian from sensor) to Grayscale
+                // Sensor outputs big-endian: first byte is high byte, second is low byte
+                for (size_t j = 0; j < expected; j += 2) {
+                    uint8_t hi = src[j];    // high byte from sensor
+                    uint8_t lo = src[j+1];  // low byte from sensor
+                    // Extract RGB565 components (big-endian format)
+                    uint8_t r5 = (hi >> 3) & 0x1F;
+                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
+                    uint8_t b5 = lo & 0x1F;
+                    // Scale to 8-bit
                     uint8_t r8 = (r5 << 3) | (r5 >> 2);
                     uint8_t g8 = (g6 << 2) | (g6 >> 4);
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
-
-                    /* Grayscale: Y = 0.299R + 0.587G + 0.114B */
-                    dst[j] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                    // Y = 0.299R + 0.587G + 0.114B
+                    dst[j/2] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
                 }
                 ret = ESP_OK;
             } else {
-                /*
-                 * RGB565 mode: copy raw BGR565 data from GC2145.
-                 * The display.c draw_bitmap function will handle byte order
-                 * conversion when sending to LCD.
-                 */
-                memcpy(dst, src, input_bytes);
+                // RGB565: byte swap (sensor big-endian -> little-endian for display)
+                for (size_t j = 0; j < expected; j += 2) {
+                    dst[j] = src[j+1];
+                    dst[j+1] = src[j];
+                }
                 ret = ESP_OK;
             }
         }
