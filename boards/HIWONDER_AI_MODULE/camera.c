@@ -96,16 +96,16 @@ void esp_vision_camera_init0(void)
     esp_vision_camera_set_defaults();
 }
 
+/*
+ * Buffer size is always 2 bytes/pixel because:
+ * - RGB565 mode: native 2 bytes/pixel
+ * - Grayscale mode: we output as RGB565 (R=G=B=gray) for display.c compatibility
+ *   (display.c draw_bitmap expects uint16_t data)
+ */
 static size_t esp_vision_camera_bpp(uint32_t pixfmt)
 {
-    switch (pixfmt) {
-    case PIXFORMAT_GRAYSCALE:
-        return sizeof(uint8_t);
-    case PIXFORMAT_RGB565:
-        return sizeof(uint16_t);
-    default:
-        return 0;
-    }
+    (void)pixfmt;
+    return sizeof(uint16_t);  /* always 2 bytes/pixel */
 }
 
 static size_t esp_vision_camera_output_size(uint32_t width, uint32_t height, uint32_t pixfmt)
@@ -296,15 +296,19 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 /*
-                 * Convert RGB565 (big-endian from sensor) to grayscale.
+                 * Convert RGB565 (big-endian from sensor) to grayscale,
+                 * output as proper RGB565 with R=G=B=gray.
                  *
-                 * IMPORTANT: display.c draw_bitmap expects uint16_t data.
-                 * We output grayscale as proper RGB565 with R=G=B=gray,
-                 * so the buffer is always 2 bytes/pixel (153600 bytes for QVGA).
+                 * This ensures the output buffer is always 2 bytes/pixel,
+                 * matching what display.c draw_bitmap expects (uint16_t*).
                  *
                  * Sensor outputs big-endian RGB565:
                  *   src[2i]   = hi = [R4 R3 R2 R1 R0 G5 G4 G3]
                  *   src[2i+1] = lo = [G2 G1 G0 B4 B3 B2 B1 B0]
+                 *
+                 * Output RGB565 grayscale:
+                 *   dst[2i]   = [gray7 gray6 gray5 gray4 gray3 green2 green1 green0]
+                 *   dst[2i+1] = [green2 green1 green0 gray4 gray3 gray2 gray1 gray0]
                  */
                 for (size_t i = 0; i < total_pixels; i++) {
                     uint8_t hi = src[i * 2];
@@ -323,11 +327,11 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                     // Luminance: Y = 0.299R + 0.587G + 0.114B
                     uint8_t gray = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
 
-                    // Output as proper RGB565 with R=G=B=gray
-                    // RGB565 layout: [R4..R0 G5..G0][G2..G0 B4..B0]
+                    // Encode as RGB565 with R=G=B=gray
+                    // RGB565: [R4..R0 G5..G3] [G2..G0 B4..B0]
                     uint8_t out_hi = (gray & 0xF8) | ((gray >> 5) & 0x07);
                     uint8_t out_lo = ((gray << 3) & 0xE0) | ((gray >> 3) & 0x1F);
-                    dst[i * 2] = out_hi;
+                    dst[i * 2]     = out_hi;
                     dst[i * 2 + 1] = out_lo;
                 }
                 ret = ESP_OK;
