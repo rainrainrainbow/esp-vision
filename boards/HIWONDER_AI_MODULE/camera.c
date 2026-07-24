@@ -6,12 +6,9 @@
  * GC2145 DVP camera backend for HIWONDER_AI_MODULE.
  * GC2145 has no JPEG output - use RGB565 mode.
  *
- * CRITICAL: GC2145 outputs BGR565 (Blue-first) per MIPI-CSI2 spec:
- *   High byte: [B4 B3 B2 B1 B0 G5 G4 G3]
- *   Low byte:  [G2 G1 G0 R4 R3 R2 R1 R0]
- *
- * We must convert BGR565 → RGB565 for correct color display,
- * and extract R/B from correct positions for grayscale conversion.
+ * IMPORTANT: GC2145 outputs BGR565 (Blue-first) per MIPI-CSI2 spec.
+ * The display.c draw_bitmap function handles byte order conversion for LCD.
+ * We keep the raw BGR565 data and let display.c do the conversion.
  */
 #include "camera.h"
 #include <inttypes.h>
@@ -309,20 +306,19 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                 /*
                  * Convert BGR565 (GC2145 output) to Grayscale.
                  *
-                 * BGR565 byte layout (per pixel):
-                 *   High byte: [B4 B3 B2 B1 B0 G5 G4 G3]
-                 *   Low byte:  [G2 G1 G0 R4 R3 R2 R1 R0]
+                 * BGR565 byte layout (little-endian in memory):
+                 *   Byte 0 (low):  [G2 G1 G0 R4 R3 R2 R1 R0]
+                 *   Byte 1 (high): [B4 B3 B2 B1 B0 G5 G4 G3]
                  *
                  * Extract R, G, B from correct positions:
                  */
                 for (size_t j = 0; j < total_pixels; j++) {
-                    uint8_t hi = src[2 * j];
-                    uint8_t lo = src[2 * j + 1];
+                    uint8_t lo = src[2 * j];      /* Low byte contains R */
+                    uint8_t hi = src[2 * j + 1];  /* High byte contains B */
 
-                    /* Extract 5-bit R, 6-bit G, 5-bit B from BGR565 */
-                    uint8_t b5 = (hi >> 3) & 0x1F;  /* Blue in high byte */
-                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);  /* Green spans both */
-                    uint8_t r5 = lo & 0x1F;  /* Red in low byte */
+                    uint8_t r5 = lo & 0x1F;                    /* Red from low byte */
+                    uint8_t g6 = ((lo >> 5) & 0x07) | ((hi & 0x07) << 3);  /* Green spans both */
+                    uint8_t b5 = (hi >> 3) & 0x1F;            /* Blue from high byte */
 
                     /* Expand to 8-bit */
                     uint8_t r8 = (r5 << 3) | (r5 >> 2);
@@ -335,26 +331,11 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                 ret = ESP_OK;
             } else {
                 /*
-                 * Convert BGR565 (GC2145) → RGB565 (standard).
-                 *
-                 * BGR565: [B4:0][G5:3] [G2:0][R4:0]
-                 * RGB565: [R4:0][G5:3] [G2:0][B4:0]
-                 *
-                 * Swap R and B channels for each pixel:
+                 * RGB565 mode: copy raw BGR565 data from GC2145.
+                 * The display.c draw_bitmap function will handle byte order
+                 * conversion when sending to LCD.
                  */
-                for (size_t j = 0; j < total_pixels; j++) {
-                    uint8_t hi = src[2 * j];
-                    uint8_t lo = src[2 * j + 1];
-
-                    /* Extract BGR565 components */
-                    uint8_t b5 = (hi >> 3) & 0x1F;
-                    uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
-                    uint8_t r5 = lo & 0x1F;
-
-                    /* Rebuild as RGB565 */
-                    dst[2 * j]     = (r5 << 3) | (g6 >> 3);  /* High byte: R + G high */
-                    dst[2 * j + 1] = ((g6 & 0x07) << 5) | b5;  /* Low byte: G low + B */
-                }
+                memcpy(dst, src, input_bytes);
                 ret = ESP_OK;
             }
         }
