@@ -96,16 +96,16 @@ void esp_vision_camera_init0(void)
     esp_vision_camera_set_defaults();
 }
 
-/*
- * Buffer size is always 2 bytes/pixel because:
- * - RGB565 mode: native 2 bytes/pixel
- * - Grayscale mode: we output as RGB565 (R=G=B=gray) for display.c compatibility
- *   (display.c draw_bitmap expects uint16_t data)
- */
 static size_t esp_vision_camera_bpp(uint32_t pixfmt)
 {
-    (void)pixfmt;
-    return sizeof(uint16_t);  /* always 2 bytes/pixel */
+    switch (pixfmt) {
+    case PIXFORMAT_GRAYSCALE:
+        return sizeof(uint8_t);
+    case PIXFORMAT_RGB565:
+        return sizeof(uint16_t);
+    default:
+        return 0;
+    }
 }
 
 static size_t esp_vision_camera_output_size(uint32_t width, uint32_t height, uint32_t pixfmt)
@@ -158,6 +158,7 @@ esp_err_t esp_vision_camera_init(void)
     esp_err_t ret = esp_vision_camera_to_esp32_framesize(s_camera.width, s_camera.height, &frame_size);
     if (ret != ESP_OK) return ret;
 
+    /* GC2145 does NOT support JPEG output. Use RGB565 mode. */
     const camera_config_t config = {
         .pin_pwdn = ESP_VISION_CAMERA_SENSOR_PWDN_PIN,
         .pin_reset = ESP_VISION_CAMERA_SENSOR_RESET_PIN,
@@ -296,20 +297,16 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 /*
-                 * Convert RGB565 (big-endian from sensor) to grayscale,
-                 * output as proper RGB565 with R=G=B=gray.
+                 * Convert big-endian RGB565 from GC2145 to grayscale.
                  *
-                 * This ensures the output buffer is always 2 bytes/pixel,
-                 * matching what display.c draw_bitmap expects (uint16_t*).
-                 *
-                 * Sensor outputs big-endian RGB565:
+                 * GC2145 outputs big-endian RGB565:
                  *   src[2i]   = hi = [R4 R3 R2 R1 R0 G5 G4 G3]
                  *   src[2i+1] = lo = [G2 G1 G0 B4 B3 B2 B1 B0]
                  *
-                 * Output RGB565 grayscale:
-                 *   dst[2i]   = [gray7 gray6 gray5 gray4 gray3 green2 green1 green0]
-                 *   dst[2i+1] = [green2 green1 green0 gray4 gray3 gray2 gray1 gray0]
+                 * Output as little-endian RGB565 with R=G=B=gray for display.c compatibility.
+                 * display.c expects uint16_t* and will byte-swap to big-endian for LCD.
                  */
+                uint16_t *dst16 = (uint16_t *)pixels;
                 for (size_t i = 0; i < total_pixels; i++) {
                     uint8_t hi = src[i * 2];
                     uint8_t lo = src[i * 2 + 1];
@@ -327,19 +324,29 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                     // Luminance: Y = 0.299R + 0.587G + 0.114B
                     uint8_t gray = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
 
-                    // Encode as RGB565 with R=G=B=gray
-                    // RGB565: [R4..R0 G5..G3] [G2..G0 B4..B0]
+                    // Encode as little-endian RGB565 with R=G=B=gray
+                    // RGB565: [R4..R0 G5..G3][G2..G0 B4..B0]
                     uint8_t out_hi = (gray & 0xF8) | ((gray >> 5) & 0x07);
                     uint8_t out_lo = ((gray << 3) & 0xE0) | ((gray >> 3) & 0x1F);
-                    dst[i * 2]     = out_hi;
-                    dst[i * 2 + 1] = out_lo;
+                    // Store as little-endian
+                    dst16[i] = (uint16_t)(out_lo << 8) | out_hi;
                 }
                 ret = ESP_OK;
             } else {
-                // RGB565: byte swap (sensor big-endian -> little-endian for display)
-                for (size_t j = 0; j < rgb565_frame_size; j += 2) {
-                    dst[j] = src[j+1];
-                    dst[j+1] = src[j];
+                /*
+                 * RGB565 mode: convert big-endian to little-endian.
+                 *
+                 * GC2145 outputs big-endian RGB565:
+                 *   src[2i]   = hi byte
+                 *   src[2i+1] = lo byte
+                 *
+                 * imlib expects little-endian RGB565:
+                 *   dst[2i]   = lo byte
+                 *   dst[2i+1] = hi byte
+                 */
+                for (size_t i = 0; i < total_pixels; i++) {
+                    dst[i * 2]     = src[i * 2 + 1];  // lo byte
+                    dst[i * 2 + 1] = src[i * 2];      // hi byte
                 }
                 ret = ESP_OK;
             }
