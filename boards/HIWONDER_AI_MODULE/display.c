@@ -27,21 +27,6 @@ static esp_err_t (*s_st7789_draw_bitmap)(esp_lcd_panel_t *panel,
                                          int x_end, int y_end,
                                          const void *color_data);
 
-/**
- * Custom draw_bitmap wrapper for GC2145 camera on Hiwonder AI Module.
- *
- * The GC2145 outputs BGR565 (Blue-first) per MIPI-CSI2 spec.
- * The ST7789 LCD is configured with:
- *   - data_endian = LCD_RGB_DATA_ENDIAN_BIG (big-endian SPI bytes)
- *   - invert_color = true (hardware NOT on all pixel bits)
- *   - swap_xy = true (landscape framebuffer → portrait display)
- *
- * Conversion pipeline:
- *   1. Read BGR565 pixel (uint16_t, little-endian in memory)
- *   2. Swap R ↔ B channels to get standard RGB565
- *   3. Bitwise NOT the RGB565 value (pre-compensate for LCD inversion)
- *   4. Byte-swap for big-endian SPI transmission
- */
 static esp_err_t esp_vision_hiwonder_draw_bitmap(esp_lcd_panel_t *panel,
                                                  int x_start, int y_start,
                                                  int x_end, int y_end,
@@ -49,14 +34,8 @@ static esp_err_t esp_vision_hiwonder_draw_bitmap(esp_lcd_panel_t *panel,
 {
     uint16_t *pixels = (uint16_t *)color_data;
     size_t count = (size_t)(x_end - x_start) * (size_t)(y_end - y_start);
-    for (size_t i = 0; i < count; i++) {
-        uint16_t v = pixels[i]; /* BGR565: [B4..B0 G5..G0 R4..R0] */
-        /* Step 1: BGR565 → RGB565 (swap R and B channels) */
-        uint16_t rgb565 = ((v & 0xF800) >> 11) | (v & 0x7E0) | ((v & 0x1F) << 11);
-        /* Step 2+3: NOT + byte-swap for big-endian LCD with color inversion */
-        uint16_t not_rgb = ~rgb565;
-        pixels[i] = (uint16_t)((not_rgb >> 8) | (not_rgb << 8));
-    }
+    for (size_t i = 0; i < count; i++)
+        pixels[i] = (uint16_t)((pixels[i] >> 8) | (pixels[i] << 8));
     return s_st7789_draw_bitmap(panel, x_start, y_start, x_end, y_end, color_data);
 }
 
@@ -158,7 +137,7 @@ esp_err_t esp_vision_board_display_init_panel(uint32_t width, uint32_t height,
     if (ret == ESP_OK) ret = esp_lcd_panel_init(*panel_handle);
     if (ret == ESP_OK) ret = esp_lcd_panel_invert_color(*panel_handle, true);
     if (ret == ESP_OK) ret = esp_lcd_panel_swap_xy(*panel_handle, true);
-    if (ret == ESP_OK) ret = esp_lcd_panel_mirror(*panel_handle, true, false);
+    if (ret == ESP_OK) ret = esp_lcd_panel_mirror(*panel_handle, false, false);
     if (ret == ESP_OK) ret = esp_lcd_panel_disp_on_off(*panel_handle, true);
     if (ret != ESP_OK) {
         esp_vision_board_display_deinit_panel(*io_handle, *panel_handle);
