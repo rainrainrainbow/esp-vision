@@ -287,35 +287,48 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
         esp_err_t ret = ESP_ERR_INVALID_RESPONSE;
         size_t fb_size = fb->len;
-        // RGB565 frame size from sensor (always 2 bytes per pixel)
-        size_t rgb565_frame_size = (size_t)s_camera.width * s_camera.height * 2;
+        size_t total_pixels = (size_t)s_camera.width * s_camera.height;
+        size_t rgb565_frame_size = total_pixels * 2;
 
         if (fb->format == ESP32_CAMERA_PIXFORMAT_RGB565 && fb_size >= rgb565_frame_size) {
             uint8_t *src = fb->buf;
             uint8_t *dst = pixels;
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
-                // Convert RGB565 (big-endian from sensor) to Grayscale
-                // Output as RGB565 format (gray value in both bytes) for display compatibility
-                // The display.c draw_bitmap expects uint16_t data
-                size_t total_pixels = (size_t)s_camera.width * s_camera.height;
+                /*
+                 * Convert RGB565 (big-endian from sensor) to grayscale.
+                 *
+                 * IMPORTANT: display.c draw_bitmap expects uint16_t data.
+                 * We output grayscale as proper RGB565 with R=G=B=gray,
+                 * so the buffer is always 2 bytes/pixel (153600 bytes for QVGA).
+                 *
+                 * Sensor outputs big-endian RGB565:
+                 *   src[2i]   = hi = [R4 R3 R2 R1 R0 G5 G4 G3]
+                 *   src[2i+1] = lo = [G2 G1 G0 B4 B3 B2 B1 B0]
+                 */
                 for (size_t i = 0; i < total_pixels; i++) {
-                    uint8_t hi = src[i * 2];      // high byte from sensor
-                    uint8_t lo = src[i * 2 + 1];  // low byte from sensor
-                    // Extract RGB565 components (big-endian format)
+                    uint8_t hi = src[i * 2];
+                    uint8_t lo = src[i * 2 + 1];
+
+                    // Extract RGB565 components from big-endian format
                     uint8_t r5 = (hi >> 3) & 0x1F;
                     uint8_t g6 = ((hi & 0x07) << 3) | (lo >> 5);
                     uint8_t b5 = lo & 0x1F;
+
                     // Scale to 8-bit
                     uint8_t r8 = (r5 << 3) | (r5 >> 2);
                     uint8_t g8 = (g6 << 2) | (g6 >> 4);
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
-                    // Y = 0.299R + 0.587G + 0.114B
+
+                    // Luminance: Y = 0.299R + 0.587G + 0.114B
                     uint8_t gray = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
-                    // Output as RGB565: both bytes contain the gray value
-                    // This ensures display.c can process it correctly
-                    dst[i * 2] = gray;
-                    dst[i * 2 + 1] = gray;
+
+                    // Output as proper RGB565 with R=G=B=gray
+                    // RGB565 layout: [R4..R0 G5..G0][G2..G0 B4..B0]
+                    uint8_t out_hi = (gray & 0xF8) | ((gray >> 5) & 0x07);
+                    uint8_t out_lo = ((gray << 3) & 0xE0) | ((gray >> 3) & 0x1F);
+                    dst[i * 2] = out_hi;
+                    dst[i * 2 + 1] = out_lo;
                 }
                 ret = ESP_OK;
             } else {
