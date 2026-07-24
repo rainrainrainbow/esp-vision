@@ -296,8 +296,8 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
 
             if (s_camera.output_pixfmt == PIXFORMAT_GRAYSCALE) {
                 // Convert RGB565 (big-endian from sensor) to Grayscale
-                // Sensor outputs big-endian: first byte is high byte, second is low byte
-                // Process ALL pixels (width * height), not just half
+                // Output as RGB565 format (gray value in both bytes) for display compatibility
+                // The display.c draw_bitmap expects uint16_t data
                 size_t total_pixels = (size_t)s_camera.width * s_camera.height;
                 for (size_t i = 0; i < total_pixels; i++) {
                     uint8_t hi = src[i * 2];      // high byte from sensor
@@ -311,7 +311,11 @@ esp_err_t esp_vision_camera_capture(uint8_t *pixels, size_t pixels_size)
                     uint8_t g8 = (g6 << 2) | (g6 >> 4);
                     uint8_t b8 = (b5 << 3) | (b5 >> 2);
                     // Y = 0.299R + 0.587G + 0.114B
-                    dst[i] = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                    uint8_t gray = (uint8_t)((77 * r8 + 150 * g8 + 29 * b8) >> 8);
+                    // Output as RGB565: both bytes contain the gray value
+                    // This ensures display.c can process it correctly
+                    dst[i * 2] = gray;
+                    dst[i * 2 + 1] = gray;
                 }
                 ret = ESP_OK;
             } else {
