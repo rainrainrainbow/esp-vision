@@ -11,10 +11,8 @@ sensor.set_framesize(sensor.QVGA)
 # 打印当前状态
 print("=== 初始状态 ===")
 st = sensor.status()
-print("分辨率: {}x{}".format(st['width'], st['height']))
-print("像素格式:", st['pixfmt'])
-print("水平镜像:", st['hmirror'])
-print("垂直翻转:", st['vflip'])
+print("状态字典:", st)
+print("分辨率: {}x{}".format(st.get('width', '?'), st.get('height', '?')))
 
 # 测试1: 当前设置
 print("\n=== 测试1: 当前设置 (hmirror=1, vflip=1) ===")
