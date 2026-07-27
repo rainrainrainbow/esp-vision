@@ -194,14 +194,14 @@ esp_err_t esp_vision_camera_init(void)
         return ret;
     }
 
-    s_camera.vflip = true;
+    s_camera.vflip = false;
     s_camera.hmirror = true;
     s_camera.initialized = true;
 
     sensor_t *sensor = esp_camera_sensor_get();
     if (sensor != NULL) {
         sensor->set_hmirror(sensor, 1);
-        sensor->set_vflip(sensor, 1);
+        sensor->set_vflip(sensor, 0);
     }
     return ESP_OK;
 }
