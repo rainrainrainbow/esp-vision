@@ -964,8 +964,8 @@ static void flood_fill_seed(struct quirc *q, int x, int y, int from, int to,
  */
 
 #define THRESHOLD_S_MIN 1
-#define THRESHOLD_S_DEN 8
-#define THRESHOLD_T     5
+#define THRESHOLD_S_DEN 4
+#define THRESHOLD_T     3
 
 static void threshold(struct quirc *q)
 {
