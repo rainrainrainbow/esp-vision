@@ -19,3 +19,5 @@ ESP-VISION port for the HIWONDER AI Module board (ESP32-S3).
 ```bash
 make BOARD=HIWONDER_AI_MODULE all
 ```
+
+<!-- trigger rebuild -->
