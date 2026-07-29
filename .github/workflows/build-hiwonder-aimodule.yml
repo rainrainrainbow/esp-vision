@@ -21,7 +21,7 @@ jobs:
           tail -80 build_output.log
           mkdir -p firmware_out
           BUILD_DIR="build/HIWONDER_AI_MODULE/idf6.1"
-          for f in bootloader/bootloader.bin partition_table/partition-table.bin micropython.bin flash_args flasher_args.json; do
+          for f in bootloader/bootloader.bin partition_table/partition-table.bin esp-vision.bin micropython.bin flash_args flasher_args.json; do
             src="$BUILD_DIR/$f"
             [ -f "$src" ] && cp "$src" firmware_out/ && echo "OK: $f ($(stat -c%s "$src") bytes)" || echo "MISSING: $f"
           done
