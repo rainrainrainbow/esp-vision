@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "DVP",
+        "GC2145",
+        "ES8311",
+        "FT5x06",
+        "ST7789"
+    ],
+    "mcu": "esp32s3",
+    "product": "HIWONDER-AI-MODULE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Hiwonder"
+}
