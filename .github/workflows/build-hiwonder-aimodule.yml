@@ -1,0 +1,26 @@
+name: Build HIWONDER_AI_MODULE Firmware
+on:
+  push:
+    branches:
+      - feature/hiwonder-aimodule
+      - feature/hiwonder-aimodule-v2
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - run: docker run --rm -v "$PWD:/project" -w /project -e BOARD=HIWONDER_AI_MODULE espressif/idf:release-v6.1 bash /project/build_hiwonder_aimodule.sh > build_output.log 2>&1; echo "DOCKER_EXIT=$?"
+      - if: always()
+        run: |
+          tail -80 build_output.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firmware-hiwonder-ai-module
+          path: |
+            boards/HIWONDER_AI_MODULE/firmware_files/*.bin
+            boards/HIWONDER_AI_MODULE/firmware_files/flash_args
+            boards/HIWONDER_AI_MODULE/firmware_files/flasher_args.json
+            boards/HIWONDER_AI_MODULE/firmware_files/build_output.log
