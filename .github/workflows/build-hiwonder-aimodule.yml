@@ -5,6 +5,7 @@ on:
     branches:
       - feature/hiwonder-aimodule
       - feature/hiwonder-aimodule-v2
+      - feature/hiwonder-aimodule-rollback
 
 jobs:
   build:
